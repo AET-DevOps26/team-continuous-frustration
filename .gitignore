@@ -1,0 +1,15 @@
+#ENV
+.env
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
