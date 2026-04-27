@@ -29,3 +29,13 @@ Example response:
 - Swagger UI: `http://localhost:8001/docs`
 - OpenAPI JSON: `http://localhost:8001/openapi.json`
 - ReDoc: `http://localhost:8001/redoc`
+
+## Pre-commit Pylint Hook
+
+Run it manually on all files:
+
+`pre-commit run --all-files`
+
+Configured hook file:
+
+`/.pre-commit-config.yaml`
