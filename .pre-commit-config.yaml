@@ -12,3 +12,19 @@ repos:
         name: ruff-format (GenAI)
         files: ^apps/GenAI/src/.*\.py$
         types_or: [python]
+  - repo: local
+    hooks:
+      - id: no-empty-commit-message
+        name: no-empty-commit-message
+        entry: bash
+        language: system
+        stages: [commit-msg]
+        pass_filenames: true
+        args:
+          - -c
+          - |
+            if ! grep -q '[^[:space:]]' "$1"; then
+              echo "Commit message cannot be empty or whitespace only."
+              exit 1
+            fi
+          - --
