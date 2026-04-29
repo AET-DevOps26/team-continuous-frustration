@@ -38,4 +38,4 @@ Run it manually on all files:
 
 Configured hook file:
 
-`/.pre-commit-config.yaml`
+`.pre-commit-config.yaml`
