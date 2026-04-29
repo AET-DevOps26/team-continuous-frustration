@@ -30,9 +30,9 @@ Example response:
 - OpenAPI JSON: `http://localhost:8001/openapi.json`
 - ReDoc: `http://localhost:8001/redoc`
 
-## Pre-commit Pylint Hook
+## Pre-commit Ruff Hooks
 
-Run it manually on all files:
+Run the configured Ruff hooks manually on all files:
 
 `pre-commit run --all-files`
 
