@@ -4,14 +4,15 @@ repos:
     hooks:
       - id: ruff
         name: ruff (GenAI)
-        files: ^apps/GenAI/src/.*\.py$
+        files: ^services/.*/src/.*\.py$
         types_or: [python]
         args:
           - --fix
       - id: ruff-format
         name: ruff-format (GenAI)
-        files: ^apps/GenAI/src/.*\.py$
+        files: ^services/.*/src/.*\.py$
         types_or: [python]
+        
   - repo: local
     hooks:
       - id: no-empty-commit-message
@@ -28,3 +29,4 @@ repos:
               exit 1
             fi
           - --
+
