@@ -6,20 +6,20 @@
   "nodes": [
     {
       "id": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
-      "width": 1010,
-      "height": 940,
+      "width": 780,
+      "height": 750,
       "type": "componentSubsystem",
       "position": {
-        "x": -320,
-        "y": -30
+        "x": -300,
+        "y": 10
       },
       "data": {
         "name": "Backend",
         "isComponentSubsystemHeaderShown": true
       },
       "measured": {
-        "width": 1010,
-        "height": 940
+        "width": 780,
+        "height": 750
       }
     },
     {
@@ -28,8 +28,8 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 30,
-        "y": 430
+        "x": 50,
+        "y": 400
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
@@ -43,20 +43,20 @@
     },
     {
       "id": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
-      "width": 180,
-      "height": 120,
+      "width": 770,
+      "height": 550,
       "type": "componentSubsystem",
       "position": {
-        "x": 1090,
-        "y": 700
+        "x": -300,
+        "y": -630
       },
       "data": {
         "name": "AI",
         "isComponentSubsystemHeaderShown": true
       },
       "measured": {
-        "width": 180,
-        "height": 120
+        "width": 770,
+        "height": 550
       }
     },
     {
@@ -65,8 +65,8 @@
       "height": 270,
       "type": "componentSubsystem",
       "position": {
-        "x": -940,
-        "y": 300
+        "x": -1630,
+        "y": -140
       },
       "data": {
         "name": "Fronted",
@@ -83,8 +83,8 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 390,
-        "y": 310
+        "x": 370,
+        "y": 260
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
@@ -98,20 +98,20 @@
     },
     {
       "id": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
-      "width": 180,
+      "width": 200,
       "height": 120,
       "type": "component",
       "position": {
-        "x": 730,
-        "y": 120
+        "x": 270,
+        "y": 350
       },
-      "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
+      "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
       "data": {
-        "name": "Material Service",
+        "name": "Card Generation Service",
         "isComponentHeaderShown": true
       },
       "measured": {
-        "width": 180,
+        "width": 200,
         "height": 120
       }
     },
@@ -121,8 +121,8 @@
       "height": 130,
       "type": "component",
       "position": {
-        "x": 360,
-        "y": 640
+        "x": 340,
+        "y": 600
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
@@ -132,25 +132,6 @@
       "measured": {
         "width": 230,
         "height": 130
-      }
-    },
-    {
-      "id": "78828a10-5cf9-41c7-87b1-1ffa0c415299",
-      "width": 180,
-      "height": 120,
-      "type": "component",
-      "position": {
-        "x": 800,
-        "y": 780
-      },
-      "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
-      "data": {
-        "name": "GenAI Service",
-        "isComponentHeaderShown": true
-      },
-      "measured": {
-        "width": 180,
-        "height": 120
       }
     },
     {
@@ -194,8 +175,8 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 860,
-        "y": 740
+        "x": -470,
+        "y": -410
       },
       "data": {
         "name": "REST API"
@@ -247,8 +228,8 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 80,
-        "y": 690
+        "x": 60,
+        "y": 650
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
@@ -265,8 +246,8 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 180,
-        "y": 350
+        "x": 160,
+        "y": 310
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
@@ -283,8 +264,8 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 460,
-        "y": 170
+        "x": 440,
+        "y": 130
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
@@ -296,21 +277,111 @@
       }
     },
     {
-      "id": "9334d86a-ba79-4b7d-8e88-57f63d575643",
+      "id": "de076709-1ff5-43a5-8826-e4f619175b28",
+      "width": 300,
+      "height": 280,
+      "type": "componentSubsystem",
+      "position": {
+        "x": -1030,
+        "y": -140
+      },
+      "data": {
+        "name": "API Gateway",
+        "isComponentSubsystemHeaderShown": true
+      },
+      "measured": {
+        "width": 300,
+        "height": 280
+      }
+    },
+    {
+      "id": "3fcd994f-fc7a-4d86-a9be-ea4027f30b60",
+      "width": 180,
+      "height": 120,
+      "type": "component",
+      "position": {
+        "x": 60,
+        "y": 80
+      },
+      "parentId": "de076709-1ff5-43a5-8826-e4f619175b28",
+      "data": {
+        "name": "API Gateway Service",
+        "isComponentHeaderShown": true
+      },
+      "measured": {
+        "width": 180,
+        "height": 120
+      }
+    },
+    {
+      "id": "86bd08a0-2be9-4b42-91e2-9c13b689f87e",
       "width": 30,
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 580,
-        "y": 820
+        "x": -1170,
+        "y": -20
       },
-      "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
-        "name": "requestAIExplanation"
+        "name": "REST API"
       },
       "measured": {
         "width": 30,
         "height": 30
+      }
+    },
+    {
+      "id": "d8e660d1-1e3d-4f04-b0b2-92eabac45baf",
+      "width": 180,
+      "height": 120,
+      "type": "componentSubsystem",
+      "position": {
+        "x": 790,
+        "y": -300
+      },
+      "data": {
+        "name": "Vector Database",
+        "isComponentSubsystemHeaderShown": true
+      },
+      "measured": {
+        "width": 180,
+        "height": 120
+      }
+    },
+    {
+      "id": "fe9f6903-d9d6-4d28-a643-f19de597303b",
+      "width": 30,
+      "height": 30,
+      "type": "componentInterface",
+      "position": {
+        "x": 550,
+        "y": -250
+      },
+      "data": {
+        "name": ""
+      },
+      "measured": {
+        "width": 30,
+        "height": 30
+      }
+    },
+    {
+      "id": "ed1cc51c-2ada-49fe-95e6-2b5b6444e052",
+      "width": 180,
+      "height": 120,
+      "type": "component",
+      "position": {
+        "x": 270,
+        "y": 100
+      },
+      "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
+      "data": {
+        "name": "Explanation Service",
+        "isComponentHeaderShown": true
+      },
+      "measured": {
+        "width": 180,
+        "height": 120
       }
     }
   ],
@@ -331,39 +402,6 @@
       "source": "aee6be08-a7d3-4e72-97f3-e8517f8745ab",
       "target": "a6d921a2-aa5d-4dec-b1ca-646ca908478c",
       "type": "ComponentProvidedInterface",
-      "sourceHandle": "right",
-      "targetHandle": "left",
-      "data": {
-        "points": []
-      }
-    },
-    {
-      "id": "2e03b2d0-aa55-47aa-9a66-70bfe8baa7a0",
-      "source": "daceeb67-ac52-49f9-b78e-b64835d361a0",
-      "target": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
-      "type": "ComponentProvidedInterface",
-      "sourceHandle": "right",
-      "targetHandle": "left",
-      "data": {
-        "points": []
-      }
-    },
-    {
-      "id": "cb673f38-24ca-4677-8df4-18bfdf615279",
-      "source": "78828a10-5cf9-41c7-87b1-1ffa0c415299",
-      "target": "daceeb67-ac52-49f9-b78e-b64835d361a0",
-      "type": "ComponentRequiredInterface",
-      "sourceHandle": "right",
-      "targetHandle": "left",
-      "data": {
-        "points": []
-      }
-    },
-    {
-      "id": "bb098368-dece-4c25-b68b-058186660b58",
-      "source": "4069a21b-95b3-4c0e-9e5e-310165c5b498",
-      "target": "aee6be08-a7d3-4e72-97f3-e8517f8745ab",
-      "type": "ComponentRequiredInterface",
       "sourceHandle": "right",
       "targetHandle": "left",
       "data": {
@@ -448,17 +486,6 @@
       }
     },
     {
-      "id": "5fa729e4-4eb1-4939-9e29-458a31cd313a",
-      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
-      "target": "9ed266a3-6c39-40fe-9bcc-8d36c17b768e",
-      "type": "ComponentRequiredInterface",
-      "sourceHandle": "right",
-      "targetHandle": "top",
-      "data": {
-        "points": []
-      }
-    },
-    {
       "id": "157544a8-d1a7-428d-9c1f-4f96b6521cb0",
       "source": "28b813bb-65d3-4b48-8700-f86d0094f74a",
       "target": "9ed266a3-6c39-40fe-9bcc-8d36c17b768e",
@@ -536,17 +563,6 @@
       }
     },
     {
-      "id": "b67b73d0-e385-4d7d-af05-7e3acbd35f0e",
-      "source": "e2227943-4103-4ed8-9eb0-4adfe53a3817",
-      "target": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
-      "type": "ComponentProvidedInterface",
-      "sourceHandle": "right",
-      "targetHandle": "left",
-      "data": {
-        "points": []
-      }
-    },
-    {
       "id": "78462b1d-2da5-4077-a24f-58d8da29f29b",
       "source": "28b813bb-65d3-4b48-8700-f86d0094f74a",
       "target": "e2227943-4103-4ed8-9eb0-4adfe53a3817",
@@ -558,9 +574,20 @@
       }
     },
     {
-      "id": "36d70447-cc54-4281-bf16-261d6c16e51a",
-      "source": "9334d86a-ba79-4b7d-8e88-57f63d575643",
-      "target": "78828a10-5cf9-41c7-87b1-1ffa0c415299",
+      "id": "2db85e1b-bbfc-4d63-a33d-d0ab5b9b6978",
+      "source": "4069a21b-95b3-4c0e-9e5e-310165c5b498",
+      "target": "86bd08a0-2be9-4b42-91e2-9c13b689f87e",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "f880bdfe-a63e-4b62-aafd-64a582e9b2fe",
+      "source": "86bd08a0-2be9-4b42-91e2-9c13b689f87e",
+      "target": "3fcd994f-fc7a-4d86-a9be-ea4027f30b60",
       "type": "ComponentProvidedInterface",
       "sourceHandle": "right",
       "targetHandle": "left",
@@ -569,11 +596,109 @@
       }
     },
     {
-      "id": "f4129883-71f2-4c1d-b07a-f906c1b094a8",
-      "source": "ba50ba99-8d4e-4521-bf52-680742a18432",
-      "target": "9334d86a-ba79-4b7d-8e88-57f63d575643",
+      "id": "04228a1d-dd0c-4487-910e-38e925361365",
+      "source": "3fcd994f-fc7a-4d86-a9be-ea4027f30b60",
+      "target": "aee6be08-a7d3-4e72-97f3-e8517f8745ab",
       "type": "ComponentRequiredInterface",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "e0c28887-50a0-4f3c-9f93-6994b176699e",
+      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
+      "target": "e2227943-4103-4ed8-9eb0-4adfe53a3817",
+      "type": "ComponentProvidedInterface",
+      "sourceHandle": "left",
+      "targetHandle": "top",
+      "data": {
+        "points": [
+          {
+            "x": -31,
+            "y": -220
+          },
+          {
+            "x": -100.62828124999999,
+            "y": -220
+          },
+          {
+            "x": -100.62828124999999,
+            "y": 109
+          },
+          {
+            "x": 155,
+            "y": 109
+          },
+          {
+            "x": 155,
+            "y": 139
+          }
+        ]
+      }
+    },
+    {
+      "id": "69cc8ebb-5b2d-4dff-89c8-b7f420459866",
+      "source": "9334d86a-ba79-4b7d-8e88-57f63d575643",
+      "target": "9ed266a3-6c39-40fe-9bcc-8d36c17b768e",
+      "type": "ComponentDependency",
       "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "54afff4f-bd42-4f2d-a983-c9e3d82b05dc",
+      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
+      "target": "fe9f6903-d9d6-4d28-a643-f19de597303b",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "46dbc2e4-0f7c-4ebb-b56e-8ebca3bab884",
+      "source": "d8e660d1-1e3d-4f04-b0b2-92eabac45baf",
+      "target": "fe9f6903-d9d6-4d28-a643-f19de597303b",
+      "type": "ComponentProvidedInterface",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "7d5baf30-0024-46f4-91ed-a7c2b561c677",
+      "source": "ed1cc51c-2ada-49fe-95e6-2b5b6444e052",
+      "target": "fe9f6903-d9d6-4d28-a643-f19de597303b",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right",
+      "targetHandle": "top",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "0690227e-d1c6-4467-9dc6-a93a47c9207a",
+      "source": "3fcd994f-fc7a-4d86-a9be-ea4027f30b60",
+      "target": "daceeb67-ac52-49f9-b78e-b64835d361a0",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "0b5cee33-7f21-49ec-a1e0-e73cb1181269",
+      "source": "daceeb67-ac52-49f9-b78e-b64835d361a0",
+      "target": "ed1cc51c-2ada-49fe-95e6-2b5b6444e052",
+      "type": "ComponentProvidedInterface",
+      "sourceHandle": "right",
       "targetHandle": "left",
       "data": {
         "points": []
