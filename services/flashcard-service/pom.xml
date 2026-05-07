@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.devops</groupId>
-    <artifactId>spring-service</artifactId>
+    <artifactId>flashcard-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>spring-service</name>
-    <description>Spring Boot service</description>
+    <name>flashcard-service</name>
+    <description>Flashcard management service</description>
 
     <properties>
         <java.version>21</java.version>

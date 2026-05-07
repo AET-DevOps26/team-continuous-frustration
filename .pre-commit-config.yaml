@@ -25,11 +25,11 @@ repos:
         
   - repo: local
     hooks:
-      - id: spring-mvn-test
-        name: Maven test (spring-x)
-        entry: bash -c 'cd services/spring-x && mvn test -q 2>&1'
+      - id: flashcard-mvn-test
+        name: Maven test (flashcard-service)
+        entry: bash -c 'cd services/flashcard-service && mvn test -q 2>&1'
         language: system
-        files: ^services/spring-x/.*\.(java|xml|properties)$
+        files: ^services/flashcard-service/.*\.(java|xml|properties)$
         pass_filenames: false
 
       - id: no-empty-commit-message
