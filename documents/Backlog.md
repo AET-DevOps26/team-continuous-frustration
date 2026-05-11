@@ -1,9 +1,12 @@
 | Epic | User Story |
 |---|---|
-| 1. authentication | 1.1 User registration (sign up with email & password) |
-| 1. authentication | 1.2 User login and session management (JWT) |
-| 1. authentication | 1.3 User logout and token invalidation |
-| 1. authentication | 1.4 Protect all API endpoints with 1. authentication |
+| 1. authentication | 1.1 Create OpenAPI spec and generate Spring Server Stub |
+| 1. authentication | 1.2 User registration (sign up with email & password) |
+| 1. authentication | 1.3 User login and session management (JWT) |
+| 1. authentication | 1.4 User logout and token invalidation |
+| 1. authentication | 1.5 Protect all API endpoints with authentication |
+| 1. authentication | 1.6 Design and Implement Signup, Login/Logout in Client |
+| 1. authentication | 1.7 Configure Auth Service as API Gateway |
 | 2. upload material | 2.1 Implement API for uploading lecture materials |
 | 2. upload material | 2.2 Store materials in database |
 | 2. upload material | 2.3 Extract text from uploaded files |
