@@ -7,12 +7,14 @@
 | 1. authentication | 1.5 Protect all API endpoints with authentication |
 | 1. authentication | 1.6 Design and Implement Signup, Login/Logout in Client |
 | 1. authentication | 1.7 Configure Auth Service as API Gateway |
-| 2. upload material | 2.1 Implement API for uploading lecture materials |
-| 2. upload material | 2.2 Store materials in database |
-| 2. upload material | 2.3 Extract text from uploaded files |
-| 3. generate flashcard (AI) | 3.1 Integrate Python GenAI service |
+| 2. upload material | 2.1 Create OpenAPI spec and generate FastAPI Server Stub for uploading lecture materials |
+| 2. upload material | 2.2 Extract text from uploaded files |
+| 2. upload material | 2.3 Chunking, Create Embedding and upsert in Weaviate vector database |
+| 2. upload material | 2.4 Design and implement File upload in client |
+| 3. generate flashcard (AI) | 3.1 Extend file upload service contract to return generated flashcards |
 | 3. generate flashcard (AI) | 3.2 Implement flashcard generation logic |
-| 3. generate flashcard (AI) | 3.3 Store generated flashcards in database |
+| 3. generate flashcard (AI) | 3.3 Stream generated flashcards as NDJSON to client |
+| 3. generate flashcard (AI) | 3.4 Display generated cards in client to user and offer editing, save and delete option |
 | 4. manage decks | 4.1 Implement deck CRUD operations |
 | 4. manage decks | 4.2 Link flashcards to decks |
 | 4. manage decks | 4.3 Retrieve flashcards by deck |
