@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: Flashcard API
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+paths:
+  /api/v1/auth/register:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+          description: User registered successfully
+      summary: Register new user
+  /api/v1/auth/login:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+          description: Login successful
+      summary: Login user
+components:
+  schemas:
+    RegisterRequest:
+      example:
+        password: password
+        email: email
+        username: username
+      properties:
+        username:
+          title: username
+          type: string
+        email:
+          title: email
+          type: string
+        password:
+          title: password
+          type: string
+      required:
+      - email
+      - password
+      - username
+      title: RegisterRequest
+      type: object
+    LoginRequest:
+      example:
+        password: password
+        email: email
+      properties:
+        email:
+          title: email
+          type: string
+        password:
+          title: password
+          type: string
+      required:
+      - email
+      - password
+      title: LoginRequest
+      type: object
+    AuthResponse:
+      example:
+        token: token
+        username: username
+      properties:
+        token:
+          title: token
+          type: string
+        username:
+          title: username
+          type: string
+      title: AuthResponse
+      type: object
