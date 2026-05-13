@@ -1,8 +1,11 @@
 import { defineConfig } from 'orval';
 
 export default defineConfig({
-  gateway: {
-    input: '../api/openapi.yaml',
-    output: './src/api/gateway.ts'
+  genai: {
+    input: '../api/genAI.yaml',
+    output: {
+      client: 'fetch',
+      target: 'src/api/genai.ts',
+    },
   },
 });
