@@ -1,0 +1,224 @@
+openapi: 3.0.3
+info:
+  description: |
+    GenAI service endpoints for flashcard generation.
+    The /generate-flashcards endpoint streams NDJSON where each line is a Flashcard object.
+  title: GenAI Service API
+  version: v1
+servers:
+- description: Local development
+  url: http://localhost:8001
+security:
+- bearerAuth: []
+paths:
+  /uploads:
+    post:
+      description: Upload a PDF or TXT file and receive an upload id.
+      requestBody:
+        content:
+          multipart/form-data:
+            encoding:
+              file:
+                contentType: "application/pdf, text/plain"
+                style: form
+            schema:
+              $ref: "#/components/schemas/_uploads_post_request"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+          description: Upload accepted.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Invalid request or unsupported file format.
+        "413":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Uploaded file too large.
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unsupported media type.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Server error during upload.
+      summary: Upload a document for processing
+  /generate-flashcards:
+    post:
+      description: |
+        Provide an upload id and receive a streamed NDJSON response.
+        Each line is a JSON object with fields id, question, answer, source_ref.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateFlashcardsRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/x-ndjson:
+              schema:
+                $ref: "#/components/schemas/Flashcard"
+          description: NDJSON stream of generated flashcards.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Invalid request.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Upload id not found.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Server error during generation.
+      summary: Generate flashcards from an uploaded document
+  /explain:
+    post:
+      description: Generate an explanation for a given flashcard.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Flashcard"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExplanationResponse"
+          description: Explanation for the flashcard.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Invalid request.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Server error during explanation.
+      summary: Explain a flashcard
+components:
+  schemas:
+    Flashcard:
+      example:
+        last_updated: 2000-01-23T04:56:07.000+00:00
+        question: question
+        answer: answer
+        source_ref: source_ref
+        id: id
+      properties:
+        id:
+          description: Unique identifier for the flashcard.
+          title: id
+          type: string
+        question:
+          title: question
+          type: string
+        answer:
+          title: answer
+          type: string
+        source_ref:
+          description: "Reference to the source segment (e.g., page or chunk id)."
+          title: source_ref
+          type: string
+        last_updated:
+          format: date-time
+          title: last_updated
+          type: string
+      required:
+      - answer
+      - id
+      - last_updated
+      - question
+      - source_ref
+      title: Flashcard
+      type: object
+    UploadResponse:
+      example:
+        upload_id: upload_id
+      properties:
+        upload_id:
+          description: Identifier for the uploaded file.
+          title: upload_id
+          type: string
+      required:
+      - upload_id
+      title: UploadResponse
+      type: object
+    GenerateFlashcardsRequest:
+      example:
+        upload_id: upload_id
+      properties:
+        upload_id:
+          description: Identifier for the uploaded file.
+          title: upload_id
+          type: string
+      required:
+      - upload_id
+      title: GenerateFlashcardsRequest
+      type: object
+    ExplanationResponse:
+      example:
+        explanation: explanation
+      properties:
+        explanation:
+          title: explanation
+          type: string
+      required:
+      - explanation
+      title: ExplanationResponse
+      type: object
+    Error:
+      example:
+        code: code
+        message: message
+      properties:
+        message:
+          title: message
+          type: string
+        code:
+          title: code
+          type: string
+      required:
+      - message
+      title: Error
+      type: object
+    _uploads_post_request:
+      properties:
+        file:
+          description: PDF or TXT file to process.
+          format: binary
+          type: string
+      required:
+      - file
+      type: object
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
