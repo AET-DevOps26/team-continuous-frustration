@@ -15,14 +15,16 @@ repos:
       - id: ruff
         name: ruff (GenAI)
         files: ^services/.*/src/.*\.py$
+        exclude: ^services/.*/generated/
         types_or: [python]
         args:
           - --fix
       - id: ruff-format
         name: ruff-format (GenAI)
         files: ^services/.*/src/.*\.py$
+        exclude: ^services/.*/generated/
         types_or: [python]
-        
+
   - repo: local
     hooks:
       - id: flashcard-mvn-test
@@ -46,4 +48,3 @@ repos:
               exit 1
             fi
           - --
-
