@@ -28,9 +28,6 @@ paths:
                   type: string
                   format: binary
                   description: PDF or TXT file to process.
-            encoding:
-              file:
-                contentType: application/pdf, text/plain
       responses:
         "201":
           description: Upload accepted.
