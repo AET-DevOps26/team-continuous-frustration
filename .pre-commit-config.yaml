@@ -3,11 +3,16 @@ repos:
     rev: v4.6.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^services/.*/generated/
       - id: end-of-file-fixer
+        exclude: ^services/.*/generated/
       - id: check-yaml
+        exclude: ^services/.*/generated/
       - id: check-added-large-files
+        exclude: ^services/.*/generated/
         args: ['--maxkb=1024']
       - id: check-merge-conflict
+        exclude: ^services/.*/generated/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.10

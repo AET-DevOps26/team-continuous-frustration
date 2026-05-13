@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from typing import List
 
 from fastapi import Depends, Security  # noqa: F401
 from fastapi.openapi.models import OAuthFlowImplicit, OAuthFlows  # noqa: F401
@@ -21,9 +22,7 @@ from openapi_server.models.extra_models import TokenModel
 bearer_auth = HTTPBearer()
 
 
-def get_token_bearerAuth(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_auth),
-) -> TokenModel:
+def get_token_bearerAuth(credentials: HTTPAuthorizationCredentials = Depends(bearer_auth)) -> TokenModel:
     """
     Check and retrieve authentication information from custom bearer token.
 
@@ -34,3 +33,4 @@ def get_token_bearerAuth(
     """
 
     ...
+

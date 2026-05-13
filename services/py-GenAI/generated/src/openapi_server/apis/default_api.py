@@ -44,10 +44,7 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
     "/uploads",
     responses={
         201: {"model": UploadResponse, "description": "Upload accepted."},
-        400: {
-            "model": Error,
-            "description": "Invalid request or unsupported file format.",
-        },
+        400: {"model": Error, "description": "Invalid request or unsupported file format."},
         413: {"model": Error, "description": "Uploaded file too large."},
         415: {"model": Error, "description": "Unsupported media type."},
         500: {"model": Error, "description": "Server error during upload."},
@@ -57,11 +54,10 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
     response_model_by_alias=True,
 )
 async def uploads_post(
-    file: Annotated[
-        Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]],
-        Field(description="PDF or TXT file to process."),
-    ] = Form(None, description="PDF or TXT file to process."),
-    token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
+    file: Annotated[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]], Field(description="PDF or TXT file to process.")] = Form(None, description="PDF or TXT file to process."),
+    token_bearerAuth: TokenModel = Security(
+        get_token_bearerAuth
+    ),
 ) -> UploadResponse:
     """Upload a PDF or TXT file and receive an upload id."""
     if not BaseDefaultApi.subclasses:
@@ -72,10 +68,7 @@ async def uploads_post(
 @router.post(
     "/generate-flashcards",
     responses={
-        200: {
-            "model": Flashcard,
-            "description": "NDJSON stream of generated flashcards.",
-        },
+        200: {"model": Flashcard, "description": "NDJSON stream of generated flashcards."},
         400: {"model": Error, "description": "Invalid request."},
         404: {"model": Error, "description": "Upload id not found."},
         500: {"model": Error, "description": "Server error during generation."},
@@ -86,23 +79,20 @@ async def uploads_post(
 )
 async def generate_flashcards_post(
     generate_flashcards_request: GenerateFlashcardsRequest = Body(None, description=""),
-    token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
+    token_bearerAuth: TokenModel = Security(
+        get_token_bearerAuth
+    ),
 ) -> Flashcard:
-    """Provide an upload id and receive a streamed NDJSON response. Each line is a JSON object with fields id, question, answer, source_ref."""
+    """Provide an upload id and receive a streamed NDJSON response. Each line is a JSON object with fields id, question, answer, source_ref. """
     if not BaseDefaultApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
-    return await BaseDefaultApi.subclasses[0]().generate_flashcards_post(
-        generate_flashcards_request
-    )
+    return await BaseDefaultApi.subclasses[0]().generate_flashcards_post(generate_flashcards_request)
 
 
 @router.post(
     "/explain",
     responses={
-        200: {
-            "model": ExplanationResponse,
-            "description": "Explanation for the flashcard.",
-        },
+        200: {"model": ExplanationResponse, "description": "Explanation for the flashcard."},
         400: {"model": Error, "description": "Invalid request."},
         500: {"model": Error, "description": "Server error during explanation."},
     },
@@ -112,7 +102,9 @@ async def generate_flashcards_post(
 )
 async def explain_post(
     flashcard: Flashcard = Body(None, description=""),
-    token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
+    token_bearerAuth: TokenModel = Security(
+        get_token_bearerAuth
+    ),
 ) -> ExplanationResponse:
     """Generate an explanation for a given flashcard."""
     if not BaseDefaultApi.subclasses:

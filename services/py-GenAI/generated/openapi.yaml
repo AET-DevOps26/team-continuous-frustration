@@ -17,10 +17,6 @@ paths:
       requestBody:
         content:
           multipart/form-data:
-            encoding:
-              file:
-                contentType: "application/pdf, text/plain"
-                style: form
             schema:
               $ref: "#/components/schemas/_uploads_post_request"
         required: true
