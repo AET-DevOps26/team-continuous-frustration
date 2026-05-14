@@ -22,7 +22,16 @@ repos:
         name: ruff-format (GenAI)
         files: ^services/.*/src/.*\.py$
         types_or: [python]
-        
+
+  - repo: local
+    hooks:
+      - id: openapi-cli-lint
+        name: Lint OpenAPI spec
+        entry: npx @redocly/cli lint
+        language: system
+        files: ^api/openapi\.yaml$
+        pass_filenames: true
+
   - repo: local
     hooks:
       - id: flashcard-mvn-test
@@ -46,4 +55,3 @@ repos:
               exit 1
             fi
           - --
-

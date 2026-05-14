@@ -13,3 +13,6 @@
 
 # Logs
 *.log
+
+# Maven
+target/
