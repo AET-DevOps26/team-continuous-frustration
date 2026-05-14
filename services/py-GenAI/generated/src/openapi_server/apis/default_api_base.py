@@ -18,7 +18,7 @@ class BaseDefaultApi:
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         BaseDefaultApi.subclasses = BaseDefaultApi.subclasses + (cls,)
-    async def uploads_post(
+    async def genai_v1_uploads_post(
         self,
         file: Annotated[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]], Field(description="PDF or TXT file to process.")],
     ) -> UploadResponse:
@@ -26,7 +26,7 @@ class BaseDefaultApi:
         ...
 
 
-    async def generate_flashcards_post(
+    async def genai_v1_generate_flashcards_post(
         self,
         generate_flashcards_request: GenerateFlashcardsRequest,
     ) -> Flashcard:
@@ -34,7 +34,7 @@ class BaseDefaultApi:
         ...
 
 
-    async def explain_post(
+    async def genai_v1_explain_post(
         self,
         flashcard: Flashcard,
     ) -> ExplanationResponse:

@@ -41,7 +41,7 @@ export interface Error {
   code?: string;
 }
 
-export type PostUploadsBody = {
+export type PostGenaiV1UploadsBody = {
   /** PDF or TXT file to process. */
   file: Blob;
 };
@@ -50,66 +50,66 @@ export type PostUploadsBody = {
  * Upload a PDF or TXT file and receive an upload id.
  * @summary Upload a document for processing
  */
-export type postUploadsResponse201 = {
+export type postGenaiV1UploadsResponse201 = {
   data: UploadResponse
   status: 201
 }
 
-export type postUploadsResponse400 = {
+export type postGenaiV1UploadsResponse400 = {
   data: Error
   status: 400
 }
 
-export type postUploadsResponse413 = {
+export type postGenaiV1UploadsResponse413 = {
   data: Error
   status: 413
 }
 
-export type postUploadsResponse415 = {
+export type postGenaiV1UploadsResponse415 = {
   data: Error
   status: 415
 }
 
-export type postUploadsResponse500 = {
+export type postGenaiV1UploadsResponse500 = {
   data: Error
   status: 500
 }
-
-export type postUploadsResponseSuccess = (postUploadsResponse201) & {
+    
+export type postGenaiV1UploadsResponseSuccess = (postGenaiV1UploadsResponse201) & {
   headers: Headers;
 };
-export type postUploadsResponseError = (postUploadsResponse400 | postUploadsResponse413 | postUploadsResponse415 | postUploadsResponse500) & {
+export type postGenaiV1UploadsResponseError = (postGenaiV1UploadsResponse400 | postGenaiV1UploadsResponse413 | postGenaiV1UploadsResponse415 | postGenaiV1UploadsResponse500) & {
   headers: Headers;
 };
 
-export type postUploadsResponse = (postUploadsResponseSuccess | postUploadsResponseError)
+export type postGenaiV1UploadsResponse = (postGenaiV1UploadsResponseSuccess | postGenaiV1UploadsResponseError)
 
-export const getPostUploadsUrl = () => {
-
-
+export const getPostGenaiV1UploadsUrl = () => {
 
 
-  return `localhost:8080/uploads`
+  
+
+  return `localhost:8080/genai/v1/uploads`
 }
 
-export const postUploads = async (postUploadsBody: PostUploadsBody, options?: RequestInit): Promise<postUploadsResponse> => {
+export const postGenaiV1Uploads = async (postGenaiV1UploadsBody: PostGenaiV1UploadsBody, options?: RequestInit): Promise<postGenaiV1UploadsResponse> => {
     const formData = new FormData();
-formData.append(`file`, postUploadsBody.file)
+formData.append(`file`, postGenaiV1UploadsBody.file)
 
-  const res = await fetch(getPostUploadsUrl(),
-  {
+  const res = await fetch(getPostGenaiV1UploadsUrl(),
+  {      
     ...options,
     method: 'POST'
     ,
-    body:
+    body: 
       formData,
   }
 )
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: postUploadsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as postUploadsResponse
+  
+  const data: postGenaiV1UploadsResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as postGenaiV1UploadsResponse
 }
 
 
@@ -120,47 +120,47 @@ Each line is a JSON object with fields id, question, answer, source_ref.
 
  * @summary Generate flashcards from an uploaded document
  */
-export type postGenerateFlashcardsResponse200 = {
+export type postGenaiV1GenerateFlashcardsResponse200 = {
   stream: TypedResponse<Flashcard>
   status: 200
 }
 
-export type postGenerateFlashcardsResponse400 = {
+export type postGenaiV1GenerateFlashcardsResponse400 = {
   data: Error
   status: 400
 }
 
-export type postGenerateFlashcardsResponse404 = {
+export type postGenaiV1GenerateFlashcardsResponse404 = {
   data: Error
   status: 404
 }
 
-export type postGenerateFlashcardsResponse500 = {
+export type postGenaiV1GenerateFlashcardsResponse500 = {
   data: Error
   status: 500
 }
-
-export type postGenerateFlashcardsResponseSuccess = (postGenerateFlashcardsResponse200) & {
+    
+export type postGenaiV1GenerateFlashcardsResponseSuccess = (postGenaiV1GenerateFlashcardsResponse200) & {
   headers: Headers;
 };
-export type postGenerateFlashcardsResponseError = (postGenerateFlashcardsResponse400 | postGenerateFlashcardsResponse404 | postGenerateFlashcardsResponse500) & {
+export type postGenaiV1GenerateFlashcardsResponseError = (postGenaiV1GenerateFlashcardsResponse400 | postGenaiV1GenerateFlashcardsResponse404 | postGenaiV1GenerateFlashcardsResponse500) & {
   headers: Headers;
 };
 
-export type postGenerateFlashcardsResponse = (postGenerateFlashcardsResponseSuccess | postGenerateFlashcardsResponseError)
+export type postGenaiV1GenerateFlashcardsResponse = (postGenaiV1GenerateFlashcardsResponseSuccess | postGenaiV1GenerateFlashcardsResponseError)
 
-export const getPostGenerateFlashcardsUrl = () => {
-
-
+export const getPostGenaiV1GenerateFlashcardsUrl = () => {
 
 
-  return `localhost:8080/generate-flashcards`
+  
+
+  return `localhost:8080/genai/v1/generate-flashcards`
 }
 
-export const postGenerateFlashcards = async (generateFlashcardsRequest: GenerateFlashcardsRequest, options?: RequestInit): Promise<postGenerateFlashcardsResponse> => {
-
-    const stream = await fetch(getPostGenerateFlashcardsUrl(),
-  {
+export const postGenaiV1GenerateFlashcards = async (generateFlashcardsRequest: GenerateFlashcardsRequest, options?: RequestInit): Promise<postGenaiV1GenerateFlashcardsResponse> => {
+  
+    const stream = await fetch(getPostGenaiV1GenerateFlashcardsUrl(),
+  {      
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -168,8 +168,8 @@ export const postGenerateFlashcards = async (generateFlashcardsRequest: Generate
       generateFlashcardsRequest,)
   }
 );
-
-  return { status: stream.status, stream, headers: stream.headers } as postGenerateFlashcardsResponse
+  
+  return { status: stream.status, stream, headers: stream.headers } as postGenaiV1GenerateFlashcardsResponse
   }
 
 
@@ -178,42 +178,42 @@ export const postGenerateFlashcards = async (generateFlashcardsRequest: Generate
  * Generate an explanation for a given flashcard.
  * @summary Explain a flashcard
  */
-export type postExplainResponse200 = {
+export type postGenaiV1ExplainResponse200 = {
   data: ExplanationResponse
   status: 200
 }
 
-export type postExplainResponse400 = {
+export type postGenaiV1ExplainResponse400 = {
   data: Error
   status: 400
 }
 
-export type postExplainResponse500 = {
+export type postGenaiV1ExplainResponse500 = {
   data: Error
   status: 500
 }
-
-export type postExplainResponseSuccess = (postExplainResponse200) & {
+    
+export type postGenaiV1ExplainResponseSuccess = (postGenaiV1ExplainResponse200) & {
   headers: Headers;
 };
-export type postExplainResponseError = (postExplainResponse400 | postExplainResponse500) & {
+export type postGenaiV1ExplainResponseError = (postGenaiV1ExplainResponse400 | postGenaiV1ExplainResponse500) & {
   headers: Headers;
 };
 
-export type postExplainResponse = (postExplainResponseSuccess | postExplainResponseError)
+export type postGenaiV1ExplainResponse = (postGenaiV1ExplainResponseSuccess | postGenaiV1ExplainResponseError)
 
-export const getPostExplainUrl = () => {
-
-
+export const getPostGenaiV1ExplainUrl = () => {
 
 
-  return `localhost:8080/explain`
+  
+
+  return `localhost:8080/genai/v1/explain`
 }
 
-export const postExplain = async (flashcard: Flashcard, options?: RequestInit): Promise<postExplainResponse> => {
-
-  const res = await fetch(getPostExplainUrl(),
-  {
+export const postGenaiV1Explain = async (flashcard: Flashcard, options?: RequestInit): Promise<postGenaiV1ExplainResponse> => {
+  
+  const res = await fetch(getPostGenaiV1ExplainUrl(),
+  {      
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -223,7 +223,7 @@ export const postExplain = async (flashcard: Flashcard, options?: RequestInit): 
 )
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: postExplainResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as postExplainResponse
+  
+  const data: postGenaiV1ExplainResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as postGenaiV1ExplainResponse
 }

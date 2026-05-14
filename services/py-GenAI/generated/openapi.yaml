@@ -11,14 +11,14 @@ servers:
 security:
 - bearerAuth: []
 paths:
-  /uploads:
+  /genai/v1/uploads:
     post:
       description: Upload a PDF or TXT file and receive an upload id.
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/_uploads_post_request"
+              $ref: "#/components/schemas/_genai_v1_uploads_post_request"
         required: true
       responses:
         "201":
@@ -52,7 +52,7 @@ paths:
                 $ref: "#/components/schemas/Error"
           description: Server error during upload.
       summary: Upload a document for processing
-  /generate-flashcards:
+  /genai/v1/generate-flashcards:
     post:
       description: |
         Provide an upload id and receive a streamed NDJSON response.
@@ -89,7 +89,7 @@ paths:
                 $ref: "#/components/schemas/Error"
           description: Server error during generation.
       summary: Generate flashcards from an uploaded document
-  /explain:
+  /genai/v1/explain:
     post:
       description: Generate an explanation for a given flashcard.
       requestBody:
@@ -204,7 +204,7 @@ components:
       - message
       title: Error
       type: object
-    _uploads_post_request:
+    _genai_v1_uploads_post_request:
       properties:
         file:
           description: PDF or TXT file to process.

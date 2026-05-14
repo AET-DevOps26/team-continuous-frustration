@@ -41,7 +41,7 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
 
 
 @router.post(
-    "/uploads",
+    "/genai/v1/uploads",
     responses={
         201: {"model": UploadResponse, "description": "Upload accepted."},
         400: {"model": Error, "description": "Invalid request or unsupported file format."},
@@ -53,7 +53,7 @@ for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
     summary="Upload a document for processing",
     response_model_by_alias=True,
 )
-async def uploads_post(
+async def genai_v1_uploads_post(
     file: Annotated[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]], Field(description="PDF or TXT file to process.")] = Form(None, description="PDF or TXT file to process."),
     token_bearerAuth: TokenModel = Security(
         get_token_bearerAuth
@@ -62,11 +62,11 @@ async def uploads_post(
     """Upload a PDF or TXT file and receive an upload id."""
     if not BaseDefaultApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
-    return await BaseDefaultApi.subclasses[0]().uploads_post(file)
+    return await BaseDefaultApi.subclasses[0]().genai_v1_uploads_post(file)
 
 
 @router.post(
-    "/generate-flashcards",
+    "/genai/v1/generate-flashcards",
     responses={
         200: {"model": Flashcard, "description": "NDJSON stream of generated flashcards."},
         400: {"model": Error, "description": "Invalid request."},
@@ -77,7 +77,7 @@ async def uploads_post(
     summary="Generate flashcards from an uploaded document",
     response_model_by_alias=True,
 )
-async def generate_flashcards_post(
+async def genai_v1_generate_flashcards_post(
     generate_flashcards_request: GenerateFlashcardsRequest = Body(None, description=""),
     token_bearerAuth: TokenModel = Security(
         get_token_bearerAuth
@@ -86,11 +86,11 @@ async def generate_flashcards_post(
     """Provide an upload id and receive a streamed NDJSON response. Each line is a JSON object with fields id, question, answer, source_ref. """
     if not BaseDefaultApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
-    return await BaseDefaultApi.subclasses[0]().generate_flashcards_post(generate_flashcards_request)
+    return await BaseDefaultApi.subclasses[0]().genai_v1_generate_flashcards_post(generate_flashcards_request)
 
 
 @router.post(
-    "/explain",
+    "/genai/v1/explain",
     responses={
         200: {"model": ExplanationResponse, "description": "Explanation for the flashcard."},
         400: {"model": Error, "description": "Invalid request."},
@@ -100,7 +100,7 @@ async def generate_flashcards_post(
     summary="Explain a flashcard",
     response_model_by_alias=True,
 )
-async def explain_post(
+async def genai_v1_explain_post(
     flashcard: Flashcard = Body(None, description=""),
     token_bearerAuth: TokenModel = Security(
         get_token_bearerAuth
@@ -109,4 +109,4 @@ async def explain_post(
     """Generate an explanation for a given flashcard."""
     if not BaseDefaultApi.subclasses:
         raise HTTPException(status_code=500, detail="Not implemented")
-    return await BaseDefaultApi.subclasses[0]().explain_post(flashcard)
+    return await BaseDefaultApi.subclasses[0]().genai_v1_explain_post(flashcard)
