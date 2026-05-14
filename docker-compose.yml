@@ -1,0 +1,69 @@
+services:
+  web-client:
+    build:
+      context: ./web-client
+      dockerfile: Dockerfile
+    container_name: ai-anki-web-client
+    ports:
+      - "5173:5173"
+    depends_on:
+      - flashcard-service
+      - genai-service
+    environment:
+      - VITE_FLASHCARD_SERVICE_URL=http://localhost:8081
+      - VITE_GENAI_SERVICE_URL=http://localhost:8001
+    networks:
+      - ai-anki-network
+
+  flashcard-service:
+    build:
+      context: ./services/flashcard-service
+      dockerfile: Dockerfile
+    container_name: ai-anki-flashcard-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - database
+      - genai-service
+    environment:
+      - SERVER_PORT=8081
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/anki_db
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_DATASOURCE_USERNAME=anki_user
+      - SPRING_DATASOURCE_PASSWORD=anki_password
+      - GENAI_SERVICE_URL=http://genai-service:8001
+    networks:
+      - ai-anki-network
+
+  genai-service:
+    build:
+      context: ./services/genai-service
+      dockerfile: Dockerfile
+    container_name: ai-anki-genai-service
+    ports:
+      - "8001:8001"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    networks:
+      - ai-anki-network
+
+  database:
+    image: postgres:16-alpine
+    container_name: ai-anki-database
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=anki_db
+      - POSTGRES_USER=anki_user
+      - POSTGRES_PASSWORD=anki_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ai-anki-network
+
+volumes:
+  postgres_data:
+
+networks:
+  ai-anki-network:
+    driver: bridge
