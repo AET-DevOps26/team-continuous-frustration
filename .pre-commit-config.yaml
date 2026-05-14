@@ -36,7 +36,7 @@ repos:
         name: Lint OpenAPI spec
         entry: npx @redocly/cli lint
         language: system
-        files: ^api/openapi\.yaml$
+        files: ^api/auth\.yaml$
         pass_filenames: true
 
   - repo: local

@@ -11,4 +11,8 @@ export default defineConfig({
       target: 'src/api/genai.ts',
     },
   },
+  auth: {
+    input: '../api/auth.yaml',
+    output: './src/api/auth.ts'
+  },
 });
