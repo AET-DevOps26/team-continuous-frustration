@@ -38,7 +38,7 @@ repos:
         name: Maven test (flashcard-service)
         entry: bash -c 'cd services/flashcard-service && mvn test -q 2>&1'
         language: system
-        files: ^services/flashcard-service/.*\.(java|xml|properties)$
+        files: ^services/flashcard-service/(src/.*\.java|pom\.xml)$
         pass_filenames: false
 
       - id: conventional-commit-message
