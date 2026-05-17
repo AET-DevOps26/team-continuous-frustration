@@ -3,11 +3,16 @@ repos:
     rev: v4.6.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^(services/.*/generated/|web-client/src/api/)
       - id: end-of-file-fixer
+        exclude: ^(services/.*/generated/|web-client/src/api/)
       - id: check-yaml
+        exclude: ^(services/.*/generated/|web-client/src/api/)
       - id: check-added-large-files
+        exclude: ^(services/.*/generated/|web-client/src/api/)
         args: ['--maxkb=1024']
       - id: check-merge-conflict
+        exclude: ^(services/.*/generated/|web-client/src/api/)
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.10
@@ -15,12 +20,14 @@ repos:
       - id: ruff
         name: ruff (GenAI)
         files: ^services/.*/src/.*\.py$
+        exclude: ^(services/.*/generated/|web-client/src/api/)
         types_or: [python]
         args:
           - --fix
       - id: ruff-format
         name: ruff-format (GenAI)
         files: ^services/.*/src/.*\.py$
+        exclude: ^(services/.*/generated/|web-client/src/api/)
         types_or: [python]
 
   - repo: local

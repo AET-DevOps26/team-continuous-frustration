@@ -1,0 +1,190 @@
+openapi: 3.0.3
+info:
+  title: GenAI Service API
+  version: v1
+  description: |
+    GenAI service endpoints for flashcard generation.
+    The /generate-flashcards endpoint streams NDJSON where each line is a Flashcard object.
+security:
+  - bearerAuth: []
+servers:
+  - url: http://localhost:8001
+    description: Local development
+paths:
+  /genai/v1/uploads:
+    post:
+      summary: Upload a document for processing
+      description: Upload a PDF or TXT file and receive an upload id.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF or TXT file to process.
+      responses:
+        "201":
+          description: Upload accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "400":
+          description: Invalid request or unsupported file format.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: Uploaded file too large.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "415":
+          description: Unsupported media type.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error during upload.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /genai/v1/generate-flashcards:
+    post:
+      summary: Generate flashcards from an uploaded document
+      description: |
+        Provide an upload id and receive a streamed NDJSON response.
+        Each line is a JSON object with fields id, question, answer, source_ref.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateFlashcardsRequest"
+      responses:
+        "200":
+          description: NDJSON stream of generated flashcards.
+          content:
+            application/x-ndjson:
+              schema:
+                $ref: "#/components/schemas/Flashcard"
+                description: |
+                  NDJSON stream where each line is a Flashcard JSON object.
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Upload id not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error during generation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /genai/v1/explain:
+    post:
+      summary: Explain a flashcard
+      description: Generate an explanation for a given flashcard.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Flashcard"
+      responses:
+        "200":
+          description: Explanation for the flashcard.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExplanationResponse"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error during explanation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Flashcard:
+      type: object
+      required:
+        - id
+        - question
+        - answer
+        - source_ref
+        - last_updated
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the flashcard.
+        question:
+          type: string
+        answer:
+          type: string
+        source_ref:
+          type: string
+          description: Reference to the source segment (e.g., page or chunk id).
+        last_updated:
+          type: string
+          format: date-time
+    UploadResponse:
+      type: object
+      required:
+        - upload_id
+      properties:
+        upload_id:
+          type: string
+          description: Identifier for the uploaded file.
+    GenerateFlashcardsRequest:
+      type: object
+      required:
+        - upload_id
+      properties:
+        upload_id:
+          type: string
+          description: Identifier for the uploaded file.
+    ExplanationResponse:
+      type: object
+      required:
+        - explanation
+      properties:
+        explanation:
+          type: string
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        code:
+          type: string

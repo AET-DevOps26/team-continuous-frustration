@@ -1,8 +1,14 @@
 import { defineConfig } from 'orval';
 
+const baseUrl = "localhost:8080";
+
 export default defineConfig({
-  gateway: {
-    input: '../api/openapi.yaml',
-    output: './src/api/gateway.ts'
+  genai: {
+    input: '../api/genAI.yaml',
+    output: {
+      client: 'fetch',
+      baseUrl,
+      target: 'src/api/genai.ts',
+    },
   },
 });
