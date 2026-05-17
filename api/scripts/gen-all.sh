@@ -11,6 +11,6 @@ openapi-generator-cli generate -i api/auth.yaml -g spring \
   --skip-validate-spec
 
 openapi-generator-cli generate -i api/genai.yaml -g python-fastapi \
-  -o services/py-GenAI/generated --skip-validate-spec
+  -o services/genai-service --skip-validate-spec
 
 npm --prefix "./web-client" run orval
