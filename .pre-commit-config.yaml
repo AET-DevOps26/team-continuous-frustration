@@ -22,7 +22,16 @@ repos:
         name: ruff-format (GenAI)
         files: ^services/.*/src/.*\.py$
         types_or: [python]
-        
+
+  - repo: local
+    hooks:
+      - id: openapi-cli-lint
+        name: Lint OpenAPI spec
+        entry: npx @redocly/cli lint
+        language: system
+        files: ^api/openapi\.yaml$
+        pass_filenames: true
+
   - repo: local
     hooks:
       - id: flashcard-mvn-test
@@ -32,8 +41,8 @@ repos:
         files: ^services/flashcard-service/.*\.(java|xml|properties)$
         pass_filenames: false
 
-      - id: no-empty-commit-message
-        name: no-empty-commit-message
+      - id: conventional-commit-message
+        name: Validate commit message format
         entry: bash
         language: system
         stages: [commit-msg]
@@ -41,9 +50,9 @@ repos:
         args:
           - -c
           - |
-            if ! grep -q '[^[:space:]]' "$1"; then
-              echo "Commit message cannot be empty or whitespace only."
+            if ! grep -qE '^(feat|fix|refactor|docs): .+$' "$1"; then
+              echo "Commit message must match: ^(feat|fix|refactor|docs): .+$"
+              echo "Examples: 'feat: add login endpoint', 'fix: correct password hashing'"
               exit 1
             fi
           - --
-
