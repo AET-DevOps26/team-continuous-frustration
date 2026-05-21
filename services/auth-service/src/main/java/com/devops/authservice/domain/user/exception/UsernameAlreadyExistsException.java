@@ -1,4 +1,4 @@
-package com.devops.springservice.domain.user.exception;
+package com.devops.authservice.domain.user.exception;
 
 public class UsernameAlreadyExistsException extends RuntimeException {
     public UsernameAlreadyExistsException(String username) {

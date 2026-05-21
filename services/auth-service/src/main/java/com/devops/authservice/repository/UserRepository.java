@@ -1,7 +1,8 @@
-package com.devops.springservice.repository;
+package com.devops.authservice.repository;
 
-import com.devops.springservice.entity.UserEntity;
+import com.devops.authservice.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.Optional;
 import java.util.UUID;
 

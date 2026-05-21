@@ -1,11 +1,11 @@
-package com.devops.springservice.controller.user.register;
+package com.devops.authservice.controller.user.register;
 
-import com.devops.springservice.api.AuthApi;
-import com.devops.springservice.domain.user.register.RegisterInput;
-import com.devops.springservice.domain.user.register.RegisterInteractor;
-import com.devops.springservice.domain.user.register.RegisterOutput;
-import com.devops.springservice.model.RegisterRequest;
-import com.devops.springservice.model.RegisterResponse;
+import com.devops.authservice.api.AuthApi;
+import com.devops.authservice.domain.user.register.RegisterInput;
+import com.devops.authservice.domain.user.register.RegisterInteractor;
+import com.devops.authservice.domain.user.register.RegisterOutput;
+import com.devops.authservice.model.RegisterRequest;
+import com.devops.authservice.model.RegisterResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;

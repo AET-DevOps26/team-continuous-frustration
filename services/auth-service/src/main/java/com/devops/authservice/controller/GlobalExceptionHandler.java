@@ -1,8 +1,8 @@
-package com.devops.springservice.controller;
+package com.devops.authservice.controller;
 
-import com.devops.springservice.domain.user.exception.EmailAlreadyExistsException;
-import com.devops.springservice.domain.user.exception.UsernameAlreadyExistsException;
-import com.devops.springservice.model.ErrorResponse;
+import com.devops.authservice.domain.user.exception.EmailAlreadyExistsException;
+import com.devops.authservice.domain.user.exception.UsernameAlreadyExistsException;
+import com.devops.authservice.model.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,14 +14,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleEmailConflict(EmailAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse("EMAIL_ALREADY_EXISTS", ex.getMessage()));
+        ErrorResponse error = new ErrorResponse();
+        error.setCode("EMAIL_ALREADY_EXISTS");
+        error.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(UsernameAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleUsernameConflict(UsernameAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse("USERNAME_ALREADY_EXISTS", ex.getMessage()));
+        ErrorResponse error = new ErrorResponse();
+        error.setCode("USERNAME_ALREADY_EXISTS");
+        error.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -30,7 +34,9 @@ public class GlobalExceptionHandler {
                 .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .findFirst()
                 .orElse("Validation failed");
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ErrorResponse("VALIDATION_ERROR", message));
+        ErrorResponse error = new ErrorResponse();
+        error.setCode("VALIDATION_ERROR");
+        error.setMessage(message);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
     }
 }

@@ -1,4 +1,4 @@
-package com.devops.springservice.domain.user.register;
+package com.devops.authservice.domain.user.register;
 
 import java.util.UUID;
 

@@ -1,55 +1,51 @@
 services:
-  auth-db:
+  db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: authdb
-      POSTGRES_USER: auth
-      POSTGRES_PASSWORD: auth
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
-      - auth_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   auth-service:
     build:
       context: ..
       dockerfile: services/auth-service/Dockerfile
     ports:
-      - "8081:8081"
+      - "${AUTH_SERVICE_PORT}:8081"
     environment:
       SERVER_PORT: 8081
-      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/authdb
-      SPRING_DATASOURCE_USERNAME: auth
-      SPRING_DATASOURCE_PASSWORD: auth
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-min-32-chars!!}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/authdb
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
     depends_on:
-      - auth-db
-
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: flashcarddb
-      POSTGRES_USER: flashcard
-      POSTGRES_PASSWORD: flashcard
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      db:
+        condition: service_healthy
 
   flashcard-service:
     build:
       context: ..
       dockerfile: services/flashcard-service/Dockerfile
     ports:
-      - "8082:8082"
+      - "${FLASHCARD_SERVICE_PORT}:8082"
     environment:
       SERVER_PORT: 8082
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/flashcarddb
-      SPRING_DATASOURCE_USERNAME: flashcard
-      SPRING_DATASOURCE_PASSWORD: flashcard
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   web-client:
     build:
@@ -57,11 +53,10 @@ services:
     ports:
       - "5173:5173"
     environment:
-      VITE_API_URL: http://localhost:8081
+      VITE_API_URL: ${VITE_API_URL}
     depends_on:
       - auth-service
       - flashcard-service
 
 volumes:
-  auth_postgres_data:
   postgres_data:

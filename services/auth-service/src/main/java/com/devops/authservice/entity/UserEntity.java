@@ -1,4 +1,4 @@
-package com.devops.springservice.entity;
+package com.devops.authservice.entity;
 
 import jakarta.persistence.*;
 import java.util.UUID;

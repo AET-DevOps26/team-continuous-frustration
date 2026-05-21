@@ -1,9 +1,9 @@
-package com.devops.springservice.domain.user.register;
+package com.devops.authservice.domain.user.register;
 
-import com.devops.springservice.domain.user.exception.EmailAlreadyExistsException;
-import com.devops.springservice.domain.user.exception.UsernameAlreadyExistsException;
-import com.devops.springservice.entity.UserEntity;
-import com.devops.springservice.repository.UserRepository;
+import com.devops.authservice.domain.user.exception.EmailAlreadyExistsException;
+import com.devops.authservice.domain.user.exception.UsernameAlreadyExistsException;
+import com.devops.authservice.entity.UserEntity;
+import com.devops.authservice.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
