@@ -49,8 +49,8 @@ services:
 
   genai-service:
     build:
-      context: ..
-      dockerfile: services/genai-service/Dockerfile
+      context: ../services/genai-service
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     command: uvicorn openapi_server.main:app --host 0.0.0.0 --port 8080
