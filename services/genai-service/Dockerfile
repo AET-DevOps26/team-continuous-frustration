@@ -1,15 +1,30 @@
-FROM python:3.12-slim
+FROM python:3.10 AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+WORKDIR /usr/src/app
 
-WORKDIR /app
+RUN python3 -m venv /venv
+ENV PATH="/venv/bin:$PATH"
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip
 
-COPY src ./src
+COPY . .
+RUN pip install --no-cache-dir .
 
-EXPOSE 8001
 
-ENTRYPOINT ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8001"]
+FROM python:3.10 AS test_runner
+WORKDIR /tmp
+COPY --from=builder /venv /venv
+COPY --from=builder /usr/src/app/tests tests
+ENV PATH=/venv/bin:$PATH
+
+# install test dependencies
+RUN pip install pytest
+
+# run tests
+RUN pytest tests
+
+
+FROM python:3.10 AS service
+WORKDIR /root/app/site-packages
+COPY --from=test_runner /venv /venv
+ENV PATH=/venv/bin:$PATH
