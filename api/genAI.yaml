@@ -8,7 +8,7 @@ info:
 security:
   - bearerAuth: []
 servers:
-  - url: http://localhost:8001
+  - url: http://localhost:8080
     description: Local development
 paths:
   /genai/v1/uploads:
