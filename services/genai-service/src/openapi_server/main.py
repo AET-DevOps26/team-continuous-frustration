@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from openapi_server.apis.default_api import router as DefaultApiRouter
+from openapi_server.impl.controller import router as DefaultApiRouter
 
 app = FastAPI(
     title="GenAI Service API",

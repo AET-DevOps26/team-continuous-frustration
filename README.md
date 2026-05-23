@@ -1,6 +1,13 @@
 # team-continuous-frustration
 Repository for team Continuous Frustration
 
+## Team Responsibilities
+
+| Member | Main Responsibility |
+|---|---|
+| Paul Marius Heizmann | GenAI Component |
+| Khalil Hkiri | Server / Backend |
+| Siyao Zhou | Client / Frontend |
 
 ## Enable Pre-commit Hook
 

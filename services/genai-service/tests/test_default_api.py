@@ -13,8 +13,8 @@ from openapi_server.models.generate_flashcards_request import GenerateFlashcards
 from openapi_server.models.upload_response import UploadResponse  # noqa: F401
 
 
-def test_uploads_post(client: TestClient):
-    """Test case for uploads_post
+def test_genai_v1_uploads_post(client: TestClient):
+    """Test case for genai_v1_uploads_post
 
     Upload a document for processing
     """
@@ -28,7 +28,7 @@ def test_uploads_post(client: TestClient):
     # uncomment below to make a request
     #response = client.request(
     #    "POST",
-    #    "/uploads",
+    #    "/genai/v1/uploads",
     #    headers=headers,
     #    data=data,
     #)
@@ -37,8 +37,8 @@ def test_uploads_post(client: TestClient):
     #assert response.status_code == 200
 
 
-def test_generate_flashcards_post(client: TestClient):
-    """Test case for generate_flashcards_post
+def test_genai_v1_generate_flashcards_post(client: TestClient):
+    """Test case for genai_v1_generate_flashcards_post
 
     Generate flashcards from an uploaded document
     """
@@ -50,7 +50,7 @@ def test_generate_flashcards_post(client: TestClient):
     # uncomment below to make a request
     #response = client.request(
     #    "POST",
-    #    "/generate-flashcards",
+    #    "/genai/v1/generate-flashcards",
     #    headers=headers,
     #    json=generate_flashcards_request,
     #)
@@ -59,8 +59,8 @@ def test_generate_flashcards_post(client: TestClient):
     #assert response.status_code == 200
 
 
-def test_explain_post(client: TestClient):
-    """Test case for explain_post
+def test_genai_v1_explain_post(client: TestClient):
+    """Test case for genai_v1_explain_post
 
     Explain a flashcard
     """
@@ -72,7 +72,7 @@ def test_explain_post(client: TestClient):
     # uncomment below to make a request
     #response = client.request(
     #    "POST",
-    #    "/explain",
+    #    "/genai/v1/explain",
     #    headers=headers,
     #    json=flashcard,
     #)
