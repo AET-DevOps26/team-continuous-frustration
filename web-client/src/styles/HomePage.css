@@ -1,0 +1,291 @@
+.home-page {
+    position: relative;
+    width: 100vw;
+    min-height: 100vh;
+    overflow: hidden;
+    color: white;
+    background:
+        linear-gradient(rgba(8, 12, 18, 0.28),
+            rgba(8, 12, 18, 0.45)),
+        url("../assets/homepage.png");
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+.home-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.08), transparent 24rem),
+        radial-gradient(circle at 82% 60%, rgba(255, 118, 180, 0.12), transparent 22rem),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.16), transparent 45%, rgba(0, 0, 0, 0.12));
+    pointer-events: none;
+}
+
+.top-nav {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 7vw;
+    color: white;
+}
+
+.nav-left,
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+}
+
+.logo-mark {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #111;
+    font-size: 0.85rem;
+    font-weight: 900;
+}
+
+.brand-name {
+    margin-left: -18px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: white;
+    text-decoration: none;
+}
+
+.nav-link,
+.login-button,
+.register-button {
+    border: none;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.nav-link::after {
+    content: " ⌕";
+    font-size: 1rem;
+}
+
+.login-button {
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #111;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+}
+
+.register-button {
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    color: white;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+
+.hero {
+    position: relative;
+    z-index: 5;
+    min-height: calc(100vh - 72px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 7vw 60px;
+}
+
+.floating-title {
+    position: absolute;
+    left: 7vw;
+    bottom: 8vh;
+    max-width: 520px;
+    color: white;
+}
+
+.floating-title p {
+    margin: 0 0 10px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    opacity: 0.86;
+}
+
+.floating-title h1 {
+    margin: 0;
+    max-width: 520px;
+    font-size: clamp(2.8rem, 6vw, 6.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.08em;
+    text-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.feature-panel {
+    width: min(260px, 86vw);
+    padding: 18px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+}
+
+.panel-header {
+    margin-bottom: 18px;
+}
+
+.panel-kicker {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.panel-header h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 0.9;
+    letter-spacing: -0.08em;
+}
+
+.panel-subtitle {
+    width: 100%;
+    margin: 16px 0 0;
+    font-size: 0.82rem;
+    line-height: 1.3;
+    opacity: 0.9;
+}
+
+.feature-list {
+    display: grid;
+    gap: 8px;
+}
+
+.feature-row {
+    display: grid;
+    grid-template-columns: 1fr 24px;
+    align-items: start;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 4px 6px;
+    margin: 0 -6px;
+    transition:
+        background 0.18s ease,
+        transform 0.18s ease,
+        opacity 0.18s ease;
+}
+
+.feature-text span {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+}
+
+.feature-text p {
+    max-width: 100%;
+    margin: 3px 0 0;
+    font-size: 0.65rem;
+    line-height: 1.25;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition:
+        opacity 0.2s ease,
+        max-height 0.2s ease;
+}
+
+.feature-row:hover .feature-text p {
+    opacity: 0.78;
+    max-height: 42px;
+}
+
+.feature-number {
+    text-align: right;
+    font-family: Georgia, serif;
+    font-size: 0.8rem;
+    opacity: 0.75;
+}
+
+.main-action,
+.secondary-action,
+.login-button,
+.register-button,
+.nav-link {
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        opacity 0.18s ease;
+}
+
+.login-button:hover,
+.register-button:hover,
+.nav-link:hover {
+    transform: translateY(-1px);
+}
+
+@media (max-width: 900px) {
+    .hero {
+        justify-content: center;
+        align-items: flex-start;
+        padding-top: 72px;
+        flex-direction: column;
+        gap: 40px;
+    }
+
+    .floating-title {
+        position: relative;
+        left: auto;
+        bottom: auto;
+        margin-right: 0;
+    }
+
+    .feature-panel {
+        width: min(260px, 90vw);
+    }
+}
+
+@media (max-width: 620px) {
+    .top-nav {
+        padding: 16px 20px;
+    }
+
+    .nav-left {
+        gap: 20px;
+    }
+
+    .brand-name {
+        margin-left: -14px;
+    }
+
+    .nav-link {
+        display: none;
+    }
+
+    .hero {
+        padding: 46px 20px 64px;
+    }
+
+    .floating-title h1 {
+        font-size: 3.4rem;
+    }
+
+    .feature-panel {
+        width: min(250px, 92vw);
+    }
+}
