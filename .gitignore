@@ -17,3 +17,5 @@
 # Maven
 target/
 
+node_modules/
+web-client/node_modules/

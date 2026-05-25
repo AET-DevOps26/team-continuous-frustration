@@ -1,6 +1,9 @@
 import { defineConfig } from 'orval';
+import dotenv from 'dotenv';
 
-const baseUrl = "localhost:8080";
+dotenv.config({ path: '.env' });
+
+const baseUrl = process.env.VITE_API_BASE_URL ?? '';
 
 export default defineConfig({
   genai: {

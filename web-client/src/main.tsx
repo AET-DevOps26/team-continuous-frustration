@@ -4,7 +4,7 @@ import axios from 'axios'
 import './index.css'
 import App from './App.tsx'
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
+const baseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 axios.defaults.baseURL = baseUrl
 
 createRoot(document.getElementById('root')!).render(
