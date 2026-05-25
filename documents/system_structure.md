@@ -39,7 +39,19 @@ The system is split into a web client, an API gateway, multiple backend services
 - The OpenAPI specification in [api/openapi.yaml](api/openapi.yaml) is the source of truth for endpoints and payloads.
 - AI-related calls use internal REST endpoints between backend services and the GenAI service.
 
-## 5. UML Diagrams
+## 5. Service Endpoints and Ports
+
+This section summarizes the deployed services, their container ports, and the HTTP base paths they expose. When running behind the API gateway or reverse proxy, the base path remains the same; only the host changes.
+
+| Service | Container Port | Base Path | Notes |
+|---|---:|---|---|
+| Web Client | 5173 | / | Served via reverse proxy; static frontend. |
+| Auth Service | 8081 | /api/v1/auth | Public auth endpoints. |
+| Flashcard Service | 8082 | /api/v1/flashcards | Flashcard endpoints; update if path changes. |
+| GenAI Service | 8080 | /api/v1/genai | Upload, generation, and explain endpoints. |
+| Reverse Proxy | 80/443 | / | Routes paths to services. |
+
+## 6. UML Diagrams
 
 These diagrams capture the user interactions, domain model, and component-level architecture.
 
@@ -47,7 +59,7 @@ These diagrams capture the user interactions, domain model, and component-level 
 - Analysis Object Model: [documents/diagrams/Analysis Object Model.json](documents/diagrams/Analysis%20Object%20Model.json)
 - Component Diagram: [documents/diagrams/Component Diagram.json](documents/diagrams/Component%20Diagram.json)
 
-## 6. Key Flows
+## 7. Key Flows
 
 1. User uploads material in the web client, routed through the API gateway to the Deck Service.
 2. Deck Service stores metadata and content, then requests flashcard generation from the GenAI service.

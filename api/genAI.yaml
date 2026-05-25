@@ -11,7 +11,7 @@ servers:
   - url: http://localhost:8080
     description: Local development
 paths:
-  /genai/v1/uploads:
+  /api/v1/genai/uploads:
     post:
       summary: Upload a document for processing
       description: Upload a PDF or TXT file and receive an upload id.
@@ -59,7 +59,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /genai/v1/generate-flashcards:
+  /api/v1/genai/generate-flashcards:
     post:
       summary: Generate flashcards from an uploaded document
       description: |
@@ -98,7 +98,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /genai/v1/explain:
+  /api/v1/genai/explain:
     post:
       summary: Explain a flashcard
       description: Generate an explanation for a given flashcard.

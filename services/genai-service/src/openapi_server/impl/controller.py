@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/uploads",
+    "/api/v1/genai/uploads",
     responses={
         201: {"model": UploadResponse, "description": "Upload accepted."},
         400: {
@@ -33,7 +33,7 @@ router = APIRouter()
     summary="Upload a document for processing",
     response_model_by_alias=True,
 )
-async def uploads_post(
+async def api_v1_genai_uploads_post(
     file: UploadFile,
     token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> UploadResponse:
@@ -48,7 +48,7 @@ async def uploads_post(
 
 
 @router.post(
-    "/generate-flashcards",
+    "/api/v1/genai/generate-flashcards",
     responses={
         200: {
             "model": Flashcard,
@@ -62,7 +62,7 @@ async def uploads_post(
     summary="Generate flashcards from an uploaded document",
     response_model_by_alias=True,
 )
-async def generate_flashcards_post(
+async def api_v1_genai_generate_flashcards_post(
     generate_flashcards_request: GenerateFlashcardsRequest = Body(None, description=""),
     token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> Flashcard:
@@ -71,7 +71,7 @@ async def generate_flashcards_post(
 
 
 @router.post(
-    "/explain",
+    "/api/v1/genai/explain",
     responses={
         200: {
             "model": ExplanationResponse,
@@ -84,7 +84,7 @@ async def generate_flashcards_post(
     summary="Explain a flashcard",
     response_model_by_alias=True,
 )
-async def explain_post(
+async def api_v1_genai_explain_post(
     flashcard: Flashcard = Body(None, description=""),
     token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> ExplanationResponse:

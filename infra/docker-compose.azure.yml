@@ -91,7 +91,7 @@ services:
     command: uvicorn openapi_server.main:app --host 0.0.0.0 --port 8080
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.genai.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/genai`)"
+      - "traefik.http.routers.genai.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/api/v1/genai`)"
       - "traefik.http.routers.genai.entrypoints=websecure"
       - "traefik.http.routers.genai.tls.certresolver=letsencrypt"
       - "traefik.http.services.genai.loadbalancer.server.port=8080"
