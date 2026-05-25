@@ -1,0 +1,122 @@
+services:
+  reverse-proxy:
+    image: traefik:v3.6.15
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@tum.de"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./letsencrypt:/letsencrypt
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    expose:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: services/auth-service/Dockerfile
+    expose:
+      - "8081"
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/authdb
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/api/v1/auth`)"
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.routers.auth.tls.certresolver=letsencrypt"
+      - "traefik.http.services.auth.loadbalancer.server.port=8081"
+      - "traefik.http.routers.auth.priority=3"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  flashcard-service:
+    build:
+      context: ..
+      dockerfile: services/flashcard-service/Dockerfile
+    expose:
+      - "8082"
+    environment:
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/flashcarddb
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.flashcards.rule=Host(`${SERVER_HOST}`) && (PathPrefix(`/api/v1/flashcards`) || PathPrefix(`/api/v1/flashcard`))"
+      - "traefik.http.routers.flashcards.entrypoints=websecure"
+      - "traefik.http.routers.flashcards.tls.certresolver=letsencrypt"
+      - "traefik.http.services.flashcards.loadbalancer.server.port=8082"
+      - "traefik.http.routers.flashcards.priority=3"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  genai-service:
+    build:
+      context: ../services/genai-service
+      dockerfile: Dockerfile
+    expose:
+      - "8080"
+    command: uvicorn openapi_server.main:app --host 0.0.0.0 --port 8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.genai.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/genai`)"
+      - "traefik.http.routers.genai.entrypoints=websecure"
+      - "traefik.http.routers.genai.tls.certresolver=letsencrypt"
+      - "traefik.http.services.genai.loadbalancer.server.port=8080"
+      - "traefik.http.routers.genai.priority=2"
+
+  web-client:
+    build:
+      context: ../web-client
+    expose:
+      - "5173"
+    environment:
+      VITE_API_BASE_URL: ''
+    depends_on:
+      - auth-service
+      - flashcard-service
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client.rule=Host(`${CLIENT_HOST}`)"
+      - "traefik.http.services.client.loadbalancer.server.port=5173"
+      - "traefik.http.routers.client.entrypoints=websecure"
+      - "traefik.http.routers.client.tls.certresolver=letsencrypt"
+      - "traefik.http.middlewares.client-compress.compress=true"
+      - "traefik.http.routers.client.middlewares=client-compress"
+      - "traefik.http.routers.client.priority=1"
+
+volumes:
+  postgres_data:
