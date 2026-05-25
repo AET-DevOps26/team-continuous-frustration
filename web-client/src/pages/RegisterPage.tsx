@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import "../styles/AuthPage.css";
 
 export function RegisterPage() {
     return (

@@ -1,6 +1,9 @@
 #ENV
 .env
 
+# Lovable design reference (extracted to sibling folder)
+smart-study-buddy-*.zip
+
 # IDE
 .idea/
 *.iml
