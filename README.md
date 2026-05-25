@@ -17,7 +17,38 @@ From repository root, install and enable pre-commit:
 2. `pre-commit install`
 
 
-## Running Services
+## Starting All Services
+
+From the `infra/` directory, a single command starts everything (PostgreSQL, auth-service, flashcard-service, genai-service, web-client):
+
+```bash
+cd infra
+docker compose up --build
+```
+
+| Service | URL |
+|---|---|
+| Auth service | http://localhost:8083 |
+| Flashcard service | http://localhost:8082 |
+| GenAI service | http://localhost:8090 |
+| Web client | http://localhost:5173 |
+| PostgreSQL | localhost:5432 |
+
+The `.env` file in `infra/` already has defaults for local development. To stop all services:
+
+```bash
+docker compose down
+```
+
+To also remove the database volume (full reset):
+
+```bash
+docker compose down -v
+```
+
+---
+
+## Running Services Individually
 
 ### Flashcard Service
 
