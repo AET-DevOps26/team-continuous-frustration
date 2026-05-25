@@ -34,8 +34,10 @@ jobs:
               - 'web-client/**'
             auth-service:
               - 'services/auth-service/**'
+              - 'api/**'
             flashcard-service:
               - 'services/flashcard-service/**'
+              - 'api/**'
             genai-service:
               - 'services/genai-service/**'
             workflow:
@@ -45,10 +47,10 @@ jobs:
         id: set-matrix
         uses: actions/github-script@v7
         env:
-          WEB_CLIENT: ${{ steps.filter.outputs.web-client }}
-          AUTH_SERVICE: ${{ steps.filter.outputs.auth-service }}
-          FLASHCARD_SERVICE: ${{ steps.filter.outputs.flashcard-service }}
-          GENAI_SERVICE: ${{ steps.filter.outputs.genai-service }}
+          WEB_CLIENT: ${{ steps.filter.outputs['web-client'] }}
+          AUTH_SERVICE: ${{ steps.filter.outputs['auth-service'] }}
+          FLASHCARD_SERVICE: ${{ steps.filter.outputs['flashcard-service'] }}
+          GENAI_SERVICE: ${{ steps.filter.outputs['genai-service'] }}
           WORKFLOW: ${{ steps.filter.outputs.workflow }}
         with:
           script: |

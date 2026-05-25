@@ -28,5 +28,5 @@ RUN pytest tests
 
 FROM python:3.10-slim AS service
 WORKDIR /root/app/site-packages
-COPY --from=test_runner /venv /venv
+COPY --from=builder /venv /venv
 ENV PATH=/venv/bin:$PATH
