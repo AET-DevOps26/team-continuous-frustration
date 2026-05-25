@@ -1,9 +1,6 @@
 .upload-page {
     min-height: 100vh;
-    background:
-        linear-gradient(rgba(255, 255, 255, 0.38),
-            rgba(255, 255, 255, 0.52)),
-        url("../assets/layout.png");
+    background: linear-gradient(135deg, #f3f6fa 0%, #edf2f7 45%, #e8eef5 100%);
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;

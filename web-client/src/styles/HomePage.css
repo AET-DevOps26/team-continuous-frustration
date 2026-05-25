@@ -3,14 +3,8 @@
     width: 100vw;
     min-height: 100vh;
     overflow: hidden;
-    color: white;
-    background:
-        linear-gradient(rgba(8, 12, 18, 0.28),
-            rgba(8, 12, 18, 0.45)),
-        url("../assets/homepage.png");
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
+    color: #11133f;
+    background: linear-gradient(135deg, #f3f6fa 0%, #edf2f7 45%, #e8eef5 100%);
 }
 
 .home-page::before {
@@ -18,9 +12,8 @@
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.08), transparent 24rem),
-        radial-gradient(circle at 82% 60%, rgba(255, 118, 180, 0.12), transparent 22rem),
-        linear-gradient(90deg, rgba(0, 0, 0, 0.16), transparent 45%, rgba(0, 0, 0, 0.12));
+        radial-gradient(circle at 45% 30%, rgba(255, 255, 255, 0.55), transparent 24rem),
+        radial-gradient(circle at 82% 60%, rgba(207, 216, 229, 0.35), transparent 22rem);
     pointer-events: none;
 }
 
@@ -31,7 +24,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 18px 7vw;
-    color: white;
+    color: #1e3a8a;
 }
 
 .nav-left,
@@ -58,7 +51,7 @@
     font-size: 1rem;
     font-weight: 700;
     letter-spacing: -0.03em;
-    color: white;
+    color: #1e3a8a;
     text-decoration: none;
 }
 
@@ -67,7 +60,7 @@
 .register-button {
     border: none;
     background: transparent;
-    color: white;
+    color: #1e3a8a;
     cursor: pointer;
     font-size: 0.95rem;
     font-weight: 600;
@@ -91,7 +84,7 @@
     padding: 10px 22px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.75);
-    color: white;
+    color: #1e3a8a;
     background: rgba(255, 255, 255, 0.08);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
 }
@@ -111,7 +104,7 @@
     left: 7vw;
     bottom: 8vh;
     max-width: 520px;
-    color: white;
+    color: #1e3a8a;
 }
 
 .floating-title p {
@@ -137,7 +130,7 @@
     padding: 18px 16px;
     border: 1px solid rgba(255, 255, 255, 0.68);
     background: rgba(255, 255, 255, 0.08);
-    color: white;
+    color: #1e3a8a;
     box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
 }
 
@@ -177,7 +170,7 @@
     grid-template-columns: 1fr 24px;
     align-items: start;
     gap: 10px;
-    color: white;
+    color: #1e3a8a;
     text-decoration: none;
     cursor: pointer;
     border-radius: 8px;
