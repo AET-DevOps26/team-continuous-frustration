@@ -21,10 +21,10 @@ jobs:
             context: ./web-client
             dockerfile: ./web-client/Dockerfile
           - service: auth-service
-            context: ./services/auth-service
+            context: .
             dockerfile: ./services/auth-service/Dockerfile
           - service: flashcard-service
-            context: ./services/flashcard-service
+            context: .
             dockerfile: ./services/flashcard-service/Dockerfile
           - service: genai-service
             context: ./services/genai-service
