@@ -17,6 +17,12 @@ export function LoginPage() {
                         placeholder="Email address"
                     />
 
+                    <input
+                        className="auth-email-input"
+                        type="password"
+                        placeholder="Password"
+                    />
+
                     <button className="auth-primary-button" type="submit">
                         Continue with email
                     </button>
@@ -32,11 +38,6 @@ export function LoginPage() {
                     <button className="auth-provider-button" type="button">
                         <span className="provider-icon google-icon">G</span>
                         <span>Continue with Google</span>
-                    </button>
-
-                    <button className="auth-provider-button" type="button">
-                        <span className="provider-icon apple-icon">●</span>
-                        <span>Continue with Apple</span>
                     </button>
 
                     <button className="auth-provider-button" type="button">
