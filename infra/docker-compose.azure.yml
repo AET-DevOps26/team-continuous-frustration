@@ -103,7 +103,7 @@ services:
     expose:
       - "5173"
     environment:
-      VITE_API_BASE_URL: ${SERVER_HOST}
+      VITE_API_BASE_URL: ''
     depends_on:
       - auth-service
       - flashcard-service
