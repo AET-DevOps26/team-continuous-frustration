@@ -11,24 +11,72 @@ permissions:
   packages: write
 
 jobs:
+  changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_changes: ${{ steps.set-matrix.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            web-client:
+              - 'web-client/**'
+            auth-service:
+              - 'services/auth-service/**'
+            flashcard-service:
+              - 'services/flashcard-service/**'
+            genai-service:
+              - 'services/genai-service/**'
+            workflow:
+              - '.github/workflows/build_docker.yaml'
+
+      - name: Build matrix from changes
+        id: set-matrix
+        uses: actions/github-script@v7
+        env:
+          WEB_CLIENT: ${{ steps.filter.outputs.web-client }}
+          AUTH_SERVICE: ${{ steps.filter.outputs.auth-service }}
+          FLASHCARD_SERVICE: ${{ steps.filter.outputs.flashcard-service }}
+          GENAI_SERVICE: ${{ steps.filter.outputs.genai-service }}
+          WORKFLOW: ${{ steps.filter.outputs.workflow }}
+        with:
+          script: |
+            const items = [];
+            const add = (service, context, dockerfile) => items.push({ service, context, dockerfile });
+            const buildAll = process.env.WORKFLOW === 'true';
+
+            if (buildAll || process.env.WEB_CLIENT === 'true') {
+              add('web-client', './web-client', './web-client/Dockerfile');
+            }
+            if (buildAll || process.env.AUTH_SERVICE === 'true') {
+              add('auth-service', '.', './services/auth-service/Dockerfile');
+            }
+            if (buildAll || process.env.FLASHCARD_SERVICE === 'true') {
+              add('flashcard-service', '.', './services/flashcard-service/Dockerfile');
+            }
+            if (buildAll || process.env.GENAI_SERVICE === 'true') {
+              add('genai-service', './services/genai-service', './services/genai-service/Dockerfile');
+            }
+
+            core.setOutput('matrix', JSON.stringify({ include: items }));
+            core.setOutput('has_changes', items.length > 0 ? 'true' : 'false');
+
   build:
     name: Build Docker Images
+    needs: changes
+    if: needs.changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        include:
-          - service: web-client
-            context: ./web-client
-            dockerfile: ./web-client/Dockerfile
-          - service: auth-service
-            context: .
-            dockerfile: ./services/auth-service/Dockerfile
-          - service: flashcard-service
-            context: .
-            dockerfile: ./services/flashcard-service/Dockerfile
-          - service: genai-service
-            context: ./services/genai-service
-            dockerfile: ./services/genai-service/Dockerfile
+      matrix: ${{ fromJSON(needs.changes.outputs.matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -68,5 +116,7 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           push: ${{ github.event_name == 'push' }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
