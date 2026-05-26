@@ -76,24 +76,36 @@ Expected response:
 
 > The app runs on port `8081` inside the container. You can map it to any free port on your machine: `docker run -p <your-port>:8081 flashcard-service`
 
-### Azure VM Information
+## Azure VM Deployment
+
+### VM Information
 
 - VM name: `team-continuous-frustration`
-- Operating system: Ubuntu 24.04
 - Public IP address: `20.240.186.130`
 - SSH user: `azureuser`
-- Open inbound ports:
-  - `22` for SSH
-  - `80` for HTTP
-  - `443` for HTTPS
+- Client URL: https://client.20.240.186.130.nip.io
 
-### How to connect to the VM
+### How to connect to the Azure VM
 
-ssh -i <path-to-key>/team-continuous-frustration_key.pem azureuser@20.240.186.130
+```bash
+chmod 400 ./team-continuous-frustration_key.pem
+ssh -i ./team-continuous-frustration_key.pem azureuser@20.240.186.130
+```
+
+### Verify Docker Installation
+```bash
+docker --version
+docker compose version
+docker ps
+```
+
+### Deploy the Project with Docker Compose
+```bash
 cd ~/team-continuous-frustration/infra
 cp .env.example .env
-docker compose up --build -d
-docker ps
+docker compose -f docker-compose.azure.yml --env-file .env down
+docker compose -f docker-compose.azure.yml --env-file .env up -d --build
+```
 
 ### How to access the application
-http://20.240.186.130
+https://client.20.240.186.130.nip.io
