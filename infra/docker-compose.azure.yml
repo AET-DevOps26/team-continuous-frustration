@@ -37,7 +37,7 @@ services:
       retries: 5
 
   auth-service:
-    image: ghcr.io/aet-devops26/team-continuous-frustration/auth-service:latest
+    image: ghcr.io/aet-devops26/team-continuous-frustration/auth-service:${IMAGE_TAG:?Set IMAGE_TAG to a published image tag}
     expose:
       - "8081"
     environment:
@@ -59,7 +59,7 @@ services:
         condition: service_healthy
 
   flashcard-service:
-    image: ghcr.io/aet-devops26/team-continuous-frustration/flashcard-service:latest
+    image: ghcr.io/aet-devops26/team-continuous-frustration/flashcard-service:${IMAGE_TAG:?Set IMAGE_TAG to a published image tag}
     expose:
       - "8082"
     environment:
@@ -79,7 +79,7 @@ services:
         condition: service_healthy
 
   genai-service:
-    image: ghcr.io/aet-devops26/team-continuous-frustration/genai-service:latest
+    image: ghcr.io/aet-devops26/team-continuous-frustration/genai-service:${IMAGE_TAG:?Set IMAGE_TAG to a published image tag}
     expose:
       - "8080"
     command: uvicorn openapi_server.main:app --host 0.0.0.0 --port 8080
@@ -92,7 +92,7 @@ services:
       - "traefik.http.routers.genai.priority=2"
 
   web-client:
-    image: ghcr.io/aet-devops26/team-continuous-frustration/web-client:latest
+    image: ghcr.io/aet-devops26/team-continuous-frustration/web-client:${IMAGE_TAG:?Set IMAGE_TAG to a published image tag}
     expose:
       - "5173"
     environment:
