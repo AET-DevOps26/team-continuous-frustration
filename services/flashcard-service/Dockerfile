@@ -7,7 +7,12 @@ RUN mvn dependency:go-offline -q
 COPY services/flashcard-service/src src/
 RUN mvn package -DskipTests -q
 
-FROM eclipse-temurin:21-jre-alpine
+FROM maven:3.9-eclipse-temurin-21 AS dev
+WORKDIR /app/services/flashcard-service
+EXPOSE 8082
+CMD ["mvn", "spring-boot:run", "-q", "-Dspring-boot.run.fork=false"]
+
+FROM eclipse-temurin:21-jre-alpine AS prod
 WORKDIR /app
 COPY --from=build /app/services/flashcard-service/target/*.jar app.jar
 EXPOSE 8082
