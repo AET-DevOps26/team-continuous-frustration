@@ -1,10 +1,11 @@
-FROM node:20
+FROM node:22.18.0-slim
 
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
+RUN npm ci
 
-RUN npm install
+COPY . .
 
 EXPOSE 5173
 
