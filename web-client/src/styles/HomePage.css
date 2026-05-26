@@ -1,7 +1,7 @@
 .home-page {
     position: relative;
-    width: 100vw;
-    min-height: 100vh;
+    width: 100%;
+    min-height: calc(100vh - 4rem);
     overflow: hidden;
     color: #11133f;
     background: linear-gradient(135deg, #f3f6fa 0%, #edf2f7 45%, #e8eef5 100%);
@@ -17,82 +17,10 @@
     pointer-events: none;
 }
 
-.top-nav {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 7vw;
-    color: #1e3a8a;
-}
-
-.nav-left,
-.nav-right {
-    display: flex;
-    align-items: center;
-    gap: 26px;
-}
-
-.logo-mark {
-    width: 24px;
-    height: 24px;
-    display: grid;
-    place-items: center;
-    border-radius: 7px;
-    background: rgba(255, 255, 255, 0.95);
-    color: #111;
-    font-size: 0.85rem;
-    font-weight: 900;
-}
-
-.brand-name {
-    margin-left: -18px;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    color: #1e3a8a;
-    text-decoration: none;
-}
-
-.nav-link,
-.login-button,
-.register-button {
-    border: none;
-    background: transparent;
-    color: #1e3a8a;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.nav-link::after {
-    content: " ⌕";
-    font-size: 1rem;
-}
-
-.login-button {
-    padding: 10px 22px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.95);
-    color: #111;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
-}
-
-.register-button {
-    padding: 10px 22px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.75);
-    color: #1e3a8a;
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
-}
-
 .hero {
     position: relative;
     z-index: 5;
-    min-height: calc(100vh - 72px);
+    min-height: calc(100vh - 4rem);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -215,23 +143,6 @@
     opacity: 0.75;
 }
 
-.main-action,
-.secondary-action,
-.login-button,
-.register-button,
-.nav-link {
-    transition:
-        transform 0.18s ease,
-        background 0.18s ease,
-        opacity 0.18s ease;
-}
-
-.login-button:hover,
-.register-button:hover,
-.nav-link:hover {
-    transform: translateY(-1px);
-}
-
 @media (max-width: 900px) {
     .hero {
         justify-content: center;
@@ -254,22 +165,6 @@
 }
 
 @media (max-width: 620px) {
-    .top-nav {
-        padding: 16px 20px;
-    }
-
-    .nav-left {
-        gap: 20px;
-    }
-
-    .brand-name {
-        margin-left: -14px;
-    }
-
-    .nav-link {
-        display: none;
-    }
-
     .hero {
         padding: 46px 20px 64px;
     }

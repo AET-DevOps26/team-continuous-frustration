@@ -32,27 +32,6 @@ const features: FeatureItem[] = [
 export function HomePage() {
     return (
         <main className="home-page">
-            <header className="top-nav">
-                <div className="nav-left">
-                    <Link to="/" className="brand-name">
-                        Anki
-                    </Link>
-
-                    <button className="nav-link" type="button">
-                        Search
-                    </button>
-                </div>
-
-                <div className="nav-right">
-                    <Link to="/login" className="login-button">
-                        Login
-                    </Link>
-                    <Link to="/register" className="register-button">
-                        Register
-                    </Link>
-                </div>
-            </header>
-
             <section className="hero">
                 <div className="floating-title">
                     <p></p>
