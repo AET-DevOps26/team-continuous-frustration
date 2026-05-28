@@ -29,11 +29,22 @@ jobs:
           username: ${{ vars.AZURE_USER }}
           key: ${{ secrets.AZURE_PRIVATE_KEY }}
           script: |
-            rm .env.prod
+            rm -f .env.prod
             touch .env.prod
+
+            echo "POSTGRES_USER=${{ vars.POSTGRES_USER }}" >> .env.prod
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.prod
+
+            echo "AUTH_SERVICE_PORT=8081" >> .env.prod
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.prod
+            echo "JWT_EXPIRATION_MS=${{ vars.JWT_EXPIRATION_MS }}" >> .env.prod
+
+            echo "FLASHCARD_SERVICE_PORT=8082" >> .env.prod
+            echo "GENAI_SERVICE_PORT=8080" >> .env.prod
+
             echo "CLIENT_HOST=client.${{ vars.AZURE_PUBLIC_IP }}.nip.io" >> .env.prod
             echo "SERVER_HOST=api.${{ vars.AZURE_PUBLIC_IP }}.nip.io" >> .env.prod
-            echo "PUBLIC_API_URL=https://api.${{ vars.AZURE_PUBLIC_IP }}.nip.io/api" >> .env.prod
+            echo "VITE_API_BASE_URL=https://api.${{ vars.AZURE_PUBLIC_IP }}.nip.io" >> .env.prod
 
       - name: SSH to VM and Execute Docker-Compose Up
         uses: appleboy/ssh-action@v1.0.3
@@ -45,4 +56,5 @@ jobs:
             echo "Logging into Docker registry..."
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             echo "Starting Docker Compose..."
-            docker compose -f docker-compose.azure.yml --env-file=.env.prod up --pull=always -d
+            cd /home/${{ vars.AZURE_USER }}/team-continuous-frustration/infra
+            docker compose -f docker-compose.azure.yml --env-file=/home/${{ vars.AZURE_USER }}/.env.prod up --pull=always -d
