@@ -109,3 +109,40 @@ docker compose -f docker-compose.azure.yml --env-file .env up -d --build
 
 ### How to access the application
 https://client.20.240.186.130.nip.io
+
+### Automated Azure Deployment with Terraform and Ansible
+
+Terraform files are located in:
+
+```text
+infra/terraform/
+```
+
+Ansible files are located in:
+```text
+infra/ansible/
+```
+
+### Create Azure VM with Terraform
+```bash
+cd infra/terraform
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform plan
+terraform apply
+```
+### Configure Ansible inventory
+```bash
+cd ../ansible
+cp inventory.ini.example inventory.ini
+```
+
+### Configure Ansible variables
+```bash
+cp group_vars/all.yml.example group_vars/all.yml
+```
+
+### Run Ansible deployment
+```bash
+ansible-playbook -i inventory.ini playbook.yml
+```
