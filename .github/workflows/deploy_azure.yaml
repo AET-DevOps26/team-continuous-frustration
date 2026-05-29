@@ -20,7 +20,7 @@ jobs:
           username: ${{ vars.AZURE_USER }}
           key: ${{ secrets.AZURE_PRIVATE_KEY }}
           source: "./infra/docker-compose.azure.yml"
-          target: /home/${{ vars.AZURE_USER }}
+          target: /home/${{ vars.AZURE_USER }}/team-continuous-frustration
 
       - name: SSH to VM and Create .env.prod
         uses: appleboy/ssh-action@v1.0.3
