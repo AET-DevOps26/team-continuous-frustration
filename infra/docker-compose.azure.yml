@@ -94,9 +94,7 @@ services:
   web-client:
     image: ghcr.io/aet-devops26/team-continuous-frustration/web-client:latest
     expose:
-      - "5173"
-    environment:
-      VITE_API_BASE_URL: ''
+      - "80"
     depends_on:
       - auth-service
       - flashcard-service
@@ -104,7 +102,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.client.rule=Host(`${CLIENT_HOST}`)"
-      - "traefik.http.services.client.loadbalancer.server.port=5173"
+      - "traefik.http.services.client.loadbalancer.server.port=80"
       - "traefik.http.routers.client.entrypoints=websecure"
       - "traefik.http.routers.client.tls.certresolver=letsencrypt"
       - "traefik.http.middlewares.client-compress.compress=true"
