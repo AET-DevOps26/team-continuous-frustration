@@ -1,0 +1,41 @@
+server:
+  port: ${GATEWAY_PORT:8080}
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: ${CORS_ALLOWED_ORIGINS:*}
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: false
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL:http://auth-service:8081}
+          predicates:
+            - Path=/api/v1/auth/**
+        - id: flashcard-service
+          uri: ${FLASHCARD_SERVICE_URL:http://flashcard-service:8082}
+          predicates:
+            - Path=/api/v1/flashcards/**,/api/v1/flashcard/**
+        - id: genai-service
+          uri: ${GENAI_SERVICE_URL:http://genai-service:8080}
+          predicates:
+            - Path=/api/v1/genai/**
+        - id: web-client
+          uri: ${WEB_CLIENT_URL:http://web-client:80}
+          predicates:
+            - Path=/**
