@@ -1,0 +1,46 @@
+.health-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    background: linear-gradient(160deg, #f7f3ee 0%, #efe7db 40%, #f9f7f2 100%);
+    color: #2e2a26;
+}
+
+.health-card {
+    width: min(520px, 100%);
+    padding: 32px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(46, 42, 38, 0.12);
+    border: 1px solid rgba(46, 42, 38, 0.08);
+}
+
+.health-card h1 {
+    margin: 0 0 12px;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+}
+
+.health-status,
+.health-error {
+    margin: 0 0 12px;
+    font-size: 18px;
+}
+
+.health-status {
+    color: #2c6e49;
+    font-weight: 600;
+}
+
+.health-error {
+    color: #b42318;
+    font-weight: 600;
+}
+
+.health-endpoint {
+    margin: 0;
+    font-size: 14px;
+    color: rgba(46, 42, 38, 0.7);
+}

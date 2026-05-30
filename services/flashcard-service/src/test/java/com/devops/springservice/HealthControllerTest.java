@@ -19,7 +19,7 @@ class HealthControllerTest {
 
     @Test
     void healthEndpointReturnsUp() throws Exception {
-        mockMvc.perform(get("/health"))
+        mockMvc.perform(get("/api/v1/flashcards/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"));
     }

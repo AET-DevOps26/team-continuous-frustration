@@ -11,6 +11,7 @@ import { CardStudioPage } from "./pages/CardStudioPage";
 import { DecksPage } from "./pages/DecksPage";
 import { DeckDetailPage } from "./pages/DeckDetailPage";
 import { StudySessionPage } from "./pages/StudySessionPage";
+import { HealthPage } from "./pages/HealthPage";
 import { OAuthCallbackPage } from "./pages/OAuthCallbackPage";
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
                         <Route path="/decks/:deckId" element={<ProtectedRoute><DeckDetailPage /></ProtectedRoute>} />
                         <Route path="/study" element={<ProtectedRoute><StudySessionPage /></ProtectedRoute>} />
                         <Route path="/study/:deckId" element={<ProtectedRoute><StudySessionPage /></ProtectedRoute>} />
+                        <Route path="/health" element={<HealthPage />} />
 
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Route>
