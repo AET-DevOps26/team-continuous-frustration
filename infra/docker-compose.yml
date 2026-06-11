@@ -65,8 +65,42 @@ services:
       context: ../services/genai-service
       dockerfile: Dockerfile
     ports:
-      - "8180:8080"
+      - "${GENAI_SERVICE_PORT}:8080"
+    environment:
+      LOGOS_API_KEY: ${LOGOS_API_KEY}
+      LLM_BASE_URL: ${LLM_BASE_URL}
+      LLM_MODEL: ${LLM_MODEL}
+      WEAVIATE_URL: http://weaviate:8080
     command: uvicorn openapi_server.main:app --host 0.0.0.0 --port 8080
+    depends_on:
+      - weaviate
+
+  weaviate:
+    image: semitechnologies/weaviate:1.24.1
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'none'
+      ENABLE_MODULES: 'text2vec-ollama'
+      CLUSTER_HOSTNAME: 'node1'
+      OLLAMA_API_ENDPOINT: 'http://ollama:11434'
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    depends_on:
+      - ollama
+
+  ollama:
+    image: alpine/ollama:0.30.6
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./ollama.sh:/ollama.sh
+    entrypoint: ["/bin/sh", "/ollama.sh"]
 
   web-client:
     build:
@@ -87,5 +121,7 @@ services:
 
 volumes:
   postgres_data:
+  weaviate_data:
+  ollama_data:
   maven_cache:
   web_client_node_modules:
