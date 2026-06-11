@@ -18,8 +18,11 @@ public class UserEntity {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
+    @Column
     private String passwordHash;
+
+    @Column(unique = true)
+    private String googleId;
 
     public UUID getId() { return id; }
 
@@ -31,4 +34,7 @@ public class UserEntity {
 
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+
+    public String getGoogleId() { return googleId; }
+    public void setGoogleId(String googleId) { this.googleId = googleId; }
 }

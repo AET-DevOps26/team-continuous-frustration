@@ -9,6 +9,7 @@ import { CardStudioPage } from "./pages/CardStudioPage";
 import { DecksPage } from "./pages/DecksPage";
 import { DeckDetailPage } from "./pages/DeckDetailPage";
 import { StudySessionPage } from "./pages/StudySessionPage";
+import { OAuthCallbackPage } from "./pages/OAuthCallbackPage";
 
 function App() {
     return (
@@ -29,6 +30,7 @@ function App() {
                     <Route path="/study" element={<StudySessionPage />} />
                     <Route path="/study/:deckId" element={<StudySessionPage />} />
 
+                    <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
             </Routes>

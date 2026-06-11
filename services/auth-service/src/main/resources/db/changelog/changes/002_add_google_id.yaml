@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002_add_google_id
+      author: team-continuous-frustration
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: google_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+                    unique: true
+        - dropNotNullConstraint:
+            tableName: users
+            columnName: password_hash
+            columnDataType: varchar(255)

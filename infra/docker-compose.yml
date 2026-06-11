@@ -29,6 +29,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5273}
     volumes:
       - ../services/auth-service:/app/services/auth-service
       - ../api:/app/api
@@ -62,7 +65,7 @@ services:
       context: ../services/genai-service
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8180:8080"
     command: uvicorn openapi_server.main:app --host 0.0.0.0 --port 8080
 
   web-client:
