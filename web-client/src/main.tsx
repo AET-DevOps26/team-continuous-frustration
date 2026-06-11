@@ -6,6 +6,7 @@ import App from './App.tsx'
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 axios.defaults.baseURL = baseUrl
+axios.defaults.withCredentials = true
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

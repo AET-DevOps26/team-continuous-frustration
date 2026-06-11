@@ -1,0 +1,59 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003_create_sessions
+      author: team-continuous-frustration
+      changes:
+        - createTable:
+            tableName: sessions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(20)
+                  defaultValue: ACTIVE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expires_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_used_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: sessions
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_sessions_user_id
+            onDelete: CASCADE
+        - createIndex:
+            tableName: sessions
+            indexName: idx_sessions_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: sessions
+            indexName: idx_sessions_expires_at
+            columns:
+              - column:
+                  name: expires_at

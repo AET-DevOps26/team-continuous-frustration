@@ -1,16 +1,13 @@
 import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 export function OAuthCallbackPage() {
-    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { refetch } = useAuth();
 
     useEffect(() => {
-        const token = searchParams.get("token");
-        if (token) {
-            localStorage.setItem("auth_token", token);
-        }
-        navigate("/", { replace: true });
+        refetch().then(() => navigate("/", { replace: true }));
     }, []);
 
     return null;

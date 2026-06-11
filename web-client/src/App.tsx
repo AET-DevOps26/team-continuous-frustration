@@ -1,5 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AppLayout } from "./components/AppLayout";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
@@ -14,26 +16,25 @@ import { OAuthCallbackPage } from "./pages/OAuthCallbackPage";
 function App() {
     return (
         <BrowserRouter>
-            <Routes>
-                <Route element={<AppLayout />}>
-                    <Route path="/" element={<HomePage />} />
+            <AuthProvider>
+                <Routes>
+                    <Route element={<AppLayout />}>
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
 
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+                        <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
+                        <Route path="/cards" element={<ProtectedRoute><CardStudioPage /></ProtectedRoute>} />
+                        <Route path="/decks" element={<ProtectedRoute><DecksPage /></ProtectedRoute>} />
+                        <Route path="/decks/:deckId" element={<ProtectedRoute><DeckDetailPage /></ProtectedRoute>} />
+                        <Route path="/study" element={<ProtectedRoute><StudySessionPage /></ProtectedRoute>} />
+                        <Route path="/study/:deckId" element={<ProtectedRoute><StudySessionPage /></ProtectedRoute>} />
 
-                    <Route path="/upload" element={<UploadPage />} />
-                    <Route path="/cards" element={<CardStudioPage />} />
-
-                    <Route path="/decks" element={<DecksPage />} />
-                    <Route path="/decks/:deckId" element={<DeckDetailPage />} />
-
-                    <Route path="/study" element={<StudySessionPage />} />
-                    <Route path="/study/:deckId" element={<StudySessionPage />} />
-
-                    <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Route>
-            </Routes>
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Route>
+                </Routes>
+            </AuthProvider>
         </BrowserRouter>
     );
 }
