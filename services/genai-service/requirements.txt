@@ -34,3 +34,10 @@ uvicorn==0.13.4
 uvloop==0.21.0
 watchgod==0.7
 websockets==10.0
+markitdown[pdf, docx, pptx]
+weaviate-client
+langchain
+langchain-core
+langchain_text_splitters
+langchain-openai
+langchain-weaviate

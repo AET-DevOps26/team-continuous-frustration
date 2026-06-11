@@ -4,6 +4,7 @@ import uuid
 from typing import Optional, Tuple
 
 from fastapi import APIRouter, Body, HTTPException, Security, UploadFile, status
+from fastapi.responses import StreamingResponse
 
 from openapi_server.models.extra_models import TokenModel  # noqa: F401
 from openapi_server.models.error import Error
@@ -13,6 +14,7 @@ from openapi_server.models.generate_flashcards_request import GenerateFlashcards
 from openapi_server.models.upload_response import UploadResponse
 from openapi_server.security_api import get_token_bearerAuth
 from openapi_server.storage import store_bytes, validate_extension
+from src.openapi_server.core.generation_service import GenerationService
 
 router = APIRouter()
 
@@ -65,9 +67,19 @@ async def api_v1_genai_uploads_post(
 async def api_v1_genai_generate_flashcards_post(
     generate_flashcards_request: GenerateFlashcardsRequest = Body(None, description=""),
     token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
-) -> Flashcard:
+) -> StreamingResponse:
     """Provide an upload id and receive a streamed NDJSON response. Each line is a JSON object with fields id, question, answer, source_ref."""
-    raise HTTPException(status_code=500, detail="Not implemented")
+    if not generate_flashcards_request or not generate_flashcards_request.upload_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Missing upload_id",
+        )
+
+    upload_id = generate_flashcards_request.upload_id
+
+    return StreamingResponse(
+        GenerationService.generate(upload_id), media_type="application/x-ndjson"
+    )
 
 
 @router.post(
