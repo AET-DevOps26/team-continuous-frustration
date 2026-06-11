@@ -47,6 +47,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      FRONTEND_URL: https://${CLIENT_HOST}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/api/v1/auth`)"
