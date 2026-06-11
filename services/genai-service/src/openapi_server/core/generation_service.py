@@ -1,7 +1,7 @@
 from typing import Iterator
 
 from src.openapi_server.storage import read_bytes
-from src.openapi_server.core.document_processor import convert_bytes_to_markdown
+from src.openapi_server.core.document_processor import convert_to_markdown
 from src.openapi_server.core.vector_store import upsert_markdown_to_weaviate
 from src.openapi_server.core.flashcard_pipeline import generate_flashcards_stream
 
@@ -31,7 +31,7 @@ class GenerationService:
         if file_bytes is None:
             raise ValueError(f"Could not find uploaded file for upload_id: {upload_id}")
 
-        md_text = convert_bytes_to_markdown(file_bytes, extension_used)
+        md_text = convert_to_markdown(file_bytes, extension_used)
 
         upsert_markdown_to_weaviate(upload_id, md_text)
 
