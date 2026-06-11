@@ -2,8 +2,11 @@ import { Link } from "react-router-dom";
 import { Sprout } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 export function AppHeader() {
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
+
   return (
     <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -15,14 +18,27 @@ export function AppHeader() {
             Kindling
           </span>
         </Link>
-        <nav className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/login">Sign in</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link to="/register">Get started</Link>
-          </Button>
-        </nav>
+        {!isLoading && (
+          <nav className="flex items-center gap-2">
+            {isAuthenticated ? (
+              <>
+                <span className="text-sm text-muted-foreground">{user?.username}</span>
+                <Button variant="ghost" size="sm" onClick={logout}>
+                  Sign out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/login">Sign in</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link to="/register">Get started</Link>
+                </Button>
+              </>
+            )}
+          </nav>
+        )}
       </div>
     </header>
   );
