@@ -13,8 +13,7 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   const google = () => {
-    setBusy(true);
-    navigate("/");
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
   };
 
   return (
