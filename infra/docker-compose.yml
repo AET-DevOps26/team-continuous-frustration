@@ -65,21 +65,25 @@ services:
     build:
       context: ../services/genai-service
       dockerfile: Dockerfile
+      target: service
     ports:
-      - "${GENAI_SERVICE_PORT}:8080"
+      - "${GENAI_SERVICE_PORT}:8090"
     environment:
       LOGOS_API_KEY: ${LOGOS_API_KEY}
       LLM_BASE_URL: ${LLM_BASE_URL}
       LLM_MODEL: ${LLM_MODEL}
       WEAVIATE_URL: http://weaviate:8080
-    command: uvicorn openapi_server.main:app --host 0.0.0.0 --port 8080
+      OLLAMA_API_ENDPOINT: http://ollama:11434
+    volumes:
+      - ../services/genai-service:/app
     environment:
       AUTH_SERVICE_URL: http://auth-service:8081
     depends_on:
       - weaviate
+      - ollama
 
   weaviate:
-    image: semitechnologies/weaviate:1.24.1
+    image: semitechnologies/weaviate:1.27.0
     ports:
       - "8080:8080"
       - "50051:50051"
@@ -97,7 +101,7 @@ services:
       - ollama
 
   ollama:
-    image: alpine/ollama:0.30.6
+    image: ollama/ollama:0.30.8
     ports:
       - "11434:11434"
     volumes:
