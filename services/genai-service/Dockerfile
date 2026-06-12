@@ -10,13 +10,16 @@ RUN pip install --no-cache-dir --upgrade pip
 COPY pyproject.toml setup.cfg README.md requirements.txt ./
 COPY src ./src
 COPY tests ./tests
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir -r requirements.txt
+# Install the openapi_server package itself so it's importable from the venv
+RUN pip install --no-cache-dir -e .
 
 
 FROM python:3.10-slim AS test_runner
 WORKDIR /tmp
 COPY --from=builder /venv /venv
 COPY --from=builder /usr/src/app/tests tests
+COPY --from=builder /usr/src/app/src src
 ENV PATH=/venv/bin:$PATH
 
 # install test dependencies
@@ -27,6 +30,10 @@ RUN pytest tests
 
 
 FROM python:3.10-slim AS service
-WORKDIR /root/app/site-packages
+WORKDIR /app
 COPY --from=builder /venv /venv
+COPY --from=builder /usr/src/app/src ./src
 ENV PATH=/venv/bin:$PATH
+ENV PYTHONPATH=/app/src
+
+CMD ["uvicorn", "openapi_server.main:app", "--host", "0.0.0.0", "--port", "8090"]
