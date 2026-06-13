@@ -64,8 +64,12 @@ async def api_v1_genai_uploads_post(
     "/api/v1/genai/generate-flashcards",
     responses={
         200: {
-            "model": Flashcard,
-            "description": "Async generator of generated flashcards.",
+            "content": {
+                "application/x-ndjson": {
+                    "schema": {"$ref": "#/components/schemas/Flashcard"}
+                }
+            },
+            "description": "NDJSON stream of generated flashcards.",
         },
         400: {"model": Error, "description": "Invalid request."},
         500: {"model": Error, "description": "Server error during generation."},
@@ -80,18 +84,18 @@ async def api_v1_genai_generate_flashcards_post(
 ) -> AsyncIterable[Flashcard]:
     filename, content = await _read_upload(file)
     extension = validate_extension(filename)
-    logger.info("[test-generate] Received file '%s' (%d bytes)", filename, len(content))
+    logger.info("[generate] Received file '%s' (%d bytes)", filename, len(content))
 
-    logger.debug("[test-generate] Converting to markdown")
+    logger.debug("[generate] Converting to markdown")
     markdown_text = convert_to_markdown(content, extension)
-    logger.debug("[test-generate] Markdown preview: %s", markdown_text[:500])
+    logger.debug("[generate] Markdown preview: %s", markdown_text[:500])
 
     upload_id = str(uuid.uuid4())
-    logger.info("[test-generate] Generated upload_id=%s", upload_id)
+    logger.info("[generate] Generated upload_id=%s", upload_id)
 
-    logger.debug("[test-generate] Upserting markdown to Weaviate")
+    logger.debug("[generate] Upserting markdown to Weaviate")
     upsert_markdown_to_weaviate(upload_id, markdown_text)
-    logger.info("[test-generate] Upsert complete — starting flashcard stream")
+    logger.info("[generate] Upsert complete — starting flashcard stream")
 
     for flashcard in generate_flashcards_stream(upload_id):
         yield flashcard
