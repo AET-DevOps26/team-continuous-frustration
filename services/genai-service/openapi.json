@@ -1,0 +1,448 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "GenAI Service API",
+        "description": "GenAI service endpoints for flashcard generation. The /generate-flashcards endpoint streams NDJSON where each line is a Flashcard object. ",
+        "version": "v1"
+    },
+    "paths": {
+        "/health": {
+            "get": {
+                "tags": [
+                    "default"
+                ],
+                "summary": "Health",
+                "operationId": "health_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": true,
+                                    "type": "object",
+                                    "title": "Response Health Health Get"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/genai/uploads": {
+            "post": {
+                "tags": [
+                    "default"
+                ],
+                "summary": "Upload a document for processing",
+                "description": "Upload a PDF or TXT file and receive an upload id.",
+                "operationId": "api_v1_genai_uploads_post_api_v1_genai_uploads_post",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Body_api_v1_genai_uploads_post_api_v1_genai_uploads_post"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UploadResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Upload accepted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UploadResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or unsupported file format.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "413": {
+                        "description": "Uploaded file too large.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error during upload.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/genai/generate-flashcards": {
+            "post": {
+                "tags": [
+                    "default"
+                ],
+                "summary": "Generate flashcards from an uploaded document",
+                "operationId": "api_v1_genai_generate_flashcards_post_api_v1_genai_generate_flashcards_post",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Body_api_v1_genai_generate_flashcards_post_api_v1_genai_generate_flashcards_post"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "NDJSON stream of generated flashcards.",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            },
+                            "application/x-ndjson": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Flashcard"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error during generation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/genai/explain": {
+            "post": {
+                "tags": [
+                    "default"
+                ],
+                "summary": "Explain a flashcard",
+                "description": "Generate an explanation for a given flashcard.",
+                "operationId": "api_v1_genai_explain_post_api_v1_genai_explain_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Flashcard",
+                                "description": ""
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Explanation for the flashcard.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExplanationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error during explanation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Body_api_v1_genai_generate_flashcards_post_api_v1_genai_generate_flashcards_post": {
+                "properties": {
+                    "file": {
+                        "type": "string",
+                        "contentMediaType": "application/octet-stream",
+                        "title": "File"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "file"
+                ],
+                "title": "Body_api_v1_genai_generate_flashcards_post_api_v1_genai_generate_flashcards_post"
+            },
+            "Body_api_v1_genai_uploads_post_api_v1_genai_uploads_post": {
+                "properties": {
+                    "file": {
+                        "type": "string",
+                        "contentMediaType": "application/octet-stream",
+                        "title": "File"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "file"
+                ],
+                "title": "Body_api_v1_genai_uploads_post_api_v1_genai_uploads_post"
+            },
+            "Error": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "code": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Code"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "message"
+                ],
+                "title": "Error",
+                "description": "Error"
+            },
+            "ExplanationResponse": {
+                "properties": {
+                    "explanation": {
+                        "type": "string",
+                        "title": "Explanation"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "explanation"
+                ],
+                "title": "ExplanationResponse",
+                "description": "ExplanationResponse"
+            },
+            "Flashcard": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id",
+                        "description": "Unique identifier for the flashcard."
+                    },
+                    "question": {
+                        "type": "string",
+                        "title": "Question"
+                    },
+                    "answer": {
+                        "type": "string",
+                        "title": "Answer"
+                    },
+                    "source_ref": {
+                        "type": "string",
+                        "title": "Source Ref",
+                        "description": "Reference to the source segment (e.g., page or chunk id)."
+                    },
+                    "last_updated": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Last Updated"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "question",
+                    "answer",
+                    "source_ref",
+                    "last_updated"
+                ],
+                "title": "Flashcard",
+                "description": "Flashcard"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "UploadResponse": {
+                "properties": {
+                    "upload_id": {
+                        "type": "string",
+                        "title": "Upload Id",
+                        "description": "Identifier for the uploaded file."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "upload_id"
+                ],
+                "title": "UploadResponse",
+                "description": "UploadResponse"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    },
+                    "input": {
+                        "title": "Input"
+                    },
+                    "ctx": {
+                        "type": "object",
+                        "title": "Context"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        },
+        "securitySchemes": {
+            "HTTPBearer": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    }
+}
