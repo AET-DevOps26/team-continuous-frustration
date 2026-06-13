@@ -48,7 +48,7 @@ def _ensure_collection_exists(client):
     try:
         client.collections.get(WEAVIATE_INDEX_NAME)
         logger.debug("Collection '%s' already exists", WEAVIATE_INDEX_NAME)
-    except weaviate.exceptions.WeaviateException:
+    except weaviate.exceptions.WeaviateBaseError:
         logger.info("Collection '%s' not found — creating it", WEAVIATE_INDEX_NAME)
         client.collections.create(
             name=WEAVIATE_INDEX_NAME,
