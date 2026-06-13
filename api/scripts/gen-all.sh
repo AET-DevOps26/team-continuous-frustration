@@ -3,7 +3,7 @@ set -euo pipefail
 
 npx @redocly/cli lint api/*.yaml
 
-openapi-generator-cli generate -i api/genai.yaml -g python-fastapi \
-  -o services/genai-service --skip-validate-spec
+openapi-generator-cli generate -i services/genai-service/openapi.json -g openapi-yaml \
+  -o api/ --additional-properties=outputFile=genai.yaml --skip-validate-spec
 
 npm --prefix "./web-client" run orval

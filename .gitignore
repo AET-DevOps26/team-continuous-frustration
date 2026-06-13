@@ -22,3 +22,5 @@ target/
 
 node_modules/
 web-client/node_modules/
+api/.openapi-generator-ignore
+api/.openapi-generator/*

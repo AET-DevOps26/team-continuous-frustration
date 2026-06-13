@@ -1,190 +1,316 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
+  description: 'GenAI service endpoints for flashcard generation. The /generate-flashcards
+    endpoint streams NDJSON where each line is a Flashcard object. '
   title: GenAI Service API
   version: v1
-  description: |
-    GenAI service endpoints for flashcard generation.
-    The /generate-flashcards endpoint streams NDJSON where each line is a Flashcard object.
-security:
-  - bearerAuth: []
 servers:
-  - url: http://localhost:8080
-    description: Local development
+- url: /
 paths:
+  /health:
+    get:
+      operationId: health_health_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties: {}
+                title: Response Health Health Get
+          description: Successful Response
+      summary: Health
+      tags:
+      - default
   /api/v1/genai/uploads:
     post:
-      summary: Upload a document for processing
       description: Upload a PDF or TXT file and receive an upload id.
+      operationId: api_v1_genai_uploads_post_api_v1_genai_uploads_post
       requestBody:
-        required: true
         content:
           multipart/form-data:
             schema:
-              type: object
-              required:
-                - file
-              properties:
-                file:
-                  type: string
-                  format: binary
-                  description: PDF or TXT file to process.
+              $ref: "#/components/schemas/Body_api_v1_genai_uploads_post_api_v1_genai_uploads_post"
+        required: true
       responses:
-        "201":
-          description: Upload accepted.
+        "200":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UploadResponse"
+          description: Successful Response
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+          description: Upload accepted.
         "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
           description: Invalid request or unsupported file format.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         "413":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
           description: Uploaded file too large.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         "415":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
           description: Unsupported media type.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         "500":
-          description: Server error during upload.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+          description: Server error during upload.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Upload a document for processing
+      tags:
+      - default
   /api/v1/genai/generate-flashcards:
     post:
-      summary: Generate flashcards from an uploaded document
-      description: |
-        Provide an upload id and receive a streamed NDJSON response.
-        Each line is a JSON object with fields id, question, answer, source_ref.
+      operationId: api_v1_genai_generate_flashcards_post_api_v1_genai_generate_flashcards_post
       requestBody:
-        required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "#/components/schemas/GenerateFlashcardsRequest"
+              $ref: "#/components/schemas/Body_api_v1_genai_generate_flashcards_post_api_v1_genai_generate_flashcards_post"
+        required: true
       responses:
         "200":
-          description: NDJSON stream of generated flashcards.
           content:
+            application/json:
+              schema: {}
             application/x-ndjson:
               schema:
                 $ref: "#/components/schemas/Flashcard"
-                description: |
-                  NDJSON stream where each line is a Flashcard JSON object.
+          description: NDJSON stream of generated flashcards.
         "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
           description: Invalid request.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: Upload id not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         "500":
-          description: Server error during generation.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+          description: Server error during generation.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Generate flashcards from an uploaded document
+      tags:
+      - default
   /api/v1/genai/explain:
     post:
-      summary: Explain a flashcard
       description: Generate an explanation for a given flashcard.
+      operationId: api_v1_genai_explain_post_api_v1_genai_explain_post
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Flashcard"
+              allOf:
+              - $ref: "#/components/schemas/Flashcard"
+              description: ""
       responses:
         "200":
-          description: Explanation for the flashcard.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ExplanationResponse"
+          description: Explanation for the flashcard.
         "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
           description: Invalid request.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         "500":
-          description: Server error during explanation.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+          description: Server error during explanation.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Explain a flashcard
+      tags:
+      - default
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   schemas:
-    Flashcard:
-      type: object
-      required:
-        - id
-        - question
-        - answer
-        - source_ref
-        - last_updated
+    Body_api_v1_genai_generate_flashcards_post_api_v1_genai_generate_flashcards_post:
       properties:
-        id:
+        file:
+          title: File
           type: string
-          description: Unique identifier for the flashcard.
-        question:
-          type: string
-        answer:
-          type: string
-        source_ref:
-          type: string
-          description: Reference to the source segment (e.g., page or chunk id).
-        last_updated:
-          type: string
-          format: date-time
-    UploadResponse:
-      type: object
       required:
-        - upload_id
+      - file
+      title: Body_api_v1_genai_generate_flashcards_post_api_v1_genai_generate_flashcards_post
+    Body_api_v1_genai_uploads_post_api_v1_genai_uploads_post:
       properties:
-        upload_id:
+        file:
+          title: File
           type: string
-          description: Identifier for the uploaded file.
-    GenerateFlashcardsRequest:
-      type: object
       required:
-        - upload_id
-      properties:
-        upload_id:
-          type: string
-          description: Identifier for the uploaded file.
-    ExplanationResponse:
-      type: object
-      required:
-        - explanation
-      properties:
-        explanation:
-          type: string
+      - file
+      title: Body_api_v1_genai_uploads_post_api_v1_genai_uploads_post
     Error:
-      type: object
-      required:
-        - message
+      description: Error
+      example:
+        code: code
+        message: message
       properties:
         message:
+          title: Message
           type: string
         code:
+          nullable: true
           type: string
+      required:
+      - message
+      title: Error
+    ExplanationResponse:
+      description: ExplanationResponse
+      example:
+        explanation: explanation
+      properties:
+        explanation:
+          title: Explanation
+          type: string
+      required:
+      - explanation
+      title: ExplanationResponse
+    Flashcard:
+      description: Flashcard
+      example:
+        last_updated: 2000-01-23T04:56:07.000+00:00
+        question: question
+        answer: answer
+        source_ref: source_ref
+        id: id
+      properties:
+        id:
+          description: Unique identifier for the flashcard.
+          title: Id
+          type: string
+        question:
+          title: Question
+          type: string
+        answer:
+          title: Answer
+          type: string
+        source_ref:
+          description: "Reference to the source segment (e.g., page or chunk id)."
+          title: Source Ref
+          type: string
+        last_updated:
+          format: date-time
+          title: Last Updated
+          type: string
+      required:
+      - answer
+      - id
+      - last_updated
+      - question
+      - source_ref
+      title: Flashcard
+    HTTPValidationError:
+      example:
+        detail:
+        - msg: msg
+          loc:
+          - Location_inner
+          - Location_inner
+          input: ""
+          ctx: "{}"
+          type: type
+        - msg: msg
+          loc:
+          - Location_inner
+          - Location_inner
+          input: ""
+          ctx: "{}"
+          type: type
+      properties:
+        detail:
+          items:
+            $ref: "#/components/schemas/ValidationError"
+          title: Detail
+          type: array
+      title: HTTPValidationError
+    UploadResponse:
+      description: UploadResponse
+      example:
+        upload_id: upload_id
+      properties:
+        upload_id:
+          description: Identifier for the uploaded file.
+          title: Upload Id
+          type: string
+      required:
+      - upload_id
+      title: UploadResponse
+    ValidationError:
+      example:
+        msg: msg
+        loc:
+        - Location_inner
+        - Location_inner
+        input: ""
+        ctx: "{}"
+        type: type
+      properties:
+        loc:
+          items:
+            $ref: "#/components/schemas/Location_inner"
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+        input:
+          title: Input
+        ctx:
+          title: Context
+          type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    Location_inner:
+      anyOf:
+      - type: string
+      - type: integer
+  securitySchemes:
+    HTTPBearer:
+      scheme: bearer
+      type: http
