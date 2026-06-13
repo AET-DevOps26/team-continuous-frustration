@@ -19,9 +19,6 @@ from openapi_server.core.document_processor import convert_to_markdown
 from openapi_server.core.vector_store import upsert_markdown_to_weaviate
 from openapi_server.core.flashcard_pipeline import generate_flashcards_stream
 
-from pydantic import BaseModel
-import time
-
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
@@ -29,25 +26,6 @@ logger = logging.getLogger(__name__)
 @router.get("/health", response_model=dict, tags=["default"])
 async def health():
     return {"status": "ok"}
-
-
-class Item(BaseModel):
-    name: str
-    description: str | None
-
-
-items = [
-    Item(name="Plumbus", description="A multi-purpose household device."),
-    Item(name="Portal Gun", description="A portal opening device."),
-    Item(name="Meeseeks Box", description="A box that summons a Meeseeks."),
-]
-
-
-@router.get("/items/stream")
-async def stream_items() -> AsyncIterable[Item]:
-    for item in items:
-        time.sleep(1)
-        yield item
 
 
 @router.post(
