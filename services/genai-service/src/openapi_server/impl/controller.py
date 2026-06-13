@@ -3,9 +3,9 @@
 import logging
 import uuid
 from typing import Optional, Tuple
+from collections.abc import AsyncIterable
 
 from fastapi import APIRouter, Body, HTTPException, Security, UploadFile, status
-from fastapi.responses import StreamingResponse
 
 from openapi_server.models.extra_models import TokenModel  # noqa: F401
 from openapi_server.models.error import Error
@@ -19,8 +19,35 @@ from openapi_server.core.document_processor import convert_to_markdown
 from openapi_server.core.vector_store import upsert_markdown_to_weaviate
 from openapi_server.core.flashcard_pipeline import generate_flashcards_stream
 
+from pydantic import BaseModel
+import time
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+@router.get("/health", response_model=dict, tags=["default"])
+async def health():
+    return {"status": "ok"}
+
+
+class Item(BaseModel):
+    name: str
+    description: str | None
+
+
+items = [
+    Item(name="Plumbus", description="A multi-purpose household device."),
+    Item(name="Portal Gun", description="A portal opening device."),
+    Item(name="Meeseeks Box", description="A box that summons a Meeseeks."),
+]
+
+
+@router.get("/items/stream")
+async def stream_items() -> AsyncIterable[Item]:
+    for item in items:
+        time.sleep(1)
+        yield item
 
 
 @router.post(
@@ -60,7 +87,7 @@ async def api_v1_genai_uploads_post(
     responses={
         200: {
             "model": Flashcard,
-            "description": "NDJSON stream of generated flashcards.",
+            "description": "Async generator of generated flashcards.",
         },
         400: {"model": Error, "description": "Invalid request."},
         500: {"model": Error, "description": "Server error during generation."},
@@ -72,7 +99,7 @@ async def api_v1_genai_uploads_post(
 async def api_v1_genai_generate_flashcards_post(
     file: UploadFile,
     token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
-) -> StreamingResponse:
+) -> AsyncIterable[Flashcard]:
     filename, content = await _read_upload(file)
     extension = validate_extension(filename)
     logger.info("[test-generate] Received file '%s' (%d bytes)", filename, len(content))
@@ -88,9 +115,8 @@ async def api_v1_genai_generate_flashcards_post(
     upsert_markdown_to_weaviate(upload_id, markdown_text)
     logger.info("[test-generate] Upsert complete — starting flashcard stream")
 
-    return StreamingResponse(
-        generate_flashcards_stream(upload_id), media_type="application/x-ndjson"
-    )
+    for flashcard in generate_flashcards_stream(upload_id):
+        yield flashcard
 
 
 @router.post(
