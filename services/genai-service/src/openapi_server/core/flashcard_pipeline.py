@@ -6,12 +6,12 @@ from weaviate.classes.query import Filter
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from pydantic import BaseModel
-import json
 import uuid
 import datetime
 
 from openapi_server.core.llm_factory import OpenAICompatibleLLM
 from openapi_server.core.vector_store import query_vector_store
+from openapi_server.models.flashcard import Flashcard
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class QuestionListOutput(BaseModel):
     questions: list[str]
 
 
-def generate_flashcards_stream(upload_id: str) -> Iterator[str]:
+def generate_flashcards_stream(upload_id: str) -> Iterator[Flashcard]:
     """
     Retrieves context for the upload_id, triggers flashcard generation,
     and returns an NDJSON stream of the structured flashcards.
@@ -92,22 +92,20 @@ def generate_flashcards_stream(upload_id: str) -> Iterator[str]:
         )
         try:
             ans = answer_chain.invoke({"context": context, "question": q})
-            fc = {
-                "id": str(uuid.uuid4()),
-                "question": q,
-                "answer": ans.strip(),
-                "source_ref": upload_id,
-                "last_updated": datetime.datetime.now(
-                    datetime.timezone.utc
-                ).isoformat(),
-            }
+            fc = Flashcard(
+                id=str(uuid.uuid4()),
+                question=q,
+                answer=ans.strip(),
+                source_ref=upload_id,
+                last_updated=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            )
             logger.info(
                 "[pipeline] Yielding flashcard %d/%d (id=%s)",
                 i,
                 len(questions),
-                fc["id"],
+                fc.id,
             )
-            yield json.dumps(fc) + "\n"
+            yield fc
         except Exception as e:
             logger.warning(
                 "[pipeline] Skipping question %d/%d due to error: %s",
