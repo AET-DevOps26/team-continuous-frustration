@@ -40,6 +40,8 @@ jobs:
               - 'api/**'
             genai-service:
               - 'services/genai-service/**'
+            upload-service:
+              - 'services/upload-service/**'
             workflow:
               - '.github/workflows/build_docker.yaml'
 
