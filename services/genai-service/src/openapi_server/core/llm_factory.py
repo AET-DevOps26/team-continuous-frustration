@@ -13,9 +13,9 @@ if LOGOS_API_KEY:
     API_KEY = LOGOS_API_KEY
 else:
     # LM Studio / Local profile
-    BASE_URL = os.getenv("LLM_BASE_URL", "http://localhost:1234/v1")
+    BASE_URL = os.getenv("LLM_BASE_URL", "http://ollama:11434/v1")
     LLM_MODEL_NAME = os.getenv("LLM_MODEL", "gemma-4-e2b")
-    API_KEY = None
+    API_KEY = "ollama"
 
 
 class OpenAICompatibleLLM(LLM):
