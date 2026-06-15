@@ -107,8 +107,8 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-      - ./ollama.sh:/ollama.sh
-    #entrypoint: ["/bin/sh", "/ollama.sh"]
+      - ./init-ollama/ollama.sh:/init-ollama/ollama.sh
+    #entrypoint: ["/bin/sh", "/init-ollama/ollama.sh"]
 
   upload-service:
     build:
