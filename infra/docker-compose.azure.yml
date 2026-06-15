@@ -94,6 +94,20 @@ services:
       - "traefik.http.services.genai.loadbalancer.server.port=8080"
       - "traefik.http.routers.genai.priority=2"
 
+  upload-service:
+    image: ghcr.io/aet-devops26/team-continuous-frustration/upload-service:latest
+    expose:
+      - "8091"
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: uploaddocumentdb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+
   web-client:
     image: ghcr.io/aet-devops26/team-continuous-frustration/web-client:latest
     expose:
