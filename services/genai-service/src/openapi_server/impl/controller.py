@@ -15,6 +15,8 @@ from openapi_server.security_api import get_token_bearerAuth
 from openapi_server.core.vector_store import upsert_markdown_to_weaviate
 from openapi_server.core.flashcard_pipeline import generate_flashcards_stream
 
+from upload_service_client import UploadServiceClientAPIs
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
@@ -46,7 +48,11 @@ async def api_v1_genai_generate_flashcards_post(
     upload_id: str,
     token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> AsyncIterable[Flashcard]:
-    markdown_text = "# Test\n## Hello\nThis is a test"
+    client = UploadServiceClientAPIs(
+        base_url="http://upload-service:8091", auth_token="your-api-token"
+    )
+    markdown_text = client.documents_get_documents_upload_id_get(upload_id)
+
     logger.debug("[generate] Upserting markdown to Weaviate")
     upsert_markdown_to_weaviate(upload_id, markdown_text)
     logger.info("[generate] Upsert complete — starting flashcard stream")
