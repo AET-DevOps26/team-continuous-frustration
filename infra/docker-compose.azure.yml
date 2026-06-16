@@ -106,6 +106,7 @@ services:
     depends_on:
       - weaviate
       - ollama
+      - upload-service
 
   weaviate:
     image: semitechnologies/weaviate:1.27.0
