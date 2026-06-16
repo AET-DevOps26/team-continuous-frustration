@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import logging
-import uuid
 from typing import Optional, Tuple
 from collections.abc import AsyncIterable
 
@@ -11,11 +10,8 @@ from openapi_server.models.extra_models import TokenModel  # noqa: F401
 from openapi_server.models.error import Error
 from openapi_server.models.explanation_response import ExplanationResponse
 from openapi_server.models.flashcard import Flashcard
-from openapi_server.models.upload_response import UploadResponse
 from openapi_server.security_api import get_token_bearerAuth
-from openapi_server.storage import store_bytes, validate_extension
 
-from openapi_server.core.document_processor import convert_to_markdown
 from openapi_server.core.vector_store import upsert_markdown_to_weaviate
 from openapi_server.core.flashcard_pipeline import generate_flashcards_stream
 
@@ -26,38 +22,6 @@ logger = logging.getLogger(__name__)
 @router.get("/health", response_model=dict, tags=["default"])
 async def health():
     return {"status": "ok"}
-
-
-@router.post(
-    "/api/v1/genai/uploads",
-    responses={
-        201: {"model": UploadResponse, "description": "Upload accepted."},
-        400: {
-            "model": Error,
-            "description": "Invalid request or unsupported file format.",
-        },
-        413: {"model": Error, "description": "Uploaded file too large."},
-        415: {"model": Error, "description": "Unsupported media type."},
-        500: {"model": Error, "description": "Server error during upload."},
-    },
-    tags=["default"],
-    summary="Upload a document for processing",
-    response_model_by_alias=True,
-)
-async def api_v1_genai_uploads_post(
-    file: UploadFile,
-    token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
-) -> UploadResponse:
-    """Upload a PDF or TXT file and receive an upload id."""
-    filename, content = await _read_upload(file)
-    logger.info("[upload] Received file '%s' (%d bytes)", filename, len(content))
-    extension = validate_extension(filename)
-    upload_id = str(uuid.uuid4())
-    storage_key = f"{upload_id}{extension}"
-    logger.debug("[upload] Storing as key='%s'", storage_key)
-    store_bytes(storage_key, content)
-    logger.info("[upload] Stored upload_id=%s", upload_id)
-    return UploadResponse(upload_id=upload_id)
 
 
 @router.post(
@@ -79,20 +43,10 @@ async def api_v1_genai_uploads_post(
     response_model_by_alias=True,
 )
 async def api_v1_genai_generate_flashcards_post(
-    file: UploadFile,
+    upload_id: str,
     token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> AsyncIterable[Flashcard]:
-    filename, content = await _read_upload(file)
-    extension = validate_extension(filename)
-    logger.info("[generate] Received file '%s' (%d bytes)", filename, len(content))
-
-    logger.debug("[generate] Converting to markdown")
-    markdown_text = convert_to_markdown(content, extension)
-    logger.debug("[generate] Markdown preview: %s", markdown_text[:500])
-
-    upload_id = str(uuid.uuid4())
-    logger.info("[generate] Generated upload_id=%s", upload_id)
-
+    markdown_text = "# Test\n## Hello\nThis is a test"
     logger.debug("[generate] Upserting markdown to Weaviate")
     upsert_markdown_to_weaviate(upload_id, markdown_text)
     logger.info("[generate] Upsert complete — starting flashcard stream")

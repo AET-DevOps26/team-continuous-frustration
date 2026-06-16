@@ -33,7 +33,6 @@ uvicorn==0.13.4
 uvloop==0.21.0
 watchgod==0.7
 websockets==10.0
-markitdown
 weaviate-client
 langchain
 langchain-core
