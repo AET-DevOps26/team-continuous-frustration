@@ -36,4 +36,4 @@ COPY --from=builder /usr/src/app/src ./src
 ENV PATH=/venv/bin:$PATH
 ENV PYTHONPATH=/app/src
 
-CMD ["uvicorn", "openapi_server.main:app", "--host", "0.0.0.0", "--port", "8090"]
+CMD ["python3", "-m", "grpc_server.server"]

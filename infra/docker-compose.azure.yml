@@ -85,7 +85,7 @@ services:
   genai-service:
     image: ghcr.io/aet-devops26/team-continuous-frustration/genai-service:latest
     expose:
-      - "8080"
+      - "50052"
     environment:
       LOGOS_API_KEY: ${LOGOS_API_KEY}
       LLM_BASE_URL: ${LLM_BASE_URL}

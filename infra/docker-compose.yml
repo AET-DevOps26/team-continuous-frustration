@@ -67,7 +67,7 @@ services:
       dockerfile: Dockerfile
       target: service
     ports:
-      - "${GENAI_SERVICE_PORT}:8090"
+      - "50052:50052"
     environment:
       LOGOS_API_KEY: ${LOGOS_API_KEY}
       LLM_BASE_URL: ${LLM_BASE_URL}
