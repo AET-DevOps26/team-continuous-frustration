@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package grpc_genai;
+
+message GenerateFlashcardsRequest {
+  string upload_id = 1;
+}
+
+message Flashcard {
+  string id = 1;
+  string question = 2;
+  string answer = 3;
+  string source_ref = 4;
+  string last_updated = 5;
+}
+
+message Explanation {
+    string explanation = 1;
+}
+
+service GenaiService {
+  rpc GenerateFlashcards(GenerateFlashcardsRequest) returns (stream Flashcard) {}
+  rpc GenerateExplanation(Flashcard) returns (Explanation) {}
+}
