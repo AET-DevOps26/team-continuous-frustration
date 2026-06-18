@@ -74,10 +74,9 @@ services:
       LLM_MODEL: ${LLM_MODEL}
       WEAVIATE_URL: http://weaviate:8080
       OLLAMA_API_ENDPOINT: http://ollama:11434
+      AUTH_SERVICE_URL: http://auth-service:8081
     volumes:
       - ../services/genai-service:/app
-    environment:
-      AUTH_SERVICE_URL: http://auth-service:8081
     depends_on:
       - weaviate
       - ollama
