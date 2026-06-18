@@ -68,6 +68,26 @@ services:
       - "8180:8080"
     command: uvicorn openapi_server.main:app --host 0.0.0.0 --port 8080
 
+  upload-service:
+    build:
+      context: ../services/upload-service
+      dockerfile: Dockerfile
+      target: service
+    ports:
+      - "8091:8091"
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: uploaddocumentdb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ../services/upload-service:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+
   web-client:
     build:
       context: ../web-client

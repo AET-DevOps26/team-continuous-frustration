@@ -40,6 +40,8 @@ jobs:
               - 'api/**'
             genai-service:
               - 'services/genai-service/**'
+            upload-service:
+              - 'services/upload-service/**'
             workflow:
               - '.github/workflows/build_docker.yaml'
 
@@ -69,6 +71,9 @@ jobs:
             }
             if (buildAll || process.env.GENAI_SERVICE === 'true') {
               add('genai-service', './services/genai-service', './services/genai-service/Dockerfile');
+            }
+            if (buildAll || process.env.UPLOAD_SERVICE === 'true') {
+              add('upload-service', './services/upload-service', './services/upload-service/Dockerfile');
             }
 
             core.setOutput('matrix', JSON.stringify({ include: items }));
