@@ -52,6 +52,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/flashcarddb
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      AUTH_SERVICE_URL: http://auth-service:8081
     volumes:
       - ../services/flashcard-service:/app/services/flashcard-service
       - ../api:/app/api
@@ -67,6 +68,8 @@ services:
     ports:
       - "8180:8080"
     command: uvicorn openapi_server.main:app --host 0.0.0.0 --port 8080
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8081
 
   upload-service:
     build:
