@@ -4,9 +4,8 @@ import com.devops.authservice.entity.SessionEntity;
 import com.devops.authservice.entity.UserEntity;
 import com.devops.authservice.repository.UserRepository;
 import com.devops.authservice.service.SessionService;
+import com.devops.authservice.service.TokenCookieService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
@@ -24,20 +21,20 @@ public class LoginController {
 
     private final UserRepository userRepository;
     private final SessionService sessionService;
+    private final TokenCookieService tokenCookieService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public LoginController(UserRepository userRepository, SessionService sessionService) {
+    public LoginController(UserRepository userRepository, SessionService sessionService,
+                           TokenCookieService tokenCookieService) {
         this.userRepository = userRepository;
         this.sessionService = sessionService;
+        this.tokenCookieService = tokenCookieService;
     }
 
     record LoginRequest(String email, String password) {}
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(
-            @RequestBody LoginRequest request,
-            HttpServletResponse response) {
-
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         UserEntity user = userRepository.findByEmail(request.email()).orElse(null);
 
         if (user == null || user.getPasswordHash() == null
@@ -47,14 +44,7 @@ public class LoginController {
         }
 
         SessionEntity session = sessionService.create(user.getId());
-        Duration maxAge = Duration.between(LocalDateTime.now(), session.getExpiresAt());
-        ResponseCookie cookie = ResponseCookie.from("session_id", session.getId().toString())
-                .httpOnly(true)
-                .path("/")
-                .maxAge(maxAge)
-                .sameSite("Lax")
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        tokenCookieService.issue(user.getId(), user.getEmail(), user.getUsername(), session, response);
 
         return ResponseEntity.ok(Map.of(
                 "id", user.getId().toString(),

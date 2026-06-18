@@ -7,19 +7,15 @@ import com.devops.authservice.entity.SessionEntity;
 import com.devops.authservice.model.RegisterRequest;
 import com.devops.authservice.model.RegisterResponse;
 import com.devops.authservice.service.SessionService;
+import com.devops.authservice.service.TokenCookieService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -27,27 +23,22 @@ public class RegisterController {
 
     private final RegisterInteractor interactor;
     private final SessionService sessionService;
+    private final TokenCookieService tokenCookieService;
 
-    public RegisterController(RegisterInteractor interactor, SessionService sessionService) {
+    public RegisterController(RegisterInteractor interactor, SessionService sessionService,
+                              TokenCookieService tokenCookieService) {
         this.interactor = interactor;
         this.sessionService = sessionService;
+        this.tokenCookieService = tokenCookieService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> registerUser(
-            @Valid @RequestBody RegisterRequest request,
-            HttpServletResponse response) {
+            @Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
         RegisterOutput output = interactor.execute(decode(request));
 
         SessionEntity session = sessionService.create(output.id());
-        Duration maxAge = Duration.between(LocalDateTime.now(), session.getExpiresAt());
-        ResponseCookie cookie = ResponseCookie.from("session_id", session.getId().toString())
-                .httpOnly(true)
-                .path("/")
-                .maxAge(maxAge)
-                .sameSite("Lax")
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        tokenCookieService.issue(output.id(), output.email(), output.username(), session, response);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(encode(output));
     }

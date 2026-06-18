@@ -1,5 +1,6 @@
 package com.devops.authservice.service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,13 +23,26 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
-    public String generate(UUID userId, String email) {
+    public String generate(UUID userId, String email, String username) {
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("email", email)
+                .claim("username", username)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key)
                 .compact();
+    }
+
+    public long getExpirationMs() {
+        return expirationMs;
+    }
+
+    public Claims getClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
