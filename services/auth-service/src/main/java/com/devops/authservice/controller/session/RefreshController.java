@@ -40,7 +40,7 @@ public class RefreshController {
                                     user.getId(), user.getEmail(), user.getUsername(), response);
                             return ResponseEntity.<Void>ok().build();
                         }))
-                .orElseGet(() -> ResponseEntity.status(401).build());
+                .orElseGet(() -> ResponseEntity.<Void>status(401).build());
     }
 
     private Optional<UUID> extractSessionId(HttpServletRequest request) {
