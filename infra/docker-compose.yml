@@ -142,6 +142,7 @@ services:
       GENAI_SERVICE_URL: http://genai-service:8080
       JWT_SECRET: ${JWT_SECRET}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5273,http://localhost:${GATEWAY_PORT:-8088}}
+      JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
     volumes:
       - ../services/api-gateway:/app/services/api-gateway
       - maven_cache:/root/.m2
