@@ -47,6 +47,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      SESSION_EXPIRATION_MS: ${SESSION_EXPIRATION_MS}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       FRONTEND_URL: https://${CLIENT_HOST}
@@ -70,7 +71,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/flashcarddb
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      AUTH_SERVICE_URL: http://auth-service:8081
+      JWT_SECRET: ${JWT_SECRET}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.flashcards.rule=Host(`${SERVER_HOST}`) && (PathPrefix(`/api/v1/flashcards`) || PathPrefix(`/api/v1/flashcard`))"
@@ -92,7 +93,7 @@ services:
       LLM_MODEL: ${LLM_MODEL}
       WEAVIATE_URL: http://weaviate:8080
       OLLAMA_API_ENDPOINT: http://ollama:11434
-      AUTH_SERVICE_URL: http://auth-service:8081
+      JWT_SECRET: ${JWT_SECRET}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.genai.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/api/v1/genai`)"
