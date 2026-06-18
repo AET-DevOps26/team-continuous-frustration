@@ -6,6 +6,7 @@ import com.devops.authservice.service.TokenCookieService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,15 +33,18 @@ public class RefreshController {
 
     @PostMapping("/refresh")
     public ResponseEntity<Void> refresh(HttpServletRequest request, HttpServletResponse response) {
-        return extractSessionId(request)
-                .flatMap(sessionService::validate)
-                .flatMap(session -> userRepository.findById(session.getUserId())
-                        .map(user -> {
-                            tokenCookieService.issueAccessToken(
-                                    user.getId(), user.getEmail(), user.getUsername(), response);
-                            return ResponseEntity.<Void>ok().build();
-                        }))
-                .orElseGet(() -> ResponseEntity.<Void>status(401).build());
+        var sessionId = extractSessionId(request);
+        if (sessionId.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        var session = sessionService.validate(sessionId.get());
+        if (session.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        var user = userRepository.findById(session.get().getUserId());
+        if (user.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        tokenCookieService.issueAccessToken(
+                user.get().getId(), user.get().getEmail(), user.get().getUsername(), response);
+        return ResponseEntity.ok().build();
     }
 
     private Optional<UUID> extractSessionId(HttpServletRequest request) {
