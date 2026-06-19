@@ -115,6 +115,7 @@ services:
       GENAI_SERVICE_URL: http://genai-service:8080
       JWT_SECRET: ${JWT_SECRET}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
     depends_on:
       - auth-service
       - flashcard-service
