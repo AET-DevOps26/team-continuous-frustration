@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Azure
-      url: 'https://${{ vars.AZURE_PUBLIC_IP }}'
+      url: 'https://${{ vars.AZURE_PUBLIC_IP }}.nip.io'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -46,9 +46,9 @@ jobs:
             echo "LLM_BASE_URL=${{ vars.LLM_BASE_URL }}" >> .env.prod
             echo "LLM_MODEL=${{ vars.LLM_MODEL }}" >> .env.prod
 
-            echo "FRONTEND_URL=https://${{ vars.AZURE_PUBLIC_IP }}" >> .env.prod
-            echo "CORS_ALLOWED_ORIGINS=https://${{ vars.AZURE_PUBLIC_IP }}" >> .env.prod
-            echo "VITE_API_BASE_URL=https://${{ vars.AZURE_PUBLIC_IP }}" >> .env.prod
+            echo "FRONTEND_URL=https://${{ vars.AZURE_PUBLIC_IP }}.nip.io" >> .env.prod
+            echo "CORS_ALLOWED_ORIGINS=https://${{ vars.AZURE_PUBLIC_IP }}.nip.io" >> .env.prod
+            echo "VITE_API_BASE_URL=https://${{ vars.AZURE_PUBLIC_IP }}.nip.io" >> .env.prod
 
       - name: SSH to VM and Execute Docker-Compose Up
         uses: appleboy/ssh-action@v1.0.3
