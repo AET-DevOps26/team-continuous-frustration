@@ -1,7 +1,8 @@
 # coding: utf-8
 
-import uuid
+import logging
 from typing import Optional, Tuple
+from collections.abc import AsyncIterable
 
 from fastapi import APIRouter, Body, HTTPException, Security, UploadFile, status
 
@@ -9,53 +10,34 @@ from openapi_server.models.extra_models import TokenModel  # noqa: F401
 from openapi_server.models.error import Error
 from openapi_server.models.explanation_response import ExplanationResponse
 from openapi_server.models.flashcard import Flashcard
-from openapi_server.models.generate_flashcards_request import GenerateFlashcardsRequest
-from openapi_server.models.upload_response import UploadResponse
 from openapi_server.security_api import get_token_bearerAuth
-from openapi_server.storage import store_bytes, validate_extension
+
+from openapi_server.core.vector_store import upsert_markdown_to_weaviate
+from openapi_server.core.flashcard_pipeline import generate_flashcards_stream
+
+from upload_service_client import UploadServiceClientAPIs
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
-@router.post(
-    "/api/v1/genai/uploads",
-    responses={
-        201: {"model": UploadResponse, "description": "Upload accepted."},
-        400: {
-            "model": Error,
-            "description": "Invalid request or unsupported file format.",
-        },
-        413: {"model": Error, "description": "Uploaded file too large."},
-        415: {"model": Error, "description": "Unsupported media type."},
-        500: {"model": Error, "description": "Server error during upload."},
-    },
-    tags=["default"],
-    summary="Upload a document for processing",
-    response_model_by_alias=True,
-)
-async def api_v1_genai_uploads_post(
-    file: UploadFile,
-    token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
-) -> UploadResponse:
-    """Upload a PDF or TXT file and receive an upload id."""
-    filename, content = await _read_upload(file)
-    extension = validate_extension(filename)
-    upload_id = str(uuid.uuid4())
-    storage_key = f"{upload_id}{extension}"
-
-    store_bytes(storage_key, content)
-    return UploadResponse(upload_id=upload_id)
+@router.get("/health", response_model=dict, tags=["default"])
+async def health():
+    return {"status": "ok"}
 
 
 @router.post(
     "/api/v1/genai/generate-flashcards",
     responses={
         200: {
-            "model": Flashcard,
+            "content": {
+                "application/x-ndjson": {
+                    "schema": {"$ref": "#/components/schemas/Flashcard"}
+                }
+            },
             "description": "NDJSON stream of generated flashcards.",
         },
         400: {"model": Error, "description": "Invalid request."},
-        404: {"model": Error, "description": "Upload id not found."},
         500: {"model": Error, "description": "Server error during generation."},
     },
     tags=["default"],
@@ -63,11 +45,20 @@ async def api_v1_genai_uploads_post(
     response_model_by_alias=True,
 )
 async def api_v1_genai_generate_flashcards_post(
-    generate_flashcards_request: GenerateFlashcardsRequest = Body(None, description=""),
+    upload_id: str,
     token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
-) -> Flashcard:
-    """Provide an upload id and receive a streamed NDJSON response. Each line is a JSON object with fields id, question, answer, source_ref."""
-    raise HTTPException(status_code=500, detail="Not implemented")
+) -> AsyncIterable[Flashcard]:
+    client = UploadServiceClientAPIs(
+        base_url="http://upload-service:8091", auth_token="your-api-token"
+    )
+    markdown_text = client.documents_get_documents_upload_id_get(upload_id)
+
+    logger.debug("[generate] Upserting markdown to Weaviate")
+    upsert_markdown_to_weaviate(upload_id, markdown_text)
+    logger.info("[generate] Upsert complete — starting flashcard stream")
+
+    for flashcard in generate_flashcards_stream(upload_id):
+        yield flashcard
 
 
 @router.post(

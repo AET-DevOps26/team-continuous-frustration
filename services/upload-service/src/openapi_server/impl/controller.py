@@ -20,7 +20,7 @@ from openapi_server.storage import (
 router = APIRouter()
 
 
-@router.get("/api/v1/health", response_model=dict, tags=["default"])
+@router.get("/api/v1/documents/health", response_model=dict, tags=["default"])
 async def health():
     return {"status": "ok"}
 
@@ -41,7 +41,7 @@ async def health():
     summary="Upload a document for processing",
     response_model_by_alias=True,
 )
-async def api_v1_documents_upload_post(
+async def documents_upload_post(
     file: UploadFile,
     token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> UploadResponse:
@@ -72,7 +72,7 @@ async def api_v1_documents_upload_post(
     summary="Get a document",
     response_class=PlainTextResponse,
 )
-async def api_v1_documents_get(
+async def documents_get(
     upload_id: str,
     token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> PlainTextResponse:

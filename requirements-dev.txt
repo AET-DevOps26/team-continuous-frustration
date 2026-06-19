@@ -1,2 +1,3 @@
 pre-commit
 openapi-generator-cli
+openapi-client-python

@@ -10,4 +10,4 @@ app = FastAPI(
     version="v1",
 )
 
-app.include_router(DefaultApiRouter, prefix="/api/v1")
+app.include_router(DefaultApiRouter)
