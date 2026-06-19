@@ -42,6 +42,8 @@ jobs:
               - 'services/genai-service/**'
             upload-service:
               - 'services/upload-service/**'
+            api-gateway:
+              - 'services/api-gateway/**'
             workflow:
               - '.github/workflows/build_docker.yaml'
 
@@ -53,6 +55,7 @@ jobs:
           AUTH_SERVICE: ${{ steps.filter.outputs['auth-service'] }}
           FLASHCARD_SERVICE: ${{ steps.filter.outputs['flashcard-service'] }}
           GENAI_SERVICE: ${{ steps.filter.outputs['genai-service'] }}
+          API_GATEWAY: ${{ steps.filter.outputs['api-gateway'] }}
           WORKFLOW: ${{ steps.filter.outputs.workflow }}
         with:
           script: |
@@ -74,6 +77,9 @@ jobs:
             }
             if (buildAll || process.env.UPLOAD_SERVICE === 'true') {
               add('upload-service', './services/upload-service', './services/upload-service/Dockerfile');
+            }
+            if (buildAll || process.env.API_GATEWAY === 'true') {
+              add('api-gateway', '.', './services/api-gateway/Dockerfile');
             }
 
             core.setOutput('matrix', JSON.stringify({ include: items }));
