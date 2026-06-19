@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Azure
-      url: 'https://client.${{ vars.AZURE_PUBLIC_IP }}.nip.io'
+      url: 'http://${{ vars.AZURE_PUBLIC_IP }}'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -35,17 +35,16 @@ jobs:
             echo "POSTGRES_USER=${{ vars.POSTGRES_USER }}" >> .env.prod
             echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.prod
 
-            echo "AUTH_SERVICE_PORT=8081" >> .env.prod
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.prod
             echo "JWT_EXPIRATION_MS=${{ vars.JWT_EXPIRATION_MS }}" >> .env.prod
             echo "SESSION_EXPIRATION_MS=${{ vars.SESSION_EXPIRATION_MS }}" >> .env.prod
 
-            echo "FLASHCARD_SERVICE_PORT=8082" >> .env.prod
-            echo "GENAI_SERVICE_PORT=8080" >> .env.prod
+            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env.prod
+            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env.prod
 
-            echo "CLIENT_HOST=client.${{ vars.AZURE_PUBLIC_IP }}.nip.io" >> .env.prod
-            echo "SERVER_HOST=api.${{ vars.AZURE_PUBLIC_IP }}.nip.io" >> .env.prod
-            echo "VITE_API_BASE_URL=https://api.${{ vars.AZURE_PUBLIC_IP }}.nip.io" >> .env.prod
+            echo "FRONTEND_URL=http://${{ vars.AZURE_PUBLIC_IP }}:3000" >> .env.prod
+            echo "CORS_ALLOWED_ORIGINS=http://${{ vars.AZURE_PUBLIC_IP }}:3000" >> .env.prod
+            echo "VITE_API_BASE_URL=http://${{ vars.AZURE_PUBLIC_IP }}" >> .env.prod
 
       - name: SSH to VM and Execute Docker-Compose Up
         uses: appleboy/ssh-action@v1.0.3
