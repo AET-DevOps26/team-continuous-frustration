@@ -23,10 +23,8 @@ export interface Error {
   code?: string | null;
 }
 
-export type LocationInner = string | number;
-
 export interface ValidationError {
-  loc: LocationInner[];
+  loc: (string | number)[];
   msg: string;
   type: string;
 }
@@ -43,7 +41,7 @@ export interface UploadResponse {
   upload_id: string;
 }
 
-export type HealthApiV1DocumentsHealthGet200 = {[key: string]: unknown};
+export type HealthApiV1DocumentsHealthGet200 = { [key: string]: unknown };
 
 /**
  * @summary Health
@@ -63,7 +61,7 @@ export const healthApiV1DocumentsHealthGet = (
 export const documentsUploadPostApiV1DocumentsUploadPost = (
     bodyDocumentsUploadPostApiV1DocumentsUploadPost: BodyDocumentsUploadPostApiV1DocumentsUploadPost, options?: AxiosRequestConfig
  ): Promise<AxiosResponse<UploadResponse>> => {const formData = new FormData();
-formData.append('data', bodyDocumentsUploadPostApiV1DocumentsUploadPost)
+formData.append(`file`, bodyDocumentsUploadPostApiV1DocumentsUploadPost.file);
 
     return axios.default.post(
       `/api/v1/documents/upload`,

@@ -15,7 +15,7 @@ export default defineConfig({
     },
   },
   upload: {
-    input: '../api/upload.yaml',
+    input: '../api/upload.json',
     output: './src/api/upload.ts'
   },
   auth: {
