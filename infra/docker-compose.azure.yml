@@ -50,7 +50,7 @@ services:
       SESSION_EXPIRATION_MS: ${SESSION_EXPIRATION_MS:-31536000000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-placeholder}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-placeholder}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      FRONTEND_URL: https://${FRONTEND_URL:-localhost}
     depends_on:
       db:
         condition: service_healthy
