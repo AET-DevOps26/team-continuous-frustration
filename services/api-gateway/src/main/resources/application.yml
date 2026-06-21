@@ -42,6 +42,11 @@ spring:
           uri: ${GENAI_SERVICE_URL:http://genai-service:8080}
           predicates:
             - Path=/api/v1/genai/**
+        - id: upload-service
+          uri: ${UPLOAD_SERVICE_URL:http://upload-service:8091}
+          predicates:
+            - Path=/api/v1/documents/**
+
 
 management:
   endpoints:

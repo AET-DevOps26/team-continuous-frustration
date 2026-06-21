@@ -14,6 +14,10 @@ export default defineConfig({
       target: 'src/api/genai.ts',
     },
   },
+  upload: {
+    input: '../api/upload.json',
+    output: './src/api/upload.ts'
+  },
   auth: {
     input: '../api/auth.yaml',
     output: './src/api/auth.ts'
