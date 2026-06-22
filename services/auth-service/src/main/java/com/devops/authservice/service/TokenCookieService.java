@@ -23,6 +23,7 @@ public class TokenCookieService {
         Duration sessionMaxAge = Duration.between(LocalDateTime.now(), session.getExpiresAt());
         ResponseCookie refreshCookie = ResponseCookie.from("session_id", session.getId().toString())
                 .httpOnly(true)
+                .secure(true)
                 .path("/")
                 .maxAge(sessionMaxAge)
                 .sameSite("Lax")
@@ -32,6 +33,7 @@ public class TokenCookieService {
         String accessToken = jwtService.generate(userId, email, username);
         ResponseCookie accessCookie = ResponseCookie.from("access_token", accessToken)
                 .httpOnly(true)
+                .secure(true)
                 .path("/")
                 .maxAge(Duration.ofMillis(jwtService.getExpirationMs()))
                 .sameSite("Lax")
@@ -43,6 +45,7 @@ public class TokenCookieService {
         String accessToken = jwtService.generate(userId, email, username);
         ResponseCookie accessCookie = ResponseCookie.from("access_token", accessToken)
                 .httpOnly(true)
+                .secure(true)
                 .path("/")
                 .maxAge(Duration.ofMillis(jwtService.getExpirationMs()))
                 .sameSite("Lax")
@@ -52,9 +55,9 @@ public class TokenCookieService {
 
     public void clearAll(HttpServletResponse response) {
         ResponseCookie clearSession = ResponseCookie.from("session_id", "")
-                .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
+                .httpOnly(true).secure(true).path("/").maxAge(0).sameSite("Lax").build();
         ResponseCookie clearAccess = ResponseCookie.from("access_token", "")
-                .httpOnly(true).path("/").maxAge(0).sameSite("Lax").build();
+                .httpOnly(true).secure(true).path("/").maxAge(0).sameSite("Lax").build();
         response.addHeader(HttpHeaders.SET_COOKIE, clearSession.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, clearAccess.toString());
     }
