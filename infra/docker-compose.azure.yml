@@ -1,4 +1,25 @@
 services:
+  reverse-proxy:
+    image: traefik:v3.6.15
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@tum.de"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./letsencrypt:/letsencrypt
+
   db:
     image: postgres:16-alpine
     environment:
@@ -29,7 +50,7 @@ services:
       SESSION_EXPIRATION_MS: ${SESSION_EXPIRATION_MS:-31536000000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-placeholder}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-placeholder}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      FRONTEND_URL: https://${FRONTEND_URL:-localhost}
     depends_on:
       db:
         condition: service_healthy
@@ -121,6 +142,15 @@ services:
       - auth-service
       - flashcard-service
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gateway.rule=Host(`${FRONTEND_URL}`) && PathPrefix(`/api`)"
+      - "traefik.http.services.gateway.loadbalancer.server.port=8080"
+      - "traefik.http.routers.gateway.entrypoints=websecure"
+      - "traefik.http.routers.gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.middlewares.gateway-compress.compress=true"
+      - "traefik.http.routers.gateway.middlewares=gateway-compress"
+      - "traefik.http.routers.gateway.priority=10"
 
   web-client:
     image: ghcr.io/aet-devops26/team-continuous-frustration/web-client:latest
@@ -129,24 +159,15 @@ services:
     depends_on:
       - api-gateway
     restart: unless-stopped
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/generate-certs.sh:/generate-certs.sh:ro
-      - nginx_certs:/etc/nginx/certs
-    entrypoint: ["/bin/sh", "/generate-certs.sh"]
-    depends_on:
-      - api-gateway
-      - web-client
-    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.webclient.rule=Host(`${FRONTEND_URL}`)"
+      - "traefik.http.services.webclient.loadbalancer.server.port=80"
+      - "traefik.http.routers.webclient.entrypoints=websecure"
+      - "traefik.http.routers.webclient.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.webclient.priority=1"
 
 volumes:
   postgres_data:
   weaviate_data:
   ollama_data:
-  nginx_certs:
