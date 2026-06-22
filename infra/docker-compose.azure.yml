@@ -117,7 +117,7 @@ services:
     volumes:
       - ollama_data:/root/.ollama
       - ./init-ollama/ollama.sh:/init-ollama/ollama.sh
-    entrypoint: ["/bin/sh", "/init-ollama/ollama.sh"]
+    entrypoint: ["/bin/sh", "/init-ollama/ollama.sh", "--pull-llm"]
 
   upload-service:
     image: ghcr.io/aet-devops26/team-continuous-frustration/upload-service:latest
