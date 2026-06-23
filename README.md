@@ -146,3 +146,9 @@ cp group_vars/all.yml.example group_vars/all.yml
 ```bash
 ansible-playbook -i inventory.ini playbook.yml
 ```
+
+### Run Helm deployment
+```bash
+cd infra/helm
+helm upgrade tcf . --namespace team-continuous-frustration
+```
