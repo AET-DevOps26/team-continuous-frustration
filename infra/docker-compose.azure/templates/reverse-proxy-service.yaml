@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
+    kompose.version: 1.38.0 (HEAD)
+  labels:
+    io.kompose.service: reverse-proxy
+  name: reverse-proxy
+  namespace: team-continuous-frustration
+spec:
+  type: ClusterIP
+  ports:
+    - name: "web"
+      port: 80
+      targetPort: 80
+    - name: "websecure"
+      port: 443
+      targetPort: 443
+  selector:
+    io.kompose.service: reverse-proxy

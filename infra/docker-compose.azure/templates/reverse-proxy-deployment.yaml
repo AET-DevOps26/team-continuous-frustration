@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
+    kompose.version: 1.38.0 (HEAD)
+  labels:
+    io.kompose.service: reverse-proxy
+  name: reverse-proxy
+  namespace: team-continuous-frustration
+spec:
+  replicas: 0  # Cluster ingress controller handles routing — do not deploy our own Traefik
+  selector:
+    matchLabels:
+      io.kompose.service: reverse-proxy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
+        kompose.version: 1.38.0 (HEAD)
+      labels:
+        io.kompose.service: reverse-proxy
+    spec:
+      containers:
+        - args:
+            - --providers.kubernetesingress=true
+            - --providers.kubernetesingress.namespaces=team-continuous-frustration
+            - --entrypoints.web.address=:80
+            - --entrypoints.websecure.address=:443
+            - --entrypoints.web.http.redirections.entryPoint.to=websecure
+            - --entrypoints.web.http.redirections.entryPoint.scheme=https
+            - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+            - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+            - --certificatesresolvers.letsencrypt.acme.email=admin@tum.de
+            - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+          image: traefik:v3.6.15
+          name: reverse-proxy
+          ports:
+            - containerPort: 80
+              protocol: TCP
+            - containerPort: 443
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /letsencrypt
+              name: reverse-proxy-claim1
+      restartPolicy: Always
+      volumes:
+        - name: reverse-proxy-claim1
+          persistentVolumeClaim:
+            claimName: reverse-proxy-claim1

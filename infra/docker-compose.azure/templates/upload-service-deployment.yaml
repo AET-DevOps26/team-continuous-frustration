@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
+    kompose.version: 1.38.0 (HEAD)
+  labels:
+    io.kompose.service: upload-service
+  name: upload-service
+  namespace: team-continuous-frustration
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: upload-service
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
+        kompose.version: 1.38.0 (HEAD)
+      labels:
+        io.kompose.service: upload-service
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              value: uploaddocumentdb
+            - name: POSTGRES_HOST
+              value: db
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_USER
+          image: ghcr.io/aet-devops26/team-continuous-frustration/upload-service:latest
+          name: upload-service
+          ports:
+            - containerPort: 8091
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      restartPolicy: Always

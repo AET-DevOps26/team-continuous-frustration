@@ -1,0 +1,8 @@
+name: docker-compose.azure
+description: A generated Helm Chart for docker-compose.azure from Skippbox Kompose
+version: 0.0.1
+apiVersion: v2
+keywords:
+  - docker-compose.azure
+sources:
+home:
