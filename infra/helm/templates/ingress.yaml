@@ -5,9 +5,14 @@ metadata:
   namespace: team-continuous-frustration
   annotations:
     # TLS and routing are managed by the cluster-level ingress controller
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
+  tls:
+    - hosts:
+        - team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+      secretName: team-continuous-frustration-tls-secret
   rules:
     - host: team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
       http:
