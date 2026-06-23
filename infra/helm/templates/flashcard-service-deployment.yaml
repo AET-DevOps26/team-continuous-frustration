@@ -5,21 +5,21 @@ metadata:
     kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
     kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: genai-service
-  name: genai-service
+    io.kompose.service: flashcard-service
+  name: flashcard-service
   namespace: team-continuous-frustration
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: genai-service
+      io.kompose.service: flashcard-service
   template:
     metadata:
       annotations:
         kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
         kompose.version: 1.38.0 (HEAD)
       labels:
-        io.kompose.service: genai-service
+        io.kompose.service: flashcard-service
     spec:
       containers:
         - env:
@@ -28,29 +28,30 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: JWT_SECRET
-            - name: LLM_BASE_URL
-              value: http://ollama:11434/v1
-            - name: LLM_MODEL
-              value: gemma4:e2b
-            - name: LOGOS_API_KEY
+            - name: SERVER_PORT
+              value: "8082"
+            - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: LOGOS_API_KEY
-            - name: OLLAMA_API_ENDPOINT
-              value: http://ollama:11434
-            - name: WEAVIATE_URL
-              value: http://weaviate:8080
-          image: ghcr.io/aet-devops26/team-continuous-frustration/genai-service:latest
-          name: genai-service
+                  key: POSTGRES_PASSWORD
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://db:5432/flashcarddb
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: POSTGRES_USER
+          image: ghcr.io/aet-devops26/team-continuous-frustration/flashcard-service:latest
+          name: flashcard-service
           ports:
-            - containerPort: 8080
+            - containerPort: 8082
               protocol: TCP
           resources:
             requests:
               cpu: "100m"
               memory: "128Mi"
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "100m"
+              memory: "128Mi"
       restartPolicy: Always
