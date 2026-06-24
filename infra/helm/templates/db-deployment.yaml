@@ -35,6 +35,8 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: POSTGRES_USER
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           image: postgres:16-alpine
           livenessProbe:
             exec:
@@ -54,8 +56,8 @@ spec:
               cpu: "100m"
               memory: "128Mi"
             limits:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: "200m"
+              memory: "192Mi"
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: postgres-data
