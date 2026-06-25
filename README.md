@@ -20,7 +20,7 @@ From repository root, install and enable pre-commit:
 ## Starting All Services
 
 From the `infra/` directory, a single command starts everything (PostgreSQL, auth-service, flashcard-service, genai-service, web-client):
-# Important: Add *LOGOS_API_KEY* in `docker-compose.yaml`. Otherwise the GenAI service will not work as expected!
+# Important: Add *LOGOS_API_KEY* in `docker-compose.yaml` as ENV of the genai-service. Otherwise the GenAI service will not work as expected!
 
 ```bash
 cd infra
