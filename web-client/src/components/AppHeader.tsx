@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Sprout } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,8 @@ import { useAuth } from "@/context/AuthContext";
 
 export function AppHeader() {
   const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const { pathname } = useLocation();
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -27,7 +29,7 @@ export function AppHeader() {
                   Sign out
                 </Button>
               </>
-            ) : (
+            ) : !isAuthPage && (
               <>
                 <Button asChild variant="ghost" size="sm">
                   <Link to="/login">Sign in</Link>

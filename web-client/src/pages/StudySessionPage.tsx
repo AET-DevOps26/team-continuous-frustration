@@ -1,385 +1,263 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import "../styles/StudySessionPage.css";
+import { ChevronLeft, ChevronDown, ChevronUp, Sparkles, X, ThumbsUp, ThumbsDown, Square } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type ReviewRating = "again" | "hard" | "good" | "easy";
 
 type StudyCard = {
-    id: number;
-    question: string;
-    answer: string;
-    keyIdea: string;
+  id: number;
+  question: string;
+  answer: string;
+  keyIdea: string;
 };
 
 const studyCards: StudyCard[] = [
-    {
-        id: 1,
-        question: "What is overfitting?",
-        answer:
-            "Overfitting occurs when a model learns the training data too well, including its noise and outliers, which reduces its ability to generalize to unseen data.",
-        keyIdea: "The model performs very well on training data but poorly on new, unseen data.",
-    },
-    {
-        id: 2,
-        question: "What is the bias-variance trade-off?",
-        answer:
-            "The bias-variance trade-off describes the balance between a model that is too simple and a model that is too complex.",
-        keyIdea: "Good models balance underfitting and overfitting.",
-    },
-    {
-        id: 3,
-        question: "What is cross-validation?",
-        answer:
-            "Cross-validation is a method for evaluating a model by splitting data into training and validation subsets.",
-        keyIdea: "It helps estimate how well a model generalizes to unseen data.",
-    },
+  {
+    id: 1,
+    question: "What is overfitting?",
+    answer: "Overfitting occurs when a model learns the training data too well, including its noise and outliers, which reduces its ability to generalize to unseen data.",
+    keyIdea: "The model performs very well on training data but poorly on new, unseen data.",
+  },
+  {
+    id: 2,
+    question: "What is the bias-variance trade-off?",
+    answer: "The bias-variance trade-off describes the balance between a model that is too simple and a model that is too complex.",
+    keyIdea: "Good models balance underfitting and overfitting.",
+  },
+  {
+    id: 3,
+    question: "What is cross-validation?",
+    answer: "Cross-validation is a method for evaluating a model by splitting data into training and validation subsets.",
+    keyIdea: "It helps estimate how well a model generalizes to unseen data.",
+  },
 ];
 
-function getDeckName(deckId: string | undefined) {
-    if (deckId === "database-systems") return "Database Systems";
-    if (deckId === "software-engineering") return "Software Engineering";
-    if (deckId === "operating-systems") return "Operating Systems";
-    if (deckId === "mathematics") return "Mathematics";
-    if (deckId === "german-vocabulary") return "German Vocabulary";
-    return "Machine Learning";
-}
+const deckNames: Record<string, string> = {
+  "database-systems": "Database Systems",
+  "software-engineering": "Software Engineering",
+  "operating-systems": "Operating Systems",
+  "mathematics": "Mathematics",
+  "german-vocabulary": "German Vocabulary",
+};
+
+const ratings: { id: ReviewRating; label: string; time: string; color: string }[] = [
+  { id: "again", label: "Again", time: "< 1 min", color: "border-red-200 bg-red-50 text-red-700 hover:bg-red-100 data-[active=true]:bg-red-100 data-[active=true]:border-red-400" },
+  { id: "hard",  label: "Hard",  time: "5 min",   color: "border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 data-[active=true]:bg-orange-100 data-[active=true]:border-orange-400" },
+  { id: "good",  label: "Good",  time: "15 min",  color: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 data-[active=true]:bg-blue-100 data-[active=true]:border-blue-400" },
+  { id: "easy",  label: "Easy",  time: "4 days",  color: "border-green-200 bg-green-50 text-green-700 hover:bg-green-100 data-[active=true]:bg-green-100 data-[active=true]:border-green-400" },
+];
 
 export function StudySessionPage() {
-    const navigate = useNavigate();
-    const { deckId } = useParams();
+  const navigate = useNavigate();
+  const { deckId } = useParams();
+  const deckName = deckNames[deckId ?? ""] ?? "Machine Learning";
+  const currentDeckId = deckId ?? "machine-learning";
 
-    const deckName = getDeckName(deckId);
-    const currentDeckId = deckId ?? "machine-learning";
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [selectedRating, setSelectedRating] = useState<ReviewRating | null>(null);
+  const [showAI, setShowAI] = useState(false);
+  const [savedExplanation, setSavedExplanation] = useState(false);
 
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [showAnswer, setShowAnswer] = useState(true);
-    const [selectedRating, setSelectedRating] = useState<ReviewRating | null>(null);
-    const [showExplanation, setShowExplanation] = useState(true);
-    const [savedExplanation, setSavedExplanation] = useState(false);
+  const currentCard = studyCards[currentIndex];
+  const progressPercent = useMemo(
+    () => Math.round(((currentIndex + 1) / studyCards.length) * 100),
+    [currentIndex]
+  );
 
-    const currentCard = studyCards[currentIndex];
+  const handlePrevious = () => {
+    setCurrentIndex((i) => Math.max(i - 1, 0));
+    setSelectedRating(null);
+    setShowAnswer(false);
+  };
 
-    const progressPercent = useMemo(() => {
-        return Math.round(((currentIndex + 1) / studyCards.length) * 100);
-    }, [currentIndex]);
+  const handleNext = () => {
+    setCurrentIndex((i) => (i < studyCards.length - 1 ? i + 1 : i));
+    setSelectedRating(null);
+    setShowAnswer(false);
+    setSavedExplanation(false);
+  };
 
-    const handlePrevious = () => {
-        setCurrentIndex((current) => Math.max(current - 1, 0));
-        setSelectedRating(null);
-        setShowAnswer(true);
-    };
+  return (
+    <main className="mx-auto max-w-6xl px-6 py-12">
+      <Link
+        to={`/decks/${currentDeckId}`}
+        className="mb-6 flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ChevronLeft className="h-4 w-4" /> {deckName}
+      </Link>
 
-    const handleNext = () => {
-        setCurrentIndex((current) => {
-            if (current >= studyCards.length - 1) {
-                return current;
-            }
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-semibold">Study Session</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Card {currentIndex + 1} of {studyCards.length} · {deckName}
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => navigate(`/decks/${currentDeckId}`)}>
+          <Square className="mr-1.5 h-3.5 w-3.5" /> End Session
+        </Button>
+      </div>
 
-            return current + 1;
-        });
+      <div className="mb-6 flex items-center gap-3">
+        <div className="h-2 flex-1 rounded-full bg-border">
+          <div
+            className="h-2 rounded-full bg-primary transition-all"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <span className="text-sm font-medium text-muted-foreground">{progressPercent}%</span>
+      </div>
 
-        setSelectedRating(null);
-        setShowAnswer(true);
-        setSavedExplanation(false);
-    };
+      <div className={`grid gap-6 ${showAI ? "lg:grid-cols-[1fr_360px]" : ""}`}>
+        <div className="space-y-4">
+          <div className="card-shadow rounded-3xl border border-border bg-card p-8">
+            <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">Question</p>
+            <h2 className="font-display text-2xl font-semibold leading-snug">{currentCard.question}</h2>
 
-    const handleEndSession = () => {
-        navigate(`/decks/${currentDeckId}`);
-    };
+            <button
+              type="button"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-border py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted"
+              onClick={() => setShowAnswer((v) => !v)}
+            >
+              {showAnswer ? (
+                <><ChevronUp className="h-4 w-4" /> Hide Answer</>
+              ) : (
+                <><ChevronDown className="h-4 w-4" /> Show Answer</>
+              )}
+            </button>
 
-    const handleRating = (rating: ReviewRating) => {
-        setSelectedRating(rating);
-    };
-
-    const handleSaveExplanation = () => {
-        setSavedExplanation(true);
-    };
-
-    return (
-        <main className="study-session-page">
-            <header className="study-topbar">
-                <Link to="/" className="study-brand">
-                    <span className="study-brand-icon">▱</span>
-                    <span>AI Anki</span>
-                </Link>
-
-                <nav className="study-breadcrumb">
-                    <Link to="/">Home</Link>
-                    <span>/</span>
-                    <Link to="/decks">Review</Link>
-                    <span>/</span>
-                    <Link to={`/study/${currentDeckId}`} className="active">
-                        {deckName} Session
-                    </Link>
-                </nav>
-            </header>
-
-            <aside className="study-sidebar">
-                <Link to="/" className="study-sidebar-item">
-                    <span>⌂</span>
-                    Home
-                </Link>
-
-                <Link to="/upload" className="study-sidebar-item">
-                    <span>☁</span>
-                    Upload
-                </Link>
-
-                <Link to="/decks" className="study-sidebar-item">
-                    <span>▤</span>
-                    My Decks
-                </Link>
-
-                <Link to={`/study/${currentDeckId}`} className="study-sidebar-item active">
-                    <span>▣</span>
-                    Review
-                </Link>
-            </aside>
-
-            <section className="study-content">
-                <div className="study-main">
-                    <section className="study-left">
-                        <div className="study-header">
-                            <h1>Study Session</h1>
-                            <p>Focus on one flashcard at a time.</p>
-                        </div>
-
-                        <div className="session-progress-card">
-                            <div className="session-title">
-                                <strong>{deckName}</strong>
-                                <span>Session</span>
-                            </div>
-
-                            <div className="progress-area">
-                                <span>
-                                    Card {currentIndex + 1} of {studyCards.length}
-                                </span>
-
-                                <div className="progress-track">
-                                    <div
-                                        className="progress-fill"
-                                        style={{ width: `${progressPercent}%` }}
-                                    />
-                                </div>
-
-                                <span>{progressPercent}%</span>
-                            </div>
-                        </div>
-
-                        <article className="study-card-panel">
-                            <div className="question-row">
-                                <div className="section-icon question-icon">?</div>
-
-                                <div>
-                                    <p className="section-label">Question</p>
-                                    <h2>{currentCard.question}</h2>
-                                </div>
-
-                                <div className="card-tools">
-                                    <button type="button">🔊</button>
-                                    <button type="button">♡</button>
-                                </div>
-                            </div>
-
-                            <div className="answer-toggle-line">
-                                <div />
-                                <button
-                                    type="button"
-                                    className="show-answer-button"
-                                    onClick={() => setShowAnswer((current) => !current)}
-                                >
-                                    {showAnswer ? "Hide Answer" : "Show Answer"}
-                                    <span>⌄</span>
-                                </button>
-                                <div />
-                            </div>
-
-                            {showAnswer && (
-                                <div className="answer-section">
-                                    <div className="answer-heading">
-                                        <div className="section-icon answer-icon">✓</div>
-                                        <p className="section-label answer-label">Answer</p>
-                                    </div>
-
-                                    <p className="answer-text">{currentCard.answer}</p>
-
-                                    <div className="key-idea-box">
-                                        <span>💡</span>
-                                        <p>
-                                            <strong>Key idea:</strong> {currentCard.keyIdea}
-                                        </p>
-                                    </div>
-
-                                    <div className="review-buttons">
-                                        <button
-                                            type="button"
-                                            className={
-                                                selectedRating === "again"
-                                                    ? "review-button again active"
-                                                    : "review-button again"
-                                            }
-                                            onClick={() => handleRating("again")}
-                                        >
-                                            <span>☹</span>
-                                            Again
-                                            <small>&lt; 1 min</small>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            className={
-                                                selectedRating === "hard"
-                                                    ? "review-button hard active"
-                                                    : "review-button hard"
-                                            }
-                                            onClick={() => handleRating("hard")}
-                                        >
-                                            <span>😐</span>
-                                            Hard
-                                            <small>5 min</small>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            className={
-                                                selectedRating === "good"
-                                                    ? "review-button good active"
-                                                    : "review-button good"
-                                            }
-                                            onClick={() => handleRating("good")}
-                                        >
-                                            <span>☺</span>
-                                            Good
-                                            <small>15 min</small>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            className={
-                                                selectedRating === "easy"
-                                                    ? "review-button easy active"
-                                                    : "review-button easy"
-                                            }
-                                            onClick={() => handleRating("easy")}
-                                        >
-                                            <span>😄</span>
-                                            Easy
-                                            <small>4 days</small>
-                                        </button>
-                                    </div>
-
-                                    <div className="ai-explanation-row">
-                                        <div />
-                                        <span>or</span>
-                                        <div />
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        className="ask-ai-button"
-                                        onClick={() => setShowExplanation(true)}
-                                    >
-                                        ✨ Ask AI Explanation
-                                    </button>
-                                </div>
-                            )}
-                        </article>
-
-                        <div className="session-controls">
-                            <button
-                                type="button"
-                                className="session-secondary-button"
-                                onClick={handlePrevious}
-                                disabled={currentIndex === 0}
-                            >
-                                ← Previous
-                            </button>
-
-                            <button
-                                type="button"
-                                className="session-secondary-button"
-                                onClick={handleEndSession}
-                            >
-                                □ End Session
-                            </button>
-
-                            <button
-                                type="button"
-                                className="next-button"
-                                onClick={handleNext}
-                                disabled={currentIndex === studyCards.length - 1}
-                            >
-                                Next →
-                            </button>
-                        </div>
-                    </section>
-
-                    {showExplanation && (
-                        <aside className="ai-panel">
-                            <div className="ai-panel-header">
-                                <h2>✨ AI Explanation</h2>
-                                <button type="button" onClick={() => setShowExplanation(false)}>
-                                    ×
-                                </button>
-                            </div>
-
-                            <div className="ai-intro-box">
-                                <div className="ai-icon">✿</div>
-                                <p>Here's an AI explanation to help you understand better.</p>
-                            </div>
-
-                            <section className="ai-section">
-                                <h3>Explanation</h3>
-                                <p>
-                                    Overfitting happens when a machine learning model captures not
-                                    only the underlying patterns in the training data but also the
-                                    random noise.
-                                </p>
-                                <p>
-                                    As a result, it performs very well on the training set but fails
-                                    to generalize to new, unseen data.
-                                </p>
-                            </section>
-
-                            <section className="ai-section">
-                                <h3>Real-world analogy</h3>
-                                <p>
-                                    It is like memorizing the answers to practice test questions
-                                    instead of understanding the concepts. You might ace the
-                                    practice test but struggle on the real exam.
-                                </p>
-                            </section>
-
-                            <section className="ai-section">
-                                <h3>How to prevent it</h3>
-                                <ul>
-                                    <li>Use more training data</li>
-                                    <li>Apply regularization L1/L2</li>
-                                    <li>Use simpler models</li>
-                                    <li>Apply dropout or early stopping</li>
-                                </ul>
-                            </section>
-
-                            <button
-                                type="button"
-                                className="save-explanation-button"
-                                onClick={handleSaveExplanation}
-                            >
-                                ＋ {savedExplanation ? "Saved as New Flashcard" : "Save as New Flashcard"}
-                            </button>
-
-                            <div className="helpful-row">
-                                <span>Was this explanation helpful?</span>
-
-                                <div>
-                                    <button type="button">👍</button>
-                                    <button type="button">👎</button>
-                                </div>
-                            </div>
-                        </aside>
-                    )}
+            {showAnswer && (
+              <div className="mt-6 space-y-4">
+                <div>
+                  <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">Answer</p>
+                  <p className="text-base leading-relaxed">{currentCard.answer}</p>
                 </div>
-            </section>
-        </main>
-    );
+
+                <div className="rounded-2xl bg-primary/5 p-4 text-sm">
+                  <p className="font-medium text-primary">Key idea</p>
+                  <p className="mt-1 text-muted-foreground">{currentCard.keyIdea}</p>
+                </div>
+
+                <div>
+                  <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">How did it go?</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {ratings.map((r) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        data-active={selectedRating === r.id}
+                        className={`flex flex-col items-center rounded-2xl border px-2 py-3 text-sm font-medium transition-colors ${r.color}`}
+                        onClick={() => setSelectedRating(r.id)}
+                      >
+                        {r.label}
+                        <span className="mt-0.5 text-xs font-normal opacity-70">{r.time}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/40 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
+                  onClick={() => setShowAI(true)}
+                >
+                  <Sparkles className="h-4 w-4" /> Ask AI to explain
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={handlePrevious}
+              disabled={currentIndex === 0}
+            >
+              ← Previous
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={handleNext}
+              disabled={currentIndex === studyCards.length - 1}
+            >
+              Next →
+            </Button>
+          </div>
+        </div>
+
+        {showAI && (
+          <aside className="card-shadow flex flex-col rounded-3xl border border-border bg-card p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h2 className="font-display text-lg font-semibold">AI Explanation</h2>
+              </div>
+              <button
+                type="button"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => setShowAI(false)}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-4 text-sm">
+              <div>
+                <h3 className="font-semibold">Explanation</h3>
+                <p className="mt-1 text-muted-foreground leading-relaxed">
+                  Overfitting happens when a machine learning model captures not only the underlying
+                  patterns in the training data but also the random noise. As a result, it performs
+                  very well on the training set but fails to generalize to new, unseen data.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold">Real-world analogy</h3>
+                <p className="mt-1 text-muted-foreground leading-relaxed">
+                  It is like memorizing the answers to practice test questions instead of understanding
+                  the concepts — you might ace the practice test but struggle on the real exam.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold">How to prevent it</h3>
+                <ul className="mt-1 space-y-1 text-muted-foreground">
+                  <li>· Use more training data</li>
+                  <li>· Apply regularization (L1/L2)</li>
+                  <li>· Use simpler models</li>
+                  <li>· Apply dropout or early stopping</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setSavedExplanation(true)}
+                disabled={savedExplanation}
+              >
+                {savedExplanation ? "✓ Saved as Flashcard" : "+ Save as Flashcard"}
+              </Button>
+
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Was this helpful?</span>
+                <div className="flex gap-2">
+                  <button type="button" className="rounded-lg p-1.5 hover:bg-muted transition-colors">
+                    <ThumbsUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button type="button" className="rounded-lg p-1.5 hover:bg-muted transition-colors">
+                    <ThumbsDown className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </aside>
+        )}
+      </div>
+    </main>
+  );
 }
