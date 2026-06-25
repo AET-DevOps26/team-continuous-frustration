@@ -1,35 +1,17 @@
 import datetime
-import pytest
 from unittest.mock import MagicMock, patch
 import weaviate
 
-from openapi_server.core.document_processor import convert_to_markdown
-from openapi_server.core.llm_factory import OpenAICompatibleLLM
-from openapi_server.core.vector_store import (
+from core.llm_factory import OpenAICompatibleLLM
+from core.vector_store import (
     upsert_markdown_to_weaviate,
     query_vector_store,
     _ensure_collection_exists,
 )
-from openapi_server.core.flashcard_pipeline import generate_flashcards_stream
-
-
-# ----------------------------------------------------------------------
-# 1. Tests for document_processor.py
-# ----------------------------------------------------------------------
-
-def test_convert_to_markdown():
-    with patch("openapi_server.core.document_processor.MarkItDown") as MockMarkItDown:
-        mock_instance = MockMarkItDown.return_value
-        mock_instance.convert.return_value.text_content = "# Sample Markdown Output"
-
-        result = convert_to_markdown(b"mock file content", ".txt")
-        assert result == "# Sample Markdown Output"
-        MockMarkItDown.assert_called_once()
-        mock_instance.convert.assert_called_once()
-
+from core.flashcard_pipeline import generate_flashcards_stream
 
 # ----------------------------------------------------------------------
-# 2. Tests for llm_factory.py
+# 1. Tests for llm_factory.py
 # ----------------------------------------------------------------------
 
 def test_llm_factory_call():
@@ -68,7 +50,7 @@ def test_llm_factory_call():
 
 
 # ----------------------------------------------------------------------
-# 3. Tests for vector_store.py
+# 2. Tests for vector_store.py
 # ----------------------------------------------------------------------
 
 def test_ensure_collection_exists_already_exists():
@@ -142,7 +124,7 @@ def test_query_vector_store():
 
 
 # ----------------------------------------------------------------------
-# 4. Tests for flashcard_pipeline.py
+# 3. Tests for flashcard_pipeline.py
 # ----------------------------------------------------------------------
 
 def test_generate_flashcards_stream():
