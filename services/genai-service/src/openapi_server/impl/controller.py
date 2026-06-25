@@ -21,7 +21,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.get("/health", response_model=dict, tags=["default"])
+@router.get("/api/v1/genai/health", response_model=dict, tags=["default"])
 async def health():
     return {"status": "ok"}
 
@@ -46,7 +46,6 @@ async def health():
 )
 async def api_v1_genai_generate_flashcards_post(
     upload_id: str,
-    token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> AsyncIterable[Flashcard]:
     client = UploadServiceClientAPIs(
         base_url="http://upload-service:8091", auth_token="your-api-token"
@@ -77,7 +76,6 @@ async def api_v1_genai_generate_flashcards_post(
 )
 async def api_v1_genai_explain_post(
     flashcard: Flashcard = Body(None, description=""),
-    token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> ExplanationResponse:
     """Generate an explanation for a given flashcard."""
     raise HTTPException(status_code=500, detail="Not implemented")

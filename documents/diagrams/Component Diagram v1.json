@@ -1,7 +1,7 @@
 {
   "id": "46d2ec95-024d-4e9f-b1f6-7db3e8f0ae5d",
   "version": "4.0.0",
-  "title": "Component Diagram",
+  "title": "Component Diagram v1",
   "type": "ComponentDiagram",
   "nodes": [
     {
@@ -33,7 +33,7 @@
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
-        "name": "User Service",
+        "name": "Auth Service",
         "isComponentHeaderShown": true
       },
       "measured": {
@@ -43,11 +43,11 @@
     },
     {
       "id": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
-      "width": 770,
+      "width": 780,
       "height": 550,
       "type": "componentSubsystem",
       "position": {
-        "x": -300,
+        "x": -305,
         "y": -630
       },
       "data": {
@@ -55,7 +55,7 @@
         "isComponentSubsystemHeaderShown": true
       },
       "measured": {
-        "width": 770,
+        "width": 780,
         "height": 550
       }
     },
@@ -88,7 +88,7 @@
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
-        "name": "Deck Service",
+        "name": "Flashcard Service",
         "isComponentHeaderShown": true
       },
       "measured": {
@@ -107,7 +107,7 @@
       },
       "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
       "data": {
-        "name": "Card Generation Service",
+        "name": "GenAI Service",
         "isComponentHeaderShown": true
       },
       "measured": {
@@ -157,9 +157,10 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": -470,
-        "y": -410
+        "x": 100,
+        "y": 125
       },
+      "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
       "data": {
         "name": "REST API"
       },
@@ -214,29 +215,11 @@
         "y": -50
       },
       "data": {
-        "name": "generateFlashcards"
+        "name": ""
       },
       "measured": {
         "width": 30,
         "height": 30
-      }
-    },
-    {
-      "id": "de076709-1ff5-43a5-8826-e4f619175b28",
-      "width": 300,
-      "height": 280,
-      "type": "componentSubsystem",
-      "position": {
-        "x": -1030,
-        "y": -140
-      },
-      "data": {
-        "name": "API Gateway",
-        "isComponentSubsystemHeaderShown": true
-      },
-      "measured": {
-        "width": 300,
-        "height": 280
       }
     },
     {
@@ -245,12 +228,11 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 60,
-        "y": 80
+        "x": -895,
+        "y": -65
       },
-      "parentId": "de076709-1ff5-43a5-8826-e4f619175b28",
       "data": {
-        "name": "API Gateway Service",
+        "name": "API Gateway",
         "isComponentHeaderShown": true
       },
       "measured": {
@@ -281,11 +263,11 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 540,
-        "y": -250
+        "x": 550,
+        "y": -310
       },
       "data": {
-        "name": ""
+        "name": "gRPC"
       },
       "measured": {
         "width": 30,
@@ -298,12 +280,12 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 270,
-        "y": 100
+        "x": 235,
+        "y": 80
       },
       "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
       "data": {
-        "name": "Explanation Service",
+        "name": "Upload Service",
         "isComponentHeaderShown": true
       },
       "measured": {
@@ -385,8 +367,8 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 720,
-        "y": -290
+        "x": 665,
+        "y": -560
       },
       "data": {
         "name": "Vector DB",
@@ -449,6 +431,113 @@
       "measured": {
         "width": 180,
         "height": 120
+      }
+    },
+    {
+      "id": "0fd19c39-92d8-4473-9707-3f2baf26544f",
+      "width": 180,
+      "height": 120,
+      "type": "component",
+      "position": {
+        "x": 990,
+        "y": -210
+      },
+      "data": {
+        "name": "Ollama",
+        "isComponentHeaderShown": true
+      },
+      "measured": {
+        "width": 180,
+        "height": 120
+      }
+    },
+    {
+      "id": "2204951f-0b77-4ff4-85db-463f882134a4",
+      "width": 180,
+      "height": 120,
+      "type": "component",
+      "position": {
+        "x": 990,
+        "y": -35
+      },
+      "data": {
+        "name": "Logos",
+        "isComponentHeaderShown": true
+      },
+      "measured": {
+        "width": 180,
+        "height": 120
+      }
+    },
+    {
+      "id": "903e2d59-ab93-4b88-9f0d-81bdbbb7bf06",
+      "width": 30,
+      "height": 30,
+      "type": "componentInterface",
+      "position": {
+        "x": 805,
+        "y": -175
+      },
+      "data": {
+        "name": "Interface"
+      },
+      "measured": {
+        "width": 30,
+        "height": 30
+      }
+    },
+    {
+      "id": "2a46997d-01e2-4cf2-9249-4da5354c3c84",
+      "width": 30,
+      "height": 30,
+      "type": "componentInterface",
+      "position": {
+        "x": 815,
+        "y": 0
+      },
+      "data": {
+        "name": "Interface"
+      },
+      "measured": {
+        "width": 30,
+        "height": 30
+      }
+    },
+    {
+      "id": "1cc4ad7c-465c-43e9-80ef-85fe0bab001b",
+      "width": 180,
+      "height": 120,
+      "type": "component",
+      "position": {
+        "x": 580,
+        "y": 75
+      },
+      "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
+      "data": {
+        "name": "File Storage",
+        "isComponentHeaderShown": true
+      },
+      "measured": {
+        "width": 180,
+        "height": 120
+      }
+    },
+    {
+      "id": "07c615f1-247b-4159-8b58-bd1d85c1e9e8",
+      "width": 30,
+      "height": 30,
+      "type": "componentInterface",
+      "position": {
+        "x": 475,
+        "y": 120
+      },
+      "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
+      "data": {
+        "name": ""
+      },
+      "measured": {
+        "width": 30,
+        "height": 30
       }
     }
   ],
@@ -641,45 +730,12 @@
       }
     },
     {
-      "id": "54afff4f-bd42-4f2d-a983-c9e3d82b05dc",
-      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
-      "target": "fe9f6903-d9d6-4d28-a643-f19de597303b",
-      "type": "ComponentRequiredInterface",
-      "sourceHandle": "right",
-      "targetHandle": "left",
-      "data": {
-        "points": []
-      }
-    },
-    {
       "id": "46dbc2e4-0f7c-4ebb-b56e-8ebca3bab884",
       "source": "68e8b989-aa6d-4b86-9ec5-5f2fe6ba6769",
       "target": "fe9f6903-d9d6-4d28-a643-f19de597303b",
       "type": "ComponentProvidedInterface",
       "sourceHandle": "left",
       "targetHandle": "right",
-      "data": {
-        "points": []
-      }
-    },
-    {
-      "id": "7d5baf30-0024-46f4-91ed-a7c2b561c677",
-      "source": "ed1cc51c-2ada-49fe-95e6-2b5b6444e052",
-      "target": "fe9f6903-d9d6-4d28-a643-f19de597303b",
-      "type": "ComponentRequiredInterface",
-      "sourceHandle": "right",
-      "targetHandle": "top",
-      "data": {
-        "points": []
-      }
-    },
-    {
-      "id": "0690227e-d1c6-4467-9dc6-a93a47c9207a",
-      "source": "de076709-1ff5-43a5-8826-e4f619175b28",
-      "target": "daceeb67-ac52-49f9-b78e-b64835d361a0",
-      "type": "ComponentRequiredInterface",
-      "sourceHandle": "right",
-      "targetHandle": "left",
       "data": {
         "points": []
       }
@@ -722,7 +778,7 @@
       "source": "3fcd994f-fc7a-4d86-a9be-ea4027f30b60",
       "target": "003cff91-9e0e-41e8-b53c-cb3b078e352a",
       "type": "ComponentRequiredInterface",
-      "sourceHandle": "right",
+      "sourceHandle": "right-between-mid-top-center",
       "targetHandle": "left",
       "data": {
         "points": []
@@ -765,6 +821,133 @@
       "id": "6983df01-7659-4f90-876c-b0c05fd95917",
       "source": "38d112f5-ff6b-4814-9788-b574c5e97f76",
       "target": "32fbd208-b644-43e0-87f2-b4be15ca7402",
+      "type": "ComponentProvidedInterface",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "1f2e4e63-9385-4d0c-84f1-ea7e82936420",
+      "source": "0fd19c39-92d8-4473-9707-3f2baf26544f",
+      "target": "903e2d59-ab93-4b88-9f0d-81bdbbb7bf06",
+      "type": "ComponentProvidedInterface",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "67071a6b-e53e-4631-9520-d9c6846669a9",
+      "source": "68e8b989-aa6d-4b86-9ec5-5f2fe6ba6769",
+      "target": "903e2d59-ab93-4b88-9f0d-81bdbbb7bf06",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "71c6ea78-1512-4b14-9f8f-e0e25a761019",
+      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
+      "target": "903e2d59-ab93-4b88-9f0d-81bdbbb7bf06",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right-between-mid-top-center",
+      "targetHandle": "left",
+      "data": {
+        "points": [
+          {
+            "x": 166,
+            "y": -220
+          },
+          {
+            "x": 488,
+            "y": -220
+          },
+          {
+            "x": 488,
+            "y": -160
+          },
+          {
+            "x": 800,
+            "y": -160
+          }
+        ]
+      }
+    },
+    {
+      "id": "632a3f2f-9eb1-46a2-8227-e4524139cd91",
+      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
+      "target": "fe9f6903-d9d6-4d28-a643-f19de597303b",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right-top",
+      "targetHandle": "left",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "bc2095c1-697d-494f-9ca4-a6b35bc93199",
+      "source": "2204951f-0b77-4ff4-85db-463f882134a4",
+      "target": "2a46997d-01e2-4cf2-9249-4da5354c3c84",
+      "type": "ComponentProvidedInterface",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "4a422759-9e5f-445b-bfb3-e812c0e50573",
+      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
+      "target": "2a46997d-01e2-4cf2-9249-4da5354c3c84",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right-bottom",
+      "targetHandle": "left",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "6f393776-dbe2-4182-9a6a-a466ccaacec9",
+      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
+      "target": "daceeb67-ac52-49f9-b78e-b64835d361a0",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "9654f098-7d0a-4e1e-ba05-bdbac4962a31",
+      "source": "3fcd994f-fc7a-4d86-a9be-ea4027f30b60",
+      "target": "daceeb67-ac52-49f9-b78e-b64835d361a0",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "5cfb0730-9f54-4ecd-8781-ab420b875ec3",
+      "source": "ed1cc51c-2ada-49fe-95e6-2b5b6444e052",
+      "target": "07c615f1-247b-4159-8b58-bd1d85c1e9e8",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "e9eb89b4-970a-4b7a-a4e3-c1395bc25cfc",
+      "source": "07c615f1-247b-4159-8b58-bd1d85c1e9e8",
+      "target": "1cc4ad7c-465c-43e9-80ef-85fe0bab001b",
       "type": "ComponentProvidedInterface",
       "sourceHandle": "right",
       "targetHandle": "left",

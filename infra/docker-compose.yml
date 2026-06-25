@@ -70,7 +70,7 @@ services:
     ports:
       - "${GENAI_SERVICE_PORT:-8090}:8090"
     environment:
-      LOGOS_API_KEY: ${LOGOS_API_KEY:-}
+      LOGOS_API_KEY: ADD-KEY_HERE
       LLM_BASE_URL: ${LLM_BASE_URL:-http://ollama:11434/v1}
       LLM_MODEL: ${LLM_MODEL:-llama3.2}
       WEAVIATE_URL: http://weaviate:8080
