@@ -7,7 +7,7 @@ Repository for team Continuous Frustration
 |---|---|
 | Paul Marius Heizmann | GenAI Component |
 | Khalil Hkiri | Server / Backend |
-| Siyao Zhou | Client / Frontend |
+| Siyao Zhou (dropped out) | Client / Frontend |
 
 ## Enable Pre-commit Hook
 
@@ -20,21 +20,23 @@ From repository root, install and enable pre-commit:
 ## Starting All Services
 
 From the `infra/` directory, a single command starts everything (PostgreSQL, auth-service, flashcard-service, genai-service, web-client):
+# Important: Add *LOGOS_API_KEY* in `docker-compose.yaml`. Otherwise the GenAI service will not work as expected!
 
 ```bash
 cd infra
 docker compose up --build
 ```
 
-| Service | URL |
+| Service | Port |
 |---|---|
-| Auth service | http://localhost:8083 |
-| Flashcard service | http://localhost:8082 |
-| GenAI service | http://localhost:8090 |
-| Web client | http://localhost:5173 |
-| PostgreSQL | localhost:5432 |
+| API Gateway | 8080 |
+| Auth service | 8081 |
+| Flashcard service | 8082 |
+| GenAI service | 8090 |
+| Upload service | 8091 |
+| Web client | 5173 |
 
-The `.env` file in `infra/` already has defaults for local development. To stop all services:
+To stop all services:
 
 ```bash
 docker compose down
@@ -48,34 +50,6 @@ docker compose down -v
 
 ---
 
-## Running Services Individually
-
-### Flashcard Service
-
-From the repository root:
-
-**Build the image:**
-```bash
-docker build -t flashcard-service services/flashcard-service
-```
-
-**Run the container:**
-```bash
-docker run -p 8081:8081 flashcard-service
-```
-
-**Test the healthcheck endpoint:**
-```bash
-curl http://localhost:8081/health
-```
-
-Expected response:
-```json
-{"status":"UP"}
-```
-
-> The app runs on port `8081` inside the container. You can map it to any free port on your machine: `docker run -p <your-port>:8081 flashcard-service`
-
 ## Azure VM Deployment
 
 ### VM Information
@@ -83,7 +57,15 @@ Expected response:
 - VM name: `team-continuous-frustration`
 - Public IP address: `20.240.186.130`
 - SSH user: `azureuser`
-- Client URL: https://client.20.240.186.130.nip.io
+- Client URL: https://20.240.186.130.nip.io
+
+### Run Azure CI 
+
+1. Go to https://github.com/AET-DevOps26/team-continuous-frustration/actions/workflows/deploy_azure.yaml
+2. Click on "Run workflow"
+3. Select branch to deploy
+4. Click on "Run workflow" to start the deployment action
+
 
 ### How to connect to the Azure VM
 
@@ -92,63 +74,46 @@ chmod 400 ./team-continuous-frustration_key.pem
 ssh -i ./team-continuous-frustration_key.pem azureuser@20.240.186.130
 ```
 
-### Verify Docker Installation
-```bash
-docker --version
-docker compose version
-docker ps
-```
+---
 
-### Deploy the Project with Docker Compose
-```bash
-cd ~/team-continuous-frustration/infra
-cp .env.example .env
-docker compose -f docker-compose.azure.yml --env-file .env down
-docker compose -f docker-compose.azure.yml --env-file .env up -d --build
-```
+## Kubernetes Deployment
 
-### How to access the application
-https://client.20.240.186.130.nip.io
+- Cluster: stud
+- Namespace: team-continuous-frustration
+- URL: https://team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de/
 
-### Automated Azure Deployment with Terraform and Ansible
-
-Terraform files are located in:
-
-```text
-infra/terraform/
-```
-
-Ansible files are located in:
-```text
-infra/ansible/
-```
-
-### Create Azure VM with Terraform
-```bash
-cd infra/terraform
-cp terraform.tfvars.example terraform.tfvars
-terraform init
-terraform plan
-terraform apply
-```
-### Configure Ansible inventory
-```bash
-cd ../ansible
-cp inventory.ini.example inventory.ini
-```
-
-### Configure Ansible variables
-```bash
-cp group_vars/all.yml.example group_vars/all.yml
-```
-
-### Run Ansible deployment
-```bash
-ansible-playbook -i inventory.ini playbook.yml
-```
-
-### Run Helm deployment
+### Run Helm deployment (upgrade current release)
 ```bash
 cd infra/helm
 helm upgrade tcf . --namespace team-continuous-frustration
 ```
+### Run Helm deployment (install new release)
+```bash
+cd infra/helm
+helm install [RELEASE_NAME] . --namespace team-continuous-frustration
+```
+
+## Features
+
+At the moment the Login/ Signup functionality is available end-to-end. The rest of the Fronted is currently mocked.
+
+### Implemented Endpoints
+
+The following endooints are available through the API Gateway:
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/auth/register` | POST | Register a new user |
+| `/api/v1/auth/login` | POST | Login with email and password |
+| `/api/v1/auth/login/google` | POST | Login with Google OAuth |
+| `/api/v1/auth/logout` | POST | Logout |
+| `/api/v1/auth/me` | GET | Get current user profile |
+| `/api/v1/auth/refresh` | POST | Refresh authentication token |
+| `/api/v1/documents/upload` | POST | Upload a document |
+| `/api/v1/documents/{upload_id}` | GET | Get a document |
+| `/api/v1/genai/generate-flashcards` | POST | Generate flashcards from an uploaded document |
+
+
+When running locally Swagger UI will be available at 
+- `http://localhost:8090/docs`
+- `http://localhost:8091/docs`
