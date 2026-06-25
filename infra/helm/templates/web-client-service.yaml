@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
+    kompose.version: 1.38.0 (HEAD)
+    traefik.enable: "true"
+    traefik.http.routers.webclient.entrypoints: websecure
+    traefik.http.routers.webclient.priority: "1"
+    traefik.http.routers.webclient.rule: Host(``)
+    traefik.http.routers.webclient.tls.certresolver: letsencrypt
+    traefik.http.services.webclient.loadbalancer.server.port: "80"
+  labels:
+    io.kompose.service: web-client
+  name: web-client
+  namespace: team-continuous-frustration
+spec:
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 80
+  selector:
+    io.kompose.service: web-client

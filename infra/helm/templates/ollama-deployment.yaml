@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
+    kompose.version: 1.38.0 (HEAD)
+  labels:
+    io.kompose.service: ollama
+  name: ollama
+  namespace: team-continuous-frustration
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ollama
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
+        kompose.version: 1.38.0 (HEAD)
+      labels:
+        io.kompose.service: ollama
+    spec:
+      containers:
+        - command:
+            - /bin/sh
+            - /ollama.sh
+          image: ollama/ollama:0.30.8
+          name: ollama
+          ports:
+            - containerPort: 11434
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+          volumeMounts:
+            - mountPath: /root/.ollama
+              name: ollama-data
+            - mountPath: /ollama.sh
+              name: ollama-cm1
+              subPath: ollama.sh
+      restartPolicy: Always
+      volumes:
+        - name: ollama-data
+          persistentVolumeClaim:
+            claimName: ollama-data
+        - configMap:
+            items:
+              - key: ollama.sh
+                path: ollama.sh
+            name: ollama-cm1
+          name: ollama-cm1

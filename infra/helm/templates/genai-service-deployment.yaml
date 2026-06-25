@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
+    kompose.version: 1.38.0 (HEAD)
+  labels:
+    io.kompose.service: genai-service
+  name: genai-service
+  namespace: team-continuous-frustration
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: genai-service
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
+        kompose.version: 1.38.0 (HEAD)
+      labels:
+        io.kompose.service: genai-service
+    spec:
+      containers:
+        - env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_SECRET
+            - name: LLM_BASE_URL
+              value: http://ollama:11434/v1
+            - name: LLM_MODEL
+              value: gemma4:e2b
+            - name: LOGOS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: LOGOS_API_KEY
+            - name: OLLAMA_API_ENDPOINT
+              value: http://ollama:11434
+            - name: WEAVIATE_URL
+              value: http://weaviate:8080
+          image: ghcr.io/aet-devops26/team-continuous-frustration/genai-service:latest
+          name: genai-service
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+      restartPolicy: Always

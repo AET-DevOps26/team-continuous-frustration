@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  ollama.sh: "#!/bin/bash\n\n# Start Ollama in the background.\n/bin/ollama serve &\n# Record Process ID.\npid=$!\n\n# Pause for Ollama to start.\nsleep 5\n\necho \"\U0001F534 Retrieve embedding...\"\nollama pull nomic-embed-text\necho \"\U0001F7E2 Done!\"\n\n# Wait for Ollama process to finish.\nwait $pid\n"
+kind: ConfigMap
+metadata:
+  annotations:
+    use-subpath: "true"
+  labels:
+    io.kompose.service: ollama
+  name: ollama-cm1
+  namespace: team-continuous-frustration
