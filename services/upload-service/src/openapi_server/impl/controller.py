@@ -43,7 +43,6 @@ async def health():
 )
 async def documents_upload_post(
     file: UploadFile,
-    token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> UploadResponse:
     """Upload a PDF or TXT file and receive an upload id."""
     filename, content = await _read_upload(file)
@@ -74,7 +73,6 @@ async def documents_upload_post(
 )
 async def documents_get(
     upload_id: str,
-    token_bearerAuth: TokenModel = Security(get_token_bearerAuth),
 ) -> PlainTextResponse:
     """Get a document"""
     document = get_document(upload_id)
