@@ -2,13 +2,13 @@ import datetime
 from unittest.mock import MagicMock, patch
 import weaviate
 
-from core.llm_factory import OpenAICompatibleLLM
-from core.vector_store import (
+from openapi_server.core.llm_factory import OpenAICompatibleLLM
+from openapi_server.core.vector_store import (
     upsert_markdown_to_weaviate,
     query_vector_store,
     _ensure_collection_exists,
 )
-from core.flashcard_pipeline import generate_flashcards_stream
+from openapi_server.core.flashcard_pipeline import generate_flashcards_stream
 
 # ----------------------------------------------------------------------
 # 1. Tests for llm_factory.py
