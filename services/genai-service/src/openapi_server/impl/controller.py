@@ -43,6 +43,7 @@ async def health():
     tags=["default"],
     summary="Generate flashcards from an uploaded document",
     response_model_by_alias=True,
+    response_model=None,
 )
 async def api_v1_genai_generate_flashcards_post(
     upload_id: str,
