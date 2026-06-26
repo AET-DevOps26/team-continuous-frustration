@@ -6,6 +6,8 @@
  * OpenAPI spec version: v1
  */
 
+const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
+
 interface TypedResponse<T> extends Response {
   json(): Promise<T>;
 }
@@ -55,7 +57,7 @@ export interface HTTPValidationError {
 export type HealthApiV1GenaiHealthGet200 = { [key: string]: unknown };
 
 export type ApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostParams = {
-upload_id: string;
+  upload_id: string;
 };
 
 export type healthApiV1GenaiHealthGetResponse200 = {
@@ -81,16 +83,16 @@ export const getHealthApiV1GenaiHealthGetUrl = () => {
 /**
  * @summary Health
  */
-export const healthApiV1GenaiHealthGet = async ( options?: RequestInit): Promise<healthApiV1GenaiHealthGetResponse> => {
+export const healthApiV1GenaiHealthGet = async (options?: RequestInit): Promise<healthApiV1GenaiHealthGetResponse> => {
 
   const res = await fetch(getHealthApiV1GenaiHealthGetUrl(),
-  {
-    ...options,
-    method: 'GET'
+    {
+      ...options,
+      method: 'GET'
 
 
-  }
-)
+    }
+  )
 
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text();
@@ -142,7 +144,7 @@ export const getApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/genai/generate-flashcards?${stringifiedParams}` : `/api/v1/genai/generate-flashcards`
+  return stringifiedParams.length > 0 ? `${baseUrl}/api/v1/genai/generate-flashcards?${stringifiedParams}` : `${baseUrl}/api/v1/genai/generate-flashcards`
 }
 
 /**
@@ -150,17 +152,17 @@ export const getApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost
  */
 export const apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost = async (params: ApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostParams, options?: RequestInit): Promise<apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostResponse> => {
 
-    const stream = await fetch(getApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostUrl(params),
-  {
-    ...options,
-    method: 'POST'
+  const stream = await fetch(getApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostUrl(params),
+    {
+      ...options,
+      method: 'POST'
 
 
-  }
-);
+    }
+  );
 
   return { status: stream.status, stream, headers: stream.headers } as apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostResponse
-  }
+}
 
 
 
@@ -208,13 +210,13 @@ export const getApiV1GenaiExplainPostApiV1GenaiExplainPostUrl = () => {
 export const apiV1GenaiExplainPostApiV1GenaiExplainPost = async (flashcard?: Flashcard, options?: RequestInit): Promise<apiV1GenaiExplainPostApiV1GenaiExplainPostResponse> => {
 
   const res = await fetch(getApiV1GenaiExplainPostApiV1GenaiExplainPostUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(flashcard)
-  }
-)
+    {
+      ...options,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      body: JSON.stringify(flashcard)
+    }
+  )
 
 
   const body = [204, 205, 304].includes(res.status) ? null : await res.text();
