@@ -10,7 +10,6 @@ import { apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost } from
 
 export function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadId, setUploadId] = useState<string | null>(null);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -36,23 +35,22 @@ export function UploadPage() {
       file: selectedFile!,
     };
 
+    let uploadId: string = "";
     try {
       const res = await documentsUploadPostApiV1DocumentsUploadPost(body);
-      setUploadId(res.data.upload_id);
-      console.log("Upload successful:", res.data.upload_id);
+      uploadId = res.data.upload_id;
+      console.log("Upload successful:", uploadId);
     } catch (error) {
       console.error("Upload failed:", error);
       // Handle error (e.g., show a toast notification)
     }
-  }
 
-  const handleGenerateFlashcards = async () => {
     const params: ApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostParams = {
       upload_id: uploadId!,
     };
 
     try {
-      const res = await apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost(params);
+      const res = await apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost(params, { credentials: 'include' });
       if (res.status === 200) {
         const stream = res.stream
 
@@ -60,8 +58,8 @@ export function UploadPage() {
           throw new Error("No body in response");
         }
         await readFlashcardsStream(stream.body);
+        console.log("Generate successful:", res.status);
       }
-      console.log("Generate successful:", res.status);
     } catch (error) {
       console.error("Generate failed:", error);
     }
@@ -150,10 +148,7 @@ export function UploadPage() {
         <Button
           className="mt-6 w-full"
           disabled={!selectedFile}
-          onClick={async () => {
-            await handleUpload();
-            await handleGenerateFlashcards();
-          }}
+          onClick={handleUpload}
         >
           ✨ Generate Flashcards
         </Button>
