@@ -1,15 +1,19 @@
 import { useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { useNavigate } from "react-router-dom";
 import { Upload, FileText, X, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import type { BodyDocumentsUploadPostApiV1DocumentsUploadPost } from '@/api/upload'
+import { documentsUploadPostApiV1DocumentsUploadPost } from '@/api/upload'
+import type { ApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostParams, Flashcard } from '@/api/genaiStream'
+import { apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost } from '@/api/genaiStream'
+
 export function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadId, setUploadId] = useState<string | null>(null);
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const navigate = useNavigate();
-
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) setSelectedFile(file);
@@ -27,6 +31,67 @@ export function UploadPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleUpload = async () => {
+    const body: BodyDocumentsUploadPostApiV1DocumentsUploadPost = {
+      file: selectedFile!,
+    };
+
+    try {
+      const res = await documentsUploadPostApiV1DocumentsUploadPost(body);
+      setUploadId(res.data.upload_id);
+      console.log("Upload successful:", res.data.upload_id);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      // Handle error (e.g., show a toast notification)
+    }
+  }
+
+  const handleGenerateFlashcards = async () => {
+    const params: ApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostParams = {
+      upload_id: uploadId!,
+    };
+
+    try {
+      const res = await apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost(params);
+      if (res.status === 200) {
+        const stream = res.stream
+
+        if (!stream.body) {
+          throw new Error("No body in response");
+        }
+        await readFlashcardsStream(stream.body);
+      }
+      console.log("Generate successful:", res.status);
+    } catch (error) {
+      console.error("Generate failed:", error);
+    }
+  };
+
+  const readFlashcardsStream = async (readableStream: ReadableStream<Uint8Array>) => {
+    const reader = readableStream.getReader();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      const chunk = new TextDecoder().decode(value);
+      const lines = chunk.split('\n');
+      for (const line of lines) {
+        if (line.trim()) {
+          try {
+            const flashcard = JSON.parse(line.trim()) as Flashcard;
+            console.log("Parsed flashcard:", flashcard);
+            setFlashcards((prev) => [...prev, flashcard]);
+          } catch (error) {
+            console.error("Failed to parse flashcard:", error);
+          }
+        }
+      }
+    }
+  }
+
+
   const formatFileSize = (size: number) => `${(size / (1024 * 1024)).toFixed(2)} MB`;
 
   return (
@@ -40,9 +105,8 @@ export function UploadPage() {
 
       <div className="mx-auto max-w-xl">
         <div
-          className={`card-shadow flex flex-col items-center rounded-3xl border-2 border-dashed bg-card p-12 text-center transition-colors ${
-            dragOver ? "border-primary bg-primary/5" : "border-border"
-          }`}
+          className={`card-shadow flex flex-col items-center rounded-3xl border-2 border-dashed bg-card p-12 text-center transition-colors ${dragOver ? "border-primary bg-primary/5" : "border-border"
+            }`}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
@@ -86,7 +150,10 @@ export function UploadPage() {
         <Button
           className="mt-6 w-full"
           disabled={!selectedFile}
-          onClick={() => navigate("/cards")}
+          onClick={async () => {
+            await handleUpload();
+            await handleGenerateFlashcards();
+          }}
         >
           ✨ Generate Flashcards
         </Button>
@@ -95,6 +162,13 @@ export function UploadPage() {
           <Lock className="h-3 w-3" />
           Your files are processed securely and used only for flashcard generation.
         </p>
+        {flashcards.map((flashcard, index) => (
+          <div key={index}>
+            <p>{flashcard.question}</p>
+            <p>{flashcard.answer}</p>
+          </div>
+        ))}
+
       </div>
     </main>
   );
