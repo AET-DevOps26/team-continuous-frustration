@@ -31,7 +31,7 @@ export function RegisterPage() {
   const passwordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
 
   const handleGoogleSignUp = () => {
-    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
+    window.location.href = "/oauth2/authorization/google";
   };
 
   const handleSubmit = async (event: React.SyntheticEvent) => {

@@ -18,7 +18,7 @@ export function LoginPage() {
   const [error, setError] = useState("");
 
   const google = () => {
-    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
+    window.location.href = "/oauth2/authorization/google";
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
