@@ -1,173 +1,101 @@
 import { useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "../styles/UploadPage.css";
+import { useNavigate } from "react-router-dom";
+import { Upload, FileText, X, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function UploadPage() {
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const navigate = useNavigate();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const navigate = useNavigate();
 
-    const handleChooseFile = () => {
-        fileInputRef.current?.click();
-    };
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) setSelectedFile(file);
+  };
 
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) setSelectedFile(file);
+  };
 
-        if (!file) {
-            return;
-        }
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
-        setSelectedFile(file);
-    };
+  const formatFileSize = (size: number) => `${(size / (1024 * 1024)).toFixed(2)} MB`;
 
-    const handleRemoveFile = () => {
-        setSelectedFile(null);
+  return (
+    <main className="mx-auto max-w-6xl px-6 py-12">
+      <div className="mb-10">
+        <h1 className="font-display text-4xl font-semibold tracking-tight">Upload Slides</h1>
+        <p className="mt-2 text-muted-foreground">
+          Upload your course slides and let AI transform them into smart flashcards.
+        </p>
+      </div>
 
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
-    };
+      <div className="mx-auto max-w-xl">
+        <div
+          className={`card-shadow flex flex-col items-center rounded-3xl border-2 border-dashed bg-card p-12 text-center transition-colors ${
+            dragOver ? "border-primary bg-primary/5" : "border-border"
+          }`}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+        >
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <Upload className="h-7 w-7" />
+          </div>
+          <h2 className="mt-4 font-display text-xl font-semibold">Drag & drop your file here</h2>
+          <p className="mt-1 text-sm text-muted-foreground">PDF or PPTX · max 50 MB</p>
+          <Button variant="outline" className="mt-6" onClick={() => fileInputRef.current?.click()}>
+            Choose File
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.ppt,.pptx"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </div>
 
-    const handleGenerateFlashcards = () => {
+        {selectedFile && (
+          <div className="card-shadow mt-4 flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
+            <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+              <FileText className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium">{selectedFile.name}</p>
+              <p className="text-xs text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
+            </div>
+            <button
+              type="button"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              onClick={handleRemoveFile}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
-        navigate("/cards");
-    };
+        <Button
+          className="mt-6 w-full"
+          disabled={!selectedFile}
+          onClick={() => navigate("/cards")}
+        >
+          ✨ Generate Flashcards
+        </Button>
 
-    const formatFileSize = (size: number) => {
-        const sizeInMB = size / (1024 * 1024);
-        return `${sizeInMB.toFixed(2)} MB`;
-    };
-
-    return (
-        <main className="upload-page">
-            <header className="upload-topbar">
-                <Link to="/" className="upload-brand">
-                    <span className="brand-icon">▱</span>
-                    <span>AI Anki</span>
-                </Link>
-
-                <nav className="upload-breadcrumb">
-                    <Link to="/">Home</Link>
-                    <span>/</span>
-                    <Link to="/upload" className="active">
-                        Upload
-                    </Link>
-                    <span>/</span>
-                    <Link to="/cards">Generate Flashcards</Link>
-                </nav>
-            </header>
-
-            <aside className="upload-sidebar">
-                <Link to="/" className="sidebar-item">
-                    <span>⌂</span>
-                    Home
-                </Link>
-
-                <Link to="/upload" className="sidebar-item active">
-                    <span>☁</span>
-                    Upload
-                </Link>
-
-                <Link to="/decks" className="sidebar-item">
-                    <span>▤</span>
-                    Decks
-                </Link>
-
-                <Link to="/study" className="sidebar-item">
-                    <span>▣</span>
-                    Review
-                </Link>
-            </aside>
-
-            <section className="upload-content">
-                <div className="upload-main">
-                    <h1></h1>
-
-                    <p className="upload-subtitle">
-                        Upload your course slides and let AI transform them into smart flashcards.
-                    </p>
-
-                    <div className="dropzone">
-                        <div className="cloud-icon">☁</div>
-
-                        <h2>Drag & drop your file here</h2>
-                        <p>or</p>
-
-                        <button
-                            className="choose-file-button"
-                            type="button"
-                            onClick={handleChooseFile}
-                        >
-                            <span>▣</span>
-                            Choose File
-                        </button>
-
-                        <input
-                            ref={fileInputRef}
-                            className="hidden-file-input"
-                            type="file"
-                            accept=".pdf,.ppt,.pptx"
-                            onChange={handleFileChange}
-                        />
-                    </div>
-
-                    <div className="upload-info-row">
-                        <span>Supported files: PDF, PPTX</span>
-                        <span>Max file size: 50MB</span>
-                    </div>
-
-                    {selectedFile ? (
-                        <div className="selected-file-card">
-                            <div className="file-left">
-                                <div className="pdf-icon">PDF</div>
-
-                                <div>
-                                    <h3>{selectedFile.name}</h3>
-                                    <p>{formatFileSize(selectedFile.size)}</p>
-                                </div>
-                            </div>
-
-                            <div className="file-actions">
-                                <span className="file-check">✓</span>
-
-                                <button
-                                    className="remove-file-button"
-                                    type="button"
-                                    onClick={handleRemoveFile}
-                                >
-                                    ×
-                                </button>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="selected-file-card empty-file-card">
-                            <div className="file-left">
-                                <div className="pdf-icon muted">PDF</div>
-
-                                <div>
-                                    <h3>No file selected</h3>
-                                    <p>Please choose a PDF or PPTX file first.</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <button
-                        className="generate-button"
-                        type="button"
-
-                        onClick={handleGenerateFlashcards}
-                    >
-                        ✨ Generate Flashcards
-                    </button>
-
-                    <p className="security-note">
-                        🔒 Your files are secure and will be processed only for flashcard generation.
-                    </p>
-                </div>
-            </section>
-        </main>
-    );
+        <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <Lock className="h-3 w-3" />
+          Your files are processed securely and used only for flashcard generation.
+        </p>
+      </div>
+    </main>
+  );
 }
