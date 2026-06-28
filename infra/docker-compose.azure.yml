@@ -51,6 +51,13 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-placeholder}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-placeholder}
       FRONTEND_URL: https://${FRONTEND_URL:-localhost}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI: https://${FRONTEND_URL:-localhost}/login/oauth2/code/google
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
     depends_on:
       db:
         condition: service_healthy
@@ -139,8 +146,10 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
       JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
     depends_on:
-      - auth-service
-      - flashcard-service
+      auth-service:
+        condition: service_healthy
+      flashcard-service:
+        condition: service_started
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
