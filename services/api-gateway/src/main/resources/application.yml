@@ -39,7 +39,7 @@ spring:
           predicates:
             - Path=/api/v1/flashcards,/api/v1/flashcards/**
         - id: genai-service
-          uri: ${GENAI_SERVICE_URL:http://genai-service:8080}
+          uri: ${GENAI_SERVICE_URL:http://genai-service:8090}
           predicates:
             - Path=/api/v1/genai/**
         - id: upload-service
