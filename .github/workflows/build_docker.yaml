@@ -55,6 +55,7 @@ jobs:
           AUTH_SERVICE: ${{ steps.filter.outputs['auth-service'] }}
           FLASHCARD_SERVICE: ${{ steps.filter.outputs['flashcard-service'] }}
           GENAI_SERVICE: ${{ steps.filter.outputs['genai-service'] }}
+          UPLOAD_SERVICE: ${{ steps.filter.outputs['upload-service'] }}
           API_GATEWAY: ${{ steps.filter.outputs['api-gateway'] }}
           WORKFLOW: ${{ steps.filter.outputs.workflow }}
         with:
