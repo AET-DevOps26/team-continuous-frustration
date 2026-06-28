@@ -1,0 +1,15 @@
+meta {
+  name: Upload Document
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/genai/uploads
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  file: @file(/path/to/document.pdf)
+}
