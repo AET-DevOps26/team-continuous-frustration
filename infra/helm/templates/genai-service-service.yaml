@@ -10,8 +10,8 @@ metadata:
   namespace: team-continuous-frustration
 spec:
   ports:
-    - name: "8080"
-      port: 8080
-      targetPort: 8080
+    - name: "8090"
+      port: 8090
+      targetPort: 8090
   selector:
     io.kompose.service: genai-service

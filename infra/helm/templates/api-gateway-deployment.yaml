@@ -46,7 +46,7 @@ spec:
             - name: FLASHCARD_SERVICE_URL
               value: http://flashcard-service:8082
             - name: GENAI_SERVICE_URL
-              value: http://genai-service:8080
+              value: http://genai-service:8090
             - name: JAVA_TOOL_OPTIONS
               value: -Djava.net.preferIPv4Stack=true
             - name: JWT_SECRET
