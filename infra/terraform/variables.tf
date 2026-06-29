@@ -45,15 +45,3 @@ variable "ssh_source_address" {
   type        = string
   default     = "*"
 }
-
-variable "frontend_port" {
-  description = "Frontend port"
-  type        = string
-  default     = "5173"
-}
-
-variable "backend_port" {
-  description = "Backend port"
-  type        = string
-  default     = "8080"
-}

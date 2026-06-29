@@ -65,38 +65,3 @@
         groups: docker
         append: true
 
-    - name: Clone or update project repository
-      ansible.builtin.git:
-        repo: "{{ repo_url }}"
-        dest: "{{ repo_dest }}"
-        version: "{{ repo_branch }}"
-        force: true
-        update: true
-
-    - name: Create .env file from Ansible variable
-      ansible.builtin.copy:
-        dest: "{{ repo_dest }}/infra/.env"
-        content: "{{ env_file_content }}"
-        owner: azureuser
-        group: azureuser
-        mode: "0600"
-
-    - name: Stop existing Docker Compose services
-      ansible.builtin.command:
-        cmd: docker compose -f {{ compose_file }} --env-file infra/.env down
-        chdir: "{{ repo_dest }}"
-      ignore_errors: true
-
-    - name: Build and start Docker Compose services
-      ansible.builtin.command:
-        cmd: docker compose -f {{ compose_file }} --env-file infra/.env up --build -d
-        chdir: "{{ repo_dest }}"
-
-    - name: Show running containers
-      ansible.builtin.command:
-        cmd: docker ps
-      register: docker_ps_output
-
-    - name: Print running containers
-      ansible.builtin.debug:
-        var: docker_ps_output.stdout_lines
