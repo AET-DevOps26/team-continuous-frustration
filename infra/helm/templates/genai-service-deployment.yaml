@@ -44,7 +44,7 @@ spec:
           image: ghcr.io/aet-devops26/team-continuous-frustration/genai-service:latest
           name: genai-service
           ports:
-            - containerPort: 8080
+            - containerPort: 8090
               protocol: TCP
           resources:
             requests:

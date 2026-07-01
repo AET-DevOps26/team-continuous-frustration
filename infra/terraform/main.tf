@@ -32,7 +32,7 @@ resource "azurerm_network_security_group" "main" {
 
   security_rule {
     name                       = "AllowSSH"
-    priority                   = 1001
+    priority                   = 101
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
@@ -43,32 +43,8 @@ resource "azurerm_network_security_group" "main" {
   }
 
   security_rule {
-    name                       = "AllowFrontend"
-    priority                   = 1002
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = var.frontend_port
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "AllowBackend"
-    priority                   = 1003
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = var.backend_port
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
     name                       = "AllowHTTP"
-    priority                   = 1004
+    priority                   = 102
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
@@ -80,7 +56,7 @@ resource "azurerm_network_security_group" "main" {
 
   security_rule {
     name                       = "AllowHTTPS"
-    priority                   = 1005
+    priority                   = 103
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"

@@ -79,7 +79,7 @@ services:
   genai-service:
     image: ghcr.io/aet-devops26/team-continuous-frustration/genai-service:latest
     expose:
-      - "8080"
+      - "8090"
     environment:
       LOGOS_API_KEY: ${LOGOS_API_KEY:-placeholder}
       LLM_BASE_URL: ${LLM_BASE_URL:-http://placeholder}
@@ -140,7 +140,7 @@ services:
     environment:
       AUTH_SERVICE_URL: http://auth-service:8081
       FLASHCARD_SERVICE_URL: http://flashcard-service:8082
-      GENAI_SERVICE_URL: http://genai-service:8080
+      GENAI_SERVICE_URL: http://genai-service:8090
       UPLOAD_SERVICE_URL: http://upload-service:8091
       JWT_SECRET: ${JWT_SECRET}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
