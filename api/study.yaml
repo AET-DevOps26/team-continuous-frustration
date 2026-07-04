@@ -1,0 +1,310 @@
+openapi: 3.0.3
+info:
+  title: Study Service API
+  version: v1
+  license:
+    name: Proprietary
+    url: https://example.com/proprietary-license
+  description: |
+    Study service endpoints for managing decks and flashcard study state.
+    The service creates decks, returns due flashcards for a deck, and lets the server compute due dates from study status updates.
+servers:
+  - url: http://127.0.0.1:8083
+    description: Local development
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/decks:
+    post:
+      operationId: createDeck
+      summary: Create a deck
+      description: Create a new flashcard deck.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeckCreateRequest"
+      responses:
+        "201":
+          description: Deck created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deck"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while creating deck.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/decks/{deck_id}/study:
+    get:
+      operationId: getDueFlashcardsForDeck
+      summary: Get due flashcards for a deck
+      description: Return up to 5 due flashcards for the specified deck.
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the deck.
+      responses:
+        "200":
+          description: Due flashcards retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 5
+                items:
+                  $ref: "#/components/schemas/StudyDueDateRecord"
+        "400":
+          description: Invalid deck identifier.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Deck not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while retrieving due flashcards.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/decks/{deck_id}/flashcards:
+    post:
+      operationId: createDeckFlashcardRecord
+      summary: Add a flashcard record to a deck
+      description: Create a new flashcard study record for the specified deck.
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the deck.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyFlashcardCreateRequest"
+      responses:
+        "201":
+          description: Flashcard record created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyDueDateRecord"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Deck or flashcard not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while creating flashcard record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/decks/{deck_id}/flashcards/{flashcard_id}/study-status:
+    patch:
+      operationId: updateFlashcardStudyStatus
+      summary: Update a flashcard study status
+      description: Update the study status for a flashcard in a deck. The server determines the next due date.
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the deck.
+        - name: flashcard_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the flashcard.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyStatusUpdateRequest"
+      responses:
+        "200":
+          description: Study status updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyDueDateRecord"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Deck or flashcard not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while updating study status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      operationId: deleteDeckFlashcardRecord
+      summary: Delete a flashcard from a deck
+      description: Remove the flashcard study record for the specified deck and flashcard.
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the deck.
+        - name: flashcard_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the flashcard.
+      responses:
+        "204":
+          description: Flashcard removed from the deck.
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Deck or flashcard not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while deleting flashcard from deck.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Deck:
+      type: object
+      required:
+        - id
+        - name
+        - tags
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the deck.
+        name:
+          type: string
+          description: Display name of the deck.
+        tags:
+          type: array
+          description: Tags associated with the deck.
+          items:
+            type: string
+    DeckCreateRequest:
+      type: object
+      required:
+        - name
+        - tags
+      properties:
+        name:
+          type: string
+          description: Display name of the deck.
+        tags:
+          type: array
+          description: Tags associated with the deck.
+          items:
+            type: string
+    StudyFlashcardCreateRequest:
+      type: object
+      required:
+        - flashcard_id
+      properties:
+        flashcard_id:
+          type: string
+          description: Identifier of the flashcard.
+    StudyStatusUpdateRequest:
+      type: object
+      required:
+        - study_status
+      properties:
+        study_status:
+          $ref: "#/components/schemas/StudyStatus"
+    StudyStatus:
+      type: string
+      description: Study state reported by the user for a flashcard in a deck.
+      enum:
+        - again
+        - hard
+        - good
+        - easy
+    StudyDueDateRecord:
+      type: object
+      required:
+        - deck_id
+        - flashcard_id
+        - due_at
+      properties:
+        deck_id:
+          type: string
+          description: Identifier of the deck.
+        flashcard_id:
+          type: string
+          description: Identifier of the flashcard.
+        due_at:
+          type: string
+          format: date-time
+          description: When the flashcard is next due for review.
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of the last due date update.
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+        code:
+          type: string
+          description: Optional machine-readable error code.
