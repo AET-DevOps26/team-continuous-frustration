@@ -44,9 +44,12 @@ CREATE TABLE documents (
 -- Study data stored in studydb for deck membership and review scheduling.
 CREATE TABLE decks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
   name VARCHAR(255) NOT NULL,
   tags TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[]
 );
+
+CREATE INDEX idx_decks_user_id ON decks(user_id);
 
 CREATE TABLE deck_flashcards (
   deck_id UUID NOT NULL REFERENCES decks(id) ON DELETE CASCADE,

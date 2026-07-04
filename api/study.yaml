@@ -8,6 +8,7 @@ info:
   description: |
     Study service endpoints for managing decks and flashcard study state.
     The service creates decks, returns due flashcards for a deck, and lets the server compute due dates from study status updates.
+    Deck ownership is derived from the authenticated user id provided in the request context/header.
 servers:
   - url: http://127.0.0.1:8083
     description: Local development
@@ -18,7 +19,7 @@ paths:
     post:
       operationId: createDeck
       summary: Create a deck
-      description: Create a new flashcard deck.
+      description: Create a new flashcard deck for the authenticated user.
       requestBody:
         required: true
         content:

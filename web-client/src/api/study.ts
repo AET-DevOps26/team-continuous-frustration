@@ -4,6 +4,7 @@
  * Study Service API
  * Study service endpoints for managing decks and flashcard study state.
  * The service creates decks, returns due flashcards for a deck, and lets the server compute due dates from study status updates.
+ * Deck ownership is derived from the authenticated user id provided in the request context/header.
  *
  * OpenAPI spec version: v1
  */
@@ -76,7 +77,7 @@ export interface Error {
 }
 
 /**
- * Create a new flashcard deck.
+ * Create a new flashcard deck for the authenticated user.
  * @summary Create a deck
  */
 export const createDeck = (
