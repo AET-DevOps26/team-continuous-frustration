@@ -22,4 +22,12 @@ export default defineConfig({
     input: '../api/auth.yaml',
     output: './src/api/auth.ts'
   },
+  flashcard: {
+    input: '../api/flashcard.yaml',
+    output: './src/api/flashcard.ts'
+  },
+  study: {
+    input: '../api/study.yaml',
+    output: './src/api/study.ts'
+  },
 });
