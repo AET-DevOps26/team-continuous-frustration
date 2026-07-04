@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: Flashcard Service API
+  version: v1
+  license:
+    name: Proprietary
+    url: https://example.com/proprietary-license
+  description: |
+    Flashcard service endpoints for managing flashcard resources.
+    The service exposes standard CRUD operations and a health check.
+servers:
+  - url: http://127.0.0.1:8082
+    description: Local development
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/flashcards/health:
+    get:
+      operationId: getFlashcardHealth
+      summary: Health check
+      description: Returns the service health status.
+      security: []
+      responses:
+        "200":
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    example: UP
+        "400":
+          description: Invalid health check request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/flashcards:
+    get:
+      operationId: listFlashcards
+      summary: List flashcards
+      description: Retrieve all flashcards.
+      responses:
+        "200":
+          description: Flashcards retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Flashcard"
+        "500":
+          description: Server error while listing flashcards.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      operationId: createFlashcard
+      summary: Create a flashcard
+      description: Create a new flashcard resource.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlashcardCreateRequest"
+      responses:
+        "201":
+          description: Flashcard created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Flashcard"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while creating flashcard.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/flashcards/{flashcard_id}:
+    get:
+      operationId: getFlashcardById
+      summary: Get a flashcard
+      description: Retrieve a flashcard by its identifier.
+      parameters:
+        - name: flashcard_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the flashcard.
+      responses:
+        "200":
+          description: Flashcard retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Flashcard"
+        "404":
+          description: Flashcard not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while retrieving flashcard.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Invalid flashcard identifier.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      operationId: updateFlashcard
+      summary: Update a flashcard
+      description: Replace an existing flashcard with updated values.
+      parameters:
+        - name: flashcard_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the flashcard.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlashcardUpdateRequest"
+      responses:
+        "200":
+          description: Flashcard updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Flashcard"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Flashcard not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while updating flashcard.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      operationId: deleteFlashcard
+      summary: Delete a flashcard
+      description: Delete a flashcard by its identifier.
+      parameters:
+        - name: flashcard_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the flashcard.
+      responses:
+        "204":
+          description: Flashcard deleted successfully.
+        "404":
+          description: Flashcard not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while deleting flashcard.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Invalid flashcard identifier.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Flashcard:
+      type: object
+      required:
+        - id
+        - question
+        - answer
+        - source_ref
+        - last_updated
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the flashcard.
+        question:
+          type: string
+          description: The flashcard question.
+        answer:
+          type: string
+          description: The flashcard answer.
+        source_ref:
+          type: string
+          description: Reference to the source segment or document chunk.
+        last_updated:
+          type: string
+          format: date-time
+          description: Timestamp of the last update.
+    FlashcardCreateRequest:
+      type: object
+      required:
+        - question
+        - answer
+        - source_ref
+      properties:
+        question:
+          type: string
+          description: The flashcard question.
+        answer:
+          type: string
+          description: The flashcard answer.
+        source_ref:
+          type: string
+          description: Reference to the source segment or document chunk.
+    FlashcardUpdateRequest:
+      type: object
+      required:
+        - question
+        - answer
+        - source_ref
+      properties:
+        question:
+          type: string
+          description: The flashcard question.
+        answer:
+          type: string
+          description: The flashcard answer.
+        source_ref:
+          type: string
+          description: Reference to the source segment or document chunk.
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+        code:
+          type: string
+          description: Optional machine-readable error code.
