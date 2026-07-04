@@ -1,10 +1,7 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
+import { getMe, logout as apiLogout, type MeResponse } from "@/api/auth";
 
-interface User {
-    id: string;
-    email: string;
-    username: string;
-}
+type User = MeResponse;
 
 interface AuthContextType {
     user: User | null;
@@ -17,16 +14,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const API = import.meta.env.VITE_API_BASE_URL ?? "";
-
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const refetch = useCallback(async () => {
         try {
-            const res = await fetch(`${API}/api/v1/auth/me`, { credentials: "include" });
-            setUser(res.ok ? await res.json() : null);
+            const res = await getMe();
+            setUser(res.status === 200 ? res.data : null);
         } catch {
             setUser(null);
         } finally {
@@ -37,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => { refetch(); }, [refetch]);
 
     const logout = async () => {
-        await fetch(`${API}/api/v1/auth/logout`, { method: "POST", credentials: "include" });
+        await apiLogout();
         setUser(null);
     };
 
