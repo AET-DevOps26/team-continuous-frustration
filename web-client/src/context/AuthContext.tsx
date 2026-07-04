@@ -32,8 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => { refetch(); }, [refetch]);
 
     const logout = async () => {
-        await apiLogout();
-        setUser(null);
+        try {
+            await apiLogout();
+        } finally {
+            setUser(null);
+        }
     };
 
     const updateUser = (u: User) => setUser(u);
