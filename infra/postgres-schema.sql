@@ -41,7 +41,7 @@ CREATE TABLE documents (
   date_uploaded VARCHAR(255)
 );
 
--- Study data stored in flashcarddb for deck membership and review scheduling.
+-- Study data stored in studydb for deck membership and review scheduling.
 CREATE TABLE decks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255) NOT NULL,
