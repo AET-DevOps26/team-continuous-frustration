@@ -237,6 +237,7 @@ components:
         tags:
           type: array
           description: Tags associated with the deck.
+          maxItems: 10
           items:
             type: string
     DeckCreateRequest:
@@ -251,6 +252,7 @@ components:
         tags:
           type: array
           description: Tags associated with the deck.
+          maxItems: 10
           items:
             type: string
     StudyFlashcardCreateRequest:

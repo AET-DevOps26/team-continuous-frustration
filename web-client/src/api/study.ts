@@ -18,14 +18,20 @@ export interface Deck {
   id: string;
   /** Display name of the deck. */
   name: string;
-  /** Tags associated with the deck. */
+  /**
+     * Tags associated with the deck.
+     * @maxItems 10
+     */
   tags: string[];
 }
 
 export interface DeckCreateRequest {
   /** Display name of the deck. */
   name: string;
-  /** Tags associated with the deck. */
+  /**
+     * Tags associated with the deck.
+     * @maxItems 10
+     */
   tags: string[];
 }
 
