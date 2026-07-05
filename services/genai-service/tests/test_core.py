@@ -8,7 +8,11 @@ from openapi_server.core.vector_store import (
     query_vector_store,
     _ensure_collection_exists,
 )
-from openapi_server.core.flashcard_pipeline import generate_flashcards_stream
+from openapi_server.core.flashcard_pipeline import (
+    generate_flashcards_stream,
+    generate_explanation,
+)
+from openapi_server.models.flashcard import Flashcard
 
 # ----------------------------------------------------------------------
 # 1. Tests for llm_factory.py
@@ -172,3 +176,36 @@ def test_generate_flashcards_stream():
 
         mock_query.assert_called_once()
         mock_llm_call.assert_called()
+
+
+def test_generate_explanation():
+    from langchain_core.documents import Document
+
+    mock_docs = [
+        Document(page_content="TUM is a prestigious university located in Munich."),
+    ]
+
+    flashcard = Flashcard(
+        id="flashcard-1",
+        question="What is TUM?",
+        answer="Technical University of Munich",
+        source_ref="upload-abc",
+        last_updated="2024-01-01T00:00:00+00:00",
+    )
+
+    with patch("openapi_server.core.flashcard_pipeline.query_vector_store") as mock_query, \
+         patch("openapi_server.core.llm_factory.OpenAICompatibleLLM._call") as mock_llm_call:
+
+        mock_query.return_value = mock_docs
+        mock_llm_call.return_value = "  TUM stands for Technical University of Munich. \n"
+
+        explanation = generate_explanation(flashcard)
+
+        assert explanation == "TUM stands for Technical University of Munich."
+
+        mock_query.assert_called_once()
+        _, kwargs = mock_query.call_args
+        assert kwargs["query"] == "What is TUM?\nTechnical University of Munich"
+        assert kwargs["k"] == 5
+
+        mock_llm_call.assert_called_once()
