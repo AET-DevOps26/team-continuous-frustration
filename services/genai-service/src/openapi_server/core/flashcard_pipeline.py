@@ -9,6 +9,7 @@ from pydantic import BaseModel
 import uuid
 import datetime
 
+from openapi_server.core.cache import get_cached_explanation, set_cached_explanation
 from openapi_server.core.llm_factory import OpenAICompatibleLLM
 from openapi_server.core.vector_store import query_vector_store
 from openapi_server.models.flashcard import Flashcard
@@ -93,7 +94,7 @@ def generate_flashcards_stream(upload_id: str) -> Iterator[Flashcard]:
         try:
             ans = answer_chain.invoke({"context": context, "question": q})
             fc = Flashcard(
-                id=str(uuid.uuid4()),
+                id=str(i),
                 question=q,
                 answer=ans.strip(),
                 source_ref=upload_id,
@@ -127,12 +128,18 @@ def generate_explanation(flashcard: Flashcard) -> str:
         "[explain] Generating explanation for flashcard id=%s", flashcard.id
     )
 
+    last_updated = flashcard.last_updated.isoformat()
+    cached = get_cached_explanation(flashcard.id, last_updated)
+    if cached is not None:
+        logger.info("[explain] Cache hit for flashcard id=%s", flashcard.id)
+        return cached
+
     logger.debug(
         "[explain] Querying vector store for source_ref=%s", flashcard.source_ref
     )
     docs = query_vector_store(
         query=f"{flashcard.question}\n{flashcard.answer}",
-        k=5,
+        k=3,
         filters=Filter.by_property("upload_id").equal(flashcard.source_ref),
     )
     logger.debug("[explain] Retrieved %d doc(s) from vector store", len(docs))
@@ -169,7 +176,9 @@ def generate_explanation(flashcard: Flashcard) -> str:
         logger.info(
             "[explain] Generated explanation for flashcard id=%s", flashcard.id
         )
-        return explanation.strip()
+        explanation = explanation.strip()
+        set_cached_explanation(flashcard.id, last_updated, explanation)
+        return explanation
     except Exception as e:
         logger.error("[explain] Failed to generate explanation: %s", e)
         raise Exception(f"Failed to generate explanation: {e}")
