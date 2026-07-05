@@ -6,6 +6,7 @@ from typing import Optional, Tuple
 from collections.abc import AsyncIterable
 
 from fastapi import APIRouter, Body, HTTPException, Security, UploadFile, status
+from starlette.concurrency import run_in_threadpool
 
 from openapi_server.models.extra_models import TokenModel  # noqa: F401
 from openapi_server.models.error import Error
@@ -86,7 +87,7 @@ async def api_v1_genai_explain_post(
 ) -> ExplanationResponse:
     """Generate an explanation for a given flashcard."""
     try:
-        explanation = generate_explanation(flashcard)
+        explanation = await run_in_threadpool(generate_explanation, flashcard)
         return ExplanationResponse(explanation=explanation)
     except Exception as e:
         logger.error("[explain] Failed to generate explanation: %s", e)

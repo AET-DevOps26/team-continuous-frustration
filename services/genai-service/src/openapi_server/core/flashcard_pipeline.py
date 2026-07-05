@@ -94,7 +94,7 @@ def generate_flashcards_stream(upload_id: str) -> Iterator[Flashcard]:
         try:
             ans = answer_chain.invoke({"context": context, "question": q})
             fc = Flashcard(
-                id=str(i),
+                id=upload_id + f"_{i}",
                 question=q,
                 answer=ans.strip(),
                 source_ref=upload_id,
