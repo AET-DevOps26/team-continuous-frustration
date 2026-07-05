@@ -14,7 +14,10 @@ from openapi_server.models.flashcard import Flashcard
 from openapi_server.security_api import get_token_bearerAuth
 
 from openapi_server.core.vector_store import upsert_markdown_to_weaviate
-from openapi_server.core.flashcard_pipeline import generate_flashcards_stream
+from openapi_server.core.flashcard_pipeline import (
+    generate_flashcards_stream,
+    generate_explanation,
+)
 
 from upload_service_client import UploadServiceClientAPIs
 
@@ -82,7 +85,12 @@ async def api_v1_genai_explain_post(
     flashcard: Flashcard = Body(None, description=""),
 ) -> ExplanationResponse:
     """Generate an explanation for a given flashcard."""
-    raise HTTPException(status_code=500, detail="Not implemented")
+    try:
+        explanation = generate_explanation(flashcard)
+        return ExplanationResponse(explanation=explanation)
+    except Exception as e:
+        logger.error("[explain] Failed to generate explanation: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 async def _read_upload(file: UploadFile) -> Tuple[Optional[str], bytes]:
