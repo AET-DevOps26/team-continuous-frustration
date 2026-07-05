@@ -89,11 +89,13 @@ services:
       UPLOAD_SERVICE_BASE_URL: ${UPLOAD_SERVICE_BASE_URL:-http://upload-service:8091}
       WEAVIATE_URL: http://weaviate:8080
       OLLAMA_API_ENDPOINT: http://ollama:11434
+      REDIS_URL: redis://redis:6379/0
       JWT_SECRET: ${JWT_SECRET}
     depends_on:
       - weaviate
       - ollama
       - upload-service
+      - redis
 
   weaviate:
     image: semitechnologies/weaviate:1.27.0
@@ -121,6 +123,13 @@ services:
       - ollama_data:/root/.ollama
       - ./init-ollama/ollama.sh:/init-ollama/ollama.sh
     entrypoint: ["/bin/sh", "/init-ollama/ollama.sh", "--pull-llm"]
+
+  redis:
+    image: redis:7-alpine
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
 
   upload-service:
     image: ghcr.io/aet-devops26/team-continuous-frustration/upload-service:latest
@@ -183,3 +192,4 @@ volumes:
   postgres_data:
   weaviate_data:
   ollama_data:
+  redis_data:
