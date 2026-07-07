@@ -93,17 +93,3 @@ async def api_v1_genai_explain_post(
         logger.error("[explain] Failed to generate explanation: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
-
-async def _read_upload(file: UploadFile) -> Tuple[Optional[str], bytes]:
-    if file is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Missing file payload",
-        )
-    content = await file.read()
-    if not content:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Empty upload payload",
-        )
-    return file.filename, content
