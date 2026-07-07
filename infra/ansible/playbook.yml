@@ -71,10 +71,31 @@
         groups: docker
         append: true
 
-    - name: Copy infra directory to VM
+    - name: Ensure infra directory exists on VM
+      ansible.builtin.file:
+        path: "{{ infra_dir }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Copy docker-compose file to VM
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../"
-        dest: "{{ infra_dir }}/"
+        src: "{{ playbook_dir }}/../docker-compose.azure.yml"
+        dest: "{{ infra_dir }}/docker-compose.azure.yml"
+        owner: "{{ ansible_user }}"
+        mode: preserve
+
+    - name: Copy Ollama entrypoint script to VM
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../ollama.sh"
+        dest: "{{ infra_dir }}/ollama.sh"
+        owner: "{{ ansible_user }}"
+        mode: preserve
+
+    - name: Copy database init scripts to VM
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../init-db/"
+        dest: "{{ infra_dir }}/init-db/"
         owner: "{{ ansible_user }}"
         mode: preserve
 
