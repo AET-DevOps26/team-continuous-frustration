@@ -75,6 +75,7 @@ services:
       LOGOS_API_KEY: ADD-KEY_HERE
       LLM_BASE_URL: ${LLM_BASE_URL:-http://ollama:11434/v1}
       LLM_MODEL: ${LLM_MODEL:-gemma4:e2b}
+      UPLOAD_SERVICE_BASE_URL: ${UPLOAD_SERVICE_BASE_URL:-http://upload-service:8091}
       WEAVIATE_URL: http://weaviate:8080
       JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-change-in-production-32c}
     volumes:

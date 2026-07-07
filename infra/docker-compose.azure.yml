@@ -81,9 +81,12 @@ services:
     expose:
       - "8090"
     environment:
-      LOGOS_API_KEY: ${LOGOS_API_KEY:-placeholder}
-      LLM_BASE_URL: ${LLM_BASE_URL:-http://placeholder}
-      LLM_MODEL: ${LLM_MODEL:-placeholder}
+      LOGOS_BASE_URL: ${LOGOS_BASE_URL:-https://logos.aet.cit.tum.de/v1}
+      LOGOS_MODEL: ${LOGOS_MODEL:-openai/gpt-oss-120b}
+      LOGOS_API_KEY: ${LOGOS_API_KEY}
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://ollama:11434/v1}
+      LLM_MODEL: ${LLM_MODEL:-gemma4:e2b}
+      UPLOAD_SERVICE_BASE_URL: ${UPLOAD_SERVICE_BASE_URL:-http://upload-service:8091}
       WEAVIATE_URL: http://weaviate:8080
       OLLAMA_API_ENDPOINT: http://ollama:11434
       JWT_SECRET: ${JWT_SECRET}
