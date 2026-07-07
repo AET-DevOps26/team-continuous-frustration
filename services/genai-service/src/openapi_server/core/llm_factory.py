@@ -7,13 +7,13 @@ from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 
 
 # Logos profile: TUM-hosted gpt-oss-120b.
-BASE_URL = "https://logos.aet.cit.tum.de/v1"
-LLM_MODEL_NAME = "openai/gpt-oss-120b"
+BASE_URL = os.getenv("LOGOS_BASE_URL","https://logos.aet.cit.tum.de/v1")
+LLM_MODEL_NAME = os.getenv("LOGOS_MODEL", "openai/gpt-oss-120b")
 API_KEY = os.getenv("LOGOS_API_KEY")
 
 # Ollama profile
 LOCAL_BASE_URL = os.getenv("LLM_BASE_URL", "http://ollama:11434/v1")
-LOCAL_LLM_MODEL_NAME = os.getenv("LLM_MODEL", "gemma-4-e2b")
+LOCAL_LLM_MODEL_NAME = os.getenv("LLM_MODEL", "gemma4:e2b")
 LOCAL_API_KEY = "ollama"
 
 
