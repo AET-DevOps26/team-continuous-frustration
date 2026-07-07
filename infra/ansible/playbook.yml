@@ -3,6 +3,12 @@
   hosts: azure_vm
   become: true
 
+  vars:
+    app_dir: "/home/{{ ansible_user }}/team-continuous-frustration"
+    infra_dir: "{{ app_dir }}/infra"
+    env_file: "/home/{{ ansible_user }}/.env.prod"
+    compose_file: "{{ infra_dir }}/docker-compose.azure.yml"
+
   tasks:
     - name: Update apt package index
       ansible.builtin.apt:
@@ -64,4 +70,50 @@
         name: azureuser
         groups: docker
         append: true
+
+    - name: Copy infra directory to VM
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../"
+        dest: "{{ infra_dir }}/"
+        owner: "{{ ansible_user }}"
+        mode: preserve
+
+    - name: Render production environment file
+      ansible.builtin.template:
+        src: templates/env.prod.j2
+        dest: "{{ env_file }}"
+        owner: "{{ ansible_user }}"
+        mode: "0600"
+      no_log: true
+
+    - name: Verify production environment file was written
+      ansible.builtin.stat:
+        path: "{{ env_file }}"
+      register: env_file_stat
+
+    - name: Fail if production environment file is missing or empty
+      ansible.builtin.fail:
+        msg: "{{ env_file }} is missing or empty"
+      when: not env_file_stat.stat.exists or env_file_stat.stat.size == 0
+
+    - name: Log in to GitHub Container Registry
+      ansible.builtin.shell: docker login ghcr.io -u "{{ github_actor }}" --password-stdin
+      args:
+        stdin: "{{ github_token }}"
+      no_log: true
+      changed_when: true
+
+    - name: Deploy application stack with Docker Compose
+      ansible.builtin.command:
+        cmd: >
+          docker compose -f {{ compose_file }} --env-file {{ env_file }}
+          up --pull=always -d --remove-orphans
+        chdir: "{{ infra_dir }}"
+      changed_when: true
+
+    - name: Remove dangling Docker resources
+      ansible.builtin.command:
+        cmd: docker system prune -af
+      register: prune_result
+      changed_when: "'Total reclaimed space: 0B' not in prune_result.stdout"
 
