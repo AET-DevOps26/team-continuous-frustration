@@ -71,7 +71,7 @@ docker compose down -v
 
 ```bash
 chmod 400 ./team-continuous-frustration_key.pem
-ssh -i ./team-continuous-frustration_key.pem azureuser@20.240.186.130
+ssh -i ./team-continuous-frustration_key.pem azureuser@68.210.146.30
 ```
 
 ---
