@@ -87,8 +87,8 @@
 
     - name: Copy Ollama entrypoint script to VM
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../ollama.sh"
-        dest: "{{ infra_dir }}/ollama.sh"
+        src: "{{ playbook_dir }}/../init-ollama/ollama.sh"
+        dest: "{{ infra_dir }}/init-ollama/ollama.sh"
         owner: "{{ ansible_user }}"
         mode: preserve
 
