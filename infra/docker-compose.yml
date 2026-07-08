@@ -70,11 +70,13 @@ services:
     ports:
       - "${GENAI_SERVICE_PORT:-8090}:8090"
     environment:
+      LOGOS_BASE_URL: ${LOGOS_BASE_URL:-https://logos.aet.cit.tum.de/v1}
+      LOGOS_MODEL: ${LOGOS_MODEL:-openai/gpt-oss-120b}
       LOGOS_API_KEY: ADD-KEY_HERE
       LLM_BASE_URL: ${LLM_BASE_URL:-http://ollama:11434/v1}
-      LLM_MODEL: ${LLM_MODEL:-llama3.2}
+      LLM_MODEL: ${LLM_MODEL:-gemma4:e2b}
+      UPLOAD_SERVICE_BASE_URL: ${UPLOAD_SERVICE_BASE_URL:-http://upload-service:8091}
       WEAVIATE_URL: http://weaviate:8080
-      OLLAMA_API_ENDPOINT: http://ollama:11434
       JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-change-in-production-32c}
     volumes:
       - ../services/genai-service:/app
@@ -107,8 +109,8 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-      - ./ollama.sh:/ollama.sh
-    entrypoint: ["/bin/sh", "/ollama.sh"]
+      - ./init-ollama/ollama.sh:/init-ollama/ollama.sh
+    entrypoint: ["/bin/sh", "/init-ollama/ollama.sh"]
 
   upload-service:
     build:

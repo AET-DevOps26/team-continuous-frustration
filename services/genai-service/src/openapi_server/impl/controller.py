@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import logging
+import os
 from typing import Optional, Tuple
 from collections.abc import AsyncIterable
 
@@ -19,6 +20,8 @@ from upload_service_client import UploadServiceClientAPIs
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+UPLOAD_SERVICE_BASE_URL = os.getenv("UPLOAD_SERVICE_BASE_URL", "http://upload-service:8091")
 
 
 @router.get("/api/v1/genai/health", response_model=dict, tags=["default"])
@@ -49,7 +52,7 @@ async def api_v1_genai_generate_flashcards_post(
     upload_id: str,
 ) -> AsyncIterable[Flashcard]:
     client = UploadServiceClientAPIs(
-        base_url="http://upload-service:8091", auth_token="your-api-token"
+        base_url=UPLOAD_SERVICE_BASE_URL, auth_token="your-api-token"
     )
     markdown_text = client.documents_get_documents_upload_id_get(upload_id)
 
