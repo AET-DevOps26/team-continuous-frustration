@@ -55,9 +55,9 @@ docker compose down -v
 ### VM Information
 
 - VM name: `team-continuous-frustration`
-- Public IP address: `20.240.186.130`
+- Public IP address: `68.210.146.30`
 - SSH user: `azureuser`
-- Client URL: https://20.240.186.130.nip.io
+- Client URL: https://68.210.146.30.nip.io
 
 ### Run Azure CI 
 
@@ -71,7 +71,7 @@ docker compose down -v
 
 ```bash
 chmod 400 ./team-continuous-frustration_key.pem
-ssh -i ./team-continuous-frustration_key.pem azureuser@20.240.186.130
+ssh -i ./team-continuous-frustration_key.pem azureuser@68.210.146.30
 ```
 
 ---
