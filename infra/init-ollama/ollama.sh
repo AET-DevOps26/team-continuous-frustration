@@ -12,7 +12,7 @@ echo "🔴 Retrieve embedding..."
 ollama pull nomic-embed-text
 echo "🟢 Done!"
 
-if [[ "$*" == "--pull-llm" ]]; then
+if [ "$*" = "--pull-llm" ]; then
     echo "🔴 Retrieve LLM..."
     ollama pull gemma4:e2b
     echo "🟢 Done!"
