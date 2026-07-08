@@ -8,7 +8,16 @@ from openapi_server.core.vector_store import (
     query_vector_store,
     _ensure_collection_exists,
 )
-from openapi_server.core.flashcard_pipeline import generate_flashcards_stream
+from openapi_server.core.flashcard_pipeline import (
+    generate_flashcards_stream,
+    generate_explanation,
+)
+from openapi_server.core.cache import (
+    get_cached_explanation,
+    set_cached_explanation,
+    EXPLANATION_CACHE_TTL_SECONDS,
+)
+from openapi_server.models.flashcard import Flashcard
 
 # ----------------------------------------------------------------------
 # 1. Tests for llm_factory.py
@@ -172,3 +181,136 @@ def test_generate_flashcards_stream():
 
         mock_query.assert_called_once()
         mock_llm_call.assert_called()
+
+
+def test_generate_explanation():
+    from langchain_core.documents import Document
+
+    mock_docs = [
+        Document(page_content="TUM is a prestigious university located in Munich."),
+    ]
+
+    flashcard = Flashcard(
+        id="flashcard-1",
+        question="What is TUM?",
+        answer="Technical University of Munich",
+        source_ref="upload-abc",
+        last_updated="2024-01-01T00:00:00+00:00",
+    )
+
+    with patch("openapi_server.core.flashcard_pipeline.query_vector_store") as mock_query, \
+         patch("openapi_server.core.llm_factory.OpenAICompatibleLLM._call") as mock_llm_call, \
+         patch("openapi_server.core.flashcard_pipeline.get_cached_explanation") as mock_get_cache, \
+         patch("openapi_server.core.flashcard_pipeline.set_cached_explanation") as mock_set_cache:
+
+        mock_get_cache.return_value = None
+        mock_query.return_value = mock_docs
+        mock_llm_call.return_value = "  TUM stands for Technical University of Munich. \n"
+
+        explanation = generate_explanation(flashcard)
+
+        assert explanation == "TUM stands for Technical University of Munich."
+
+        mock_query.assert_called_once()
+        _, kwargs = mock_query.call_args
+        assert kwargs["query"] == "What is TUM?\nTechnical University of Munich"
+        assert kwargs["k"] == 3
+
+        mock_llm_call.assert_called_once()
+
+        mock_get_cache.assert_called_once_with(
+            "flashcard-1", flashcard.last_updated.isoformat()
+        )
+        mock_set_cache.assert_called_once_with(
+            "flashcard-1",
+            flashcard.last_updated.isoformat(),
+            "TUM stands for Technical University of Munich.",
+        )
+
+
+def test_generate_explanation_cache_hit():
+    flashcard = Flashcard(
+        id="flashcard-1",
+        question="What is TUM?",
+        answer="Technical University of Munich",
+        source_ref="upload-abc",
+        last_updated="2024-01-01T00:00:00+00:00",
+    )
+
+    with patch("openapi_server.core.flashcard_pipeline.get_cached_explanation") as mock_get_cache, \
+         patch("openapi_server.core.flashcard_pipeline.set_cached_explanation") as mock_set_cache, \
+         patch("openapi_server.core.flashcard_pipeline.query_vector_store") as mock_query, \
+         patch("openapi_server.core.llm_factory.OpenAICompatibleLLM._call") as mock_llm_call:
+
+        mock_get_cache.return_value = "Cached explanation"
+
+        explanation = generate_explanation(flashcard)
+
+        assert explanation == "Cached explanation"
+        mock_query.assert_not_called()
+        mock_llm_call.assert_not_called()
+        mock_set_cache.assert_not_called()
+
+
+# ----------------------------------------------------------------------
+# 4. Tests for cache.py
+# ----------------------------------------------------------------------
+
+def test_get_cached_explanation_hit():
+    with patch("openapi_server.core.cache.get_redis_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_client.get.return_value = "Cached explanation"
+        mock_get_client.return_value = mock_client
+
+        result = get_cached_explanation("flashcard-1", "2024-01-01T00:00:00+00:00")
+
+        assert result == "Cached explanation"
+        mock_client.get.assert_called_once_with(
+            "explanation:flashcard-1:2024-01-01T00:00:00+00:00"
+        )
+
+
+def test_get_cached_explanation_miss():
+    with patch("openapi_server.core.cache.get_redis_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_client.get.return_value = None
+        mock_get_client.return_value = mock_client
+
+        result = get_cached_explanation("flashcard-1", "2024-01-01T00:00:00+00:00")
+
+        assert result is None
+
+
+def test_get_cached_explanation_redis_error_returns_none():
+    with patch("openapi_server.core.cache.get_redis_client") as mock_get_client:
+        mock_get_client.side_effect = ConnectionError("redis unavailable")
+
+        result = get_cached_explanation("flashcard-1", "2024-01-01T00:00:00+00:00")
+
+        assert result is None
+
+
+def test_set_cached_explanation_stores_with_ttl():
+    with patch("openapi_server.core.cache.get_redis_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+
+        set_cached_explanation(
+            "flashcard-1", "2024-01-01T00:00:00+00:00", "Some explanation"
+        )
+
+        mock_client.set.assert_called_once_with(
+            "explanation:flashcard-1:2024-01-01T00:00:00+00:00",
+            "Some explanation",
+            ex=EXPLANATION_CACHE_TTL_SECONDS,
+        )
+
+
+def test_set_cached_explanation_redis_error_is_swallowed():
+    with patch("openapi_server.core.cache.get_redis_client") as mock_get_client:
+        mock_get_client.side_effect = ConnectionError("redis unavailable")
+
+        # Should not raise despite Redis being unavailable.
+        set_cached_explanation(
+            "flashcard-1", "2024-01-01T00:00:00+00:00", "Some explanation"
+        )

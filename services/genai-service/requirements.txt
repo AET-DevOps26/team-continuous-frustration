@@ -40,3 +40,4 @@ langchain-core
 langchain_text_splitters
 langchain_ollama
 langchain-weaviate
+redis

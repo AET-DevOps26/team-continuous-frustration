@@ -39,6 +39,8 @@ spec:
                   key: LOGOS_API_KEY
             - name: OLLAMA_API_ENDPOINT
               value: http://ollama:11434
+            - name: REDIS_URL
+              value: redis://redis:6379/0
             - name: WEAVIATE_URL
               value: http://weaviate:8080
           image: ghcr.io/aet-devops26/team-continuous-frustration/genai-service:latest
