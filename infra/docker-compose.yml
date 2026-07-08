@@ -121,13 +121,6 @@ services:
     volumes:
       - redis_data:/data
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-
   upload-service:
     build:
       context: ../services/upload-service
