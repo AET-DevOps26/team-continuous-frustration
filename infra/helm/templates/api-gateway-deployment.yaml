@@ -1,15 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    traefik.enable: "true"
-    traefik.http.middlewares.gateway-compress.compress: "true"
-    traefik.http.routers.gateway.entrypoints: websecure
-    traefik.http.routers.gateway.middlewares: gateway-compress
-    traefik.http.routers.gateway.priority: "10"
-    traefik.http.routers.gateway.rule: Host(`{{ .Values.ingress.host }}`) && PathPrefix(`/api`)
-    traefik.http.routers.gateway.tls.certresolver: letsencrypt
-    traefik.http.services.gateway.loadbalancer.server.port: {{ .Values.apiGateway.port | quote }}
   labels:
     io.kompose.service: {{ .Values.apiGateway.name }}
   name: {{ .Values.apiGateway.name }}
@@ -21,15 +12,6 @@ spec:
       io.kompose.service: {{ .Values.apiGateway.name }}
   template:
     metadata:
-      annotations:
-        traefik.enable: "true"
-        traefik.http.middlewares.gateway-compress.compress: "true"
-        traefik.http.routers.gateway.entrypoints: websecure
-        traefik.http.routers.gateway.middlewares: gateway-compress
-        traefik.http.routers.gateway.priority: "10"
-        traefik.http.routers.gateway.rule: Host(`{{ .Values.ingress.host }}`) && PathPrefix(`/api`)
-        traefik.http.routers.gateway.tls.certresolver: letsencrypt
-        traefik.http.services.gateway.loadbalancer.server.port: {{ .Values.apiGateway.port | quote }}
       labels:
         io.kompose.service: {{ .Values.apiGateway.name }}
     spec:

@@ -1,13 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    traefik.enable: "true"
-    traefik.http.routers.webclient.entrypoints: websecure
-    traefik.http.routers.webclient.priority: "1"
-    traefik.http.routers.webclient.rule: Host(`{{ .Values.ingress.host }}`)
-    traefik.http.routers.webclient.tls.certresolver: letsencrypt
-    traefik.http.services.webclient.loadbalancer.server.port: {{ .Values.webClient.port | quote }}
   labels:
     io.kompose.service: {{ .Values.webClient.name }}
   name: {{ .Values.webClient.name }}
@@ -19,13 +12,6 @@ spec:
       io.kompose.service: {{ .Values.webClient.name }}
   template:
     metadata:
-      annotations:
-        traefik.enable: "true"
-        traefik.http.routers.webclient.entrypoints: websecure
-        traefik.http.routers.webclient.priority: "1"
-        traefik.http.routers.webclient.rule: Host(`{{ .Values.ingress.host }}`)
-        traefik.http.routers.webclient.tls.certresolver: letsencrypt
-        traefik.http.services.webclient.loadbalancer.server.port: {{ .Values.webClient.port | quote }}
       labels:
         io.kompose.service: {{ .Values.webClient.name }}
     spec:
