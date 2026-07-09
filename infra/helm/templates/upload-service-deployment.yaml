@@ -1,54 +1,49 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: upload-service
-  name: upload-service
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.uploadService.name }}
+  name: {{ .Values.uploadService.name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.uploadService.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: upload-service
+      io.kompose.service: {{ .Values.uploadService.name }}
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-        kompose.version: 1.38.0 (HEAD)
       labels:
-        io.kompose.service: upload-service
+        io.kompose.service: {{ .Values.uploadService.name }}
     spec:
       containers:
         - env:
             - name: POSTGRES_DB
-              value: uploaddocumentdb
+              value: {{ .Values.db.uploadDb }}
             - name: POSTGRES_HOST
-              value: db
+              value: {{ .Values.db.name }}
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_PORT
-              value: "5432"
+              value: {{ .Values.db.port | quote }}
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_USER
-          image: ghcr.io/aet-devops26/team-continuous-frustration/upload-service:latest
-          name: upload-service
+          image: {{ .Values.image.registry }}/{{ .Values.uploadService.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: {{ .Values.uploadService.name }}
           ports:
-            - containerPort: 8091
+            - containerPort: {{ .Values.uploadService.port }}
               protocol: TCP
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: {{ .Values.uploadService.resources.requests.cpu | quote }}
+              memory: {{ .Values.uploadService.resources.requests.memory | quote }}
             limits:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: {{ .Values.uploadService.resources.limits.cpu | quote }}
+              memory: {{ .Values.uploadService.resources.limits.memory | quote }}
       restartPolicy: Always

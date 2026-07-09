@@ -1,41 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: redis
-  name: redis
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.redis.name }}
+  name: {{ .Values.redis.name }}
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: redis
+      io.kompose.service: {{ .Values.redis.name }}
   strategy:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-        kompose.version: 1.38.0 (HEAD)
       labels:
-        io.kompose.service: redis
+        io.kompose.service: {{ .Values.redis.name }}
     spec:
       containers:
-        - image: redis:7-alpine
-          name: redis
+        - image: {{ .Values.redis.image }}
+          name: {{ .Values.redis.name }}
           ports:
-            - containerPort: 6379
+            - containerPort: {{ .Values.redis.port }}
               protocol: TCP
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: {{ .Values.redis.resources.requests.cpu | quote }}
+              memory: {{ .Values.redis.resources.requests.memory | quote }}
             limits:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: {{ .Values.redis.resources.limits.cpu | quote }}
+              memory: {{ .Values.redis.resources.limits.memory | quote }}
           volumeMounts:
             - mountPath: /data
               name: redis-data

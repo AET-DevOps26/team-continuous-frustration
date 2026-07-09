@@ -1,17 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: genai-service
-  name: genai-service
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.genaiService.name }}
+  name: {{ .Values.genaiService.name }}
+  namespace: {{ .Values.namespace }}
 spec:
   ports:
-    - name: "8090"
-      port: 8090
-      targetPort: 8090
+    - name: {{ .Values.genaiService.port | quote }}
+      port: {{ .Values.genaiService.port }}
+      targetPort: {{ .Values.genaiService.port }}
   selector:
-    io.kompose.service: genai-service
+    io.kompose.service: {{ .Values.genaiService.name }}

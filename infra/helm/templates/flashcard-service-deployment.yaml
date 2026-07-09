@@ -1,57 +1,52 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: flashcard-service
-  name: flashcard-service
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.flashcardService.name }}
+  name: {{ .Values.flashcardService.name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.flashcardService.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: flashcard-service
+      io.kompose.service: {{ .Values.flashcardService.name }}
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-        kompose.version: 1.38.0 (HEAD)
       labels:
-        io.kompose.service: flashcard-service
+        io.kompose.service: {{ .Values.flashcardService.name }}
     spec:
       containers:
         - env:
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: JWT_SECRET
             - name: SERVER_PORT
-              value: "8082"
+              value: {{ .Values.flashcardService.port | quote }}
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_PASSWORD
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://db:5432/flashcarddb
+              value: jdbc:postgresql://{{ .Values.db.name }}:{{ .Values.db.port }}/{{ .Values.db.flashcardDb }}
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_USER
-          image: ghcr.io/aet-devops26/team-continuous-frustration/flashcard-service:latest
-          name: flashcard-service
+          image: {{ .Values.image.registry }}/{{ .Values.flashcardService.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: {{ .Values.flashcardService.name }}
           ports:
-            - containerPort: 8082
+            - containerPort: {{ .Values.flashcardService.port }}
               protocol: TCP
           resources:
             requests:
-              cpu: "100m"
-              memory: "256Mi"
+              cpu: {{ .Values.flashcardService.resources.requests.cpu | quote }}
+              memory: {{ .Values.flashcardService.resources.requests.memory | quote }}
             limits:
-              cpu: "200m"
-              memory: "512Mi"
+              cpu: {{ .Values.flashcardService.resources.limits.cpu | quote }}
+              memory: {{ .Values.flashcardService.resources.limits.memory | quote }}
       restartPolicy: Always

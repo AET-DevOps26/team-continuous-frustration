@@ -1,0 +1,154 @@
+# Default values for the team-continuous-frustration chart.
+# This file declares the environment-specific settings that used to be
+# hardcoded in the kompose-generated manifests under templates/.
+
+namespace: team-continuous-frustration
+
+image:
+  registry: ghcr.io/aet-devops26/team-continuous-frustration
+  tag: latest
+  pullPolicy: Always
+
+# Name of the (externally managed) Secret holding JWT_SECRET, POSTGRES_USER,
+# POSTGRES_PASSWORD, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, LOGOS_API_KEY.
+secretName: app-secrets
+
+storageClassName: csi-rbd-sc
+
+ingress:
+  host: team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+  tlsSecretName: team-continuous-frustration-tls-secret
+  clusterIssuer: letsencrypt-prod
+
+apiGateway:
+  name: api-gateway
+  replicaCount: 1
+  port: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 192Mi
+
+authService:
+  name: auth-service
+  replicaCount: 1
+  port: 8081
+  jwtExpirationMs: "86400000"
+  sessionExpirationMs: "31536000000"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+flashcardService:
+  name: flashcard-service
+  replicaCount: 1
+  port: 8082
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+genaiService:
+  name: genai-service
+  replicaCount: 1
+  port: 8090
+  llmModel: "gemma4:e2b"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+uploadService:
+  name: upload-service
+  replicaCount: 1
+  port: 8091
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+webClient:
+  name: web-client
+  replicaCount: 1
+  port: 80
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+db:
+  name: db
+  image: postgres:16-alpine
+  port: 5432
+  storageSize: 100Mi
+  authDb: authdb
+  flashcardDb: flashcarddb
+  uploadDb: uploaddocumentdb
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 192Mi
+
+redis:
+  name: redis
+  image: redis:7-alpine
+  port: 6379
+  storageSize: 100Mi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+weaviate:
+  name: weaviate
+  image: semitechnologies/weaviate:1.27.0
+  port: 8080
+  grpcPort: 50051
+  storageSize: 100Mi
+  queryDefaultsLimit: 25
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+ollama:
+  name: ollama
+  image: ollama/ollama:0.30.8
+  port: 11434
+  pullLlm: false
+  storageSize: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
