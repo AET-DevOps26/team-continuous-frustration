@@ -1,44 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: ollama
-  name: ollama
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.ollama.name }}
+  name: {{ .Values.ollama.name }}
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: ollama
+      io.kompose.service: {{ .Values.ollama.name }}
   strategy:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-        kompose.version: 1.38.0 (HEAD)
       labels:
-        io.kompose.service: ollama
+        io.kompose.service: {{ .Values.ollama.name }}
     spec:
       containers:
         - command:
             - /bin/sh
             - /ollama.sh
-          image: ollama/ollama:0.30.8
-          name: ollama
+            {{- if .Values.ollama.pullLlm }}
+            - --pull-llm
+            {{- end }}
+          image: {{ .Values.ollama.image }}
+          name: {{ .Values.ollama.name }}
           ports:
-            - containerPort: 11434
+            - containerPort: {{ .Values.ollama.port }}
               protocol: TCP
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: {{ .Values.ollama.resources.requests.cpu | quote }}
+              memory: {{ .Values.ollama.resources.requests.memory | quote }}
             limits:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: {{ .Values.ollama.resources.limits.cpu | quote }}
+              memory: {{ .Values.ollama.resources.limits.memory | quote }}
           volumeMounts:
             - mountPath: /root/.ollama
               name: ollama-data

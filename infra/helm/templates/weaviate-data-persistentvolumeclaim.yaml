@@ -4,11 +4,11 @@ metadata:
   labels:
     io.kompose.service: weaviate-data
   name: weaviate-data
-  namespace: team-continuous-frustration
+  namespace: {{ .Values.namespace }}
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: csi-rbd-sc
+  storageClassName: {{ .Values.storageClassName }}
   resources:
     requests:
-      storage: 100Mi
+      storage: {{ .Values.weaviate.storageSize }}

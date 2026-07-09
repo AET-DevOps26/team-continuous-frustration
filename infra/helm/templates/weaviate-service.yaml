@@ -1,20 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: weaviate
-  name: weaviate
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.weaviate.name }}
+  name: {{ .Values.weaviate.name }}
+  namespace: {{ .Values.namespace }}
 spec:
   ports:
-    - name: "8080"
-      port: 8080
-      targetPort: 8080
-    - name: "50051"
-      port: 50051
-      targetPort: 50051
+    - name: {{ .Values.weaviate.port | quote }}
+      port: {{ .Values.weaviate.port }}
+      targetPort: {{ .Values.weaviate.port }}
+    - name: {{ .Values.weaviate.grpcPort | quote }}
+      port: {{ .Values.weaviate.grpcPort }}
+      targetPort: {{ .Values.weaviate.grpcPort }}
   selector:
-    io.kompose.service: weaviate
+    io.kompose.service: {{ .Values.weaviate.name }}

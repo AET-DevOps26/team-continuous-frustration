@@ -2,48 +2,45 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
     traefik.enable: "true"
     traefik.http.routers.webclient.entrypoints: websecure
     traefik.http.routers.webclient.priority: "1"
-    traefik.http.routers.webclient.rule: Host(``)
+    traefik.http.routers.webclient.rule: Host(`{{ .Values.ingress.host }}`)
     traefik.http.routers.webclient.tls.certresolver: letsencrypt
-    traefik.http.services.webclient.loadbalancer.server.port: "80"
+    traefik.http.services.webclient.loadbalancer.server.port: {{ .Values.webClient.port | quote }}
   labels:
-    io.kompose.service: web-client
-  name: web-client
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.webClient.name }}
+  name: {{ .Values.webClient.name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.webClient.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: web-client
+      io.kompose.service: {{ .Values.webClient.name }}
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-        kompose.version: 1.38.0 (HEAD)
         traefik.enable: "true"
         traefik.http.routers.webclient.entrypoints: websecure
         traefik.http.routers.webclient.priority: "1"
-        traefik.http.routers.webclient.rule: Host(``)
+        traefik.http.routers.webclient.rule: Host(`{{ .Values.ingress.host }}`)
         traefik.http.routers.webclient.tls.certresolver: letsencrypt
-        traefik.http.services.webclient.loadbalancer.server.port: "80"
+        traefik.http.services.webclient.loadbalancer.server.port: {{ .Values.webClient.port | quote }}
       labels:
-        io.kompose.service: web-client
+        io.kompose.service: {{ .Values.webClient.name }}
     spec:
       containers:
-        - image: ghcr.io/aet-devops26/team-continuous-frustration/web-client:latest
-          name: web-client
+        - image: {{ .Values.image.registry }}/{{ .Values.webClient.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: {{ .Values.webClient.name }}
           ports:
-            - containerPort: 80
+            - containerPort: {{ .Values.webClient.port }}
               protocol: TCP
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: {{ .Values.webClient.resources.requests.cpu | quote }}
+              memory: {{ .Values.webClient.resources.requests.memory | quote }}
             limits:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: {{ .Values.webClient.resources.limits.cpu | quote }}
+              memory: {{ .Values.webClient.resources.limits.memory | quote }}
       restartPolicy: Always

@@ -1,17 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: ollama
-  name: ollama
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.ollama.name }}
+  name: {{ .Values.ollama.name }}
+  namespace: {{ .Values.namespace }}
 spec:
   ports:
-    - name: "11434"
-      port: 11434
-      targetPort: 11434
+    - name: {{ .Values.ollama.port | quote }}
+      port: {{ .Values.ollama.port }}
+      targetPort: {{ .Values.ollama.port }}
   selector:
-    io.kompose.service: ollama
+    io.kompose.service: {{ .Values.ollama.name }}

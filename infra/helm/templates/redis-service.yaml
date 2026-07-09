@@ -1,17 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: redis
-  name: redis
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.redis.name }}
+  name: {{ .Values.redis.name }}
+  namespace: {{ .Values.namespace }}
 spec:
   ports:
-    - name: "6379"
-      port: 6379
-      targetPort: 6379
+    - name: {{ .Values.redis.port | quote }}
+      port: {{ .Values.redis.port }}
+      targetPort: {{ .Values.redis.port }}
   selector:
-    io.kompose.service: redis
+    io.kompose.service: {{ .Values.redis.name }}

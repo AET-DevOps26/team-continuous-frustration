@@ -2,70 +2,67 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
     traefik.enable: "true"
     traefik.http.middlewares.gateway-compress.compress: "true"
     traefik.http.routers.gateway.entrypoints: websecure
     traefik.http.routers.gateway.middlewares: gateway-compress
     traefik.http.routers.gateway.priority: "10"
-    traefik.http.routers.gateway.rule: Host(``) && PathPrefix(`/api`)
+    traefik.http.routers.gateway.rule: Host(`{{ .Values.ingress.host }}`) && PathPrefix(`/api`)
     traefik.http.routers.gateway.tls.certresolver: letsencrypt
-    traefik.http.services.gateway.loadbalancer.server.port: "8080"
+    traefik.http.services.gateway.loadbalancer.server.port: {{ .Values.apiGateway.port | quote }}
   labels:
-    io.kompose.service: api-gateway
-  name: api-gateway
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.apiGateway.name }}
+  name: {{ .Values.apiGateway.name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.apiGateway.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: api-gateway
+      io.kompose.service: {{ .Values.apiGateway.name }}
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-        kompose.version: 1.38.0 (HEAD)
         traefik.enable: "true"
         traefik.http.middlewares.gateway-compress.compress: "true"
         traefik.http.routers.gateway.entrypoints: websecure
         traefik.http.routers.gateway.middlewares: gateway-compress
         traefik.http.routers.gateway.priority: "10"
-        traefik.http.routers.gateway.rule: Host(``) && PathPrefix(`/api`)
+        traefik.http.routers.gateway.rule: Host(`{{ .Values.ingress.host }}`) && PathPrefix(`/api`)
         traefik.http.routers.gateway.tls.certresolver: letsencrypt
-        traefik.http.services.gateway.loadbalancer.server.port: "8080"
+        traefik.http.services.gateway.loadbalancer.server.port: {{ .Values.apiGateway.port | quote }}
       labels:
-        io.kompose.service: api-gateway
+        io.kompose.service: {{ .Values.apiGateway.name }}
     spec:
       containers:
         - env:
             - name: AUTH_SERVICE_URL
-              value: http://auth-service:8081
+              value: http://{{ .Values.authService.name }}:{{ .Values.authService.port }}
             - name: CORS_ALLOWED_ORIGINS
-              value: https://team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+              value: https://{{ .Values.ingress.host }}
             - name: FLASHCARD_SERVICE_URL
-              value: http://flashcard-service:8082
+              value: http://{{ .Values.flashcardService.name }}:{{ .Values.flashcardService.port }}
             - name: GENAI_SERVICE_URL
-              value: http://genai-service:8090
+              value: http://{{ .Values.genaiService.name }}:{{ .Values.genaiService.port }}
             - name: JAVA_TOOL_OPTIONS
               value: -Djava.net.preferIPv4Stack=true
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: JWT_SECRET
             - name: UPLOAD_SERVICE_URL
-              value: http://upload-service:8091
-          image: ghcr.io/aet-devops26/team-continuous-frustration/api-gateway:latest
-          name: api-gateway
+              value: http://{{ .Values.uploadService.name }}:{{ .Values.uploadService.port }}
+          image: {{ .Values.image.registry }}/{{ .Values.apiGateway.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: {{ .Values.apiGateway.name }}
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.apiGateway.port }}
               protocol: TCP
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: {{ .Values.apiGateway.resources.requests.cpu | quote }}
+              memory: {{ .Values.apiGateway.resources.requests.memory | quote }}
             limits:
-              cpu: "200m"
-              memory: "192Mi"
+              cpu: {{ .Values.apiGateway.resources.limits.cpu | quote }}
+              memory: {{ .Values.apiGateway.resources.limits.memory | quote }}
       restartPolicy: Always
