@@ -18,7 +18,7 @@ spec:
       containers:
         - env:
             - name: FRONTEND_URL
-              value: ""
+              value: https://{{ .Values.ingress.host }}
             - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:

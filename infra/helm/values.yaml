@@ -65,11 +65,11 @@ genaiService:
   llmModel: "gemma4:e2b"
   resources:
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 200m
+      memory: 256Mi
     limits:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 200m
+      memory: 256Mi
 
 uploadService:
   name: upload-service
@@ -133,11 +133,11 @@ weaviate:
   queryDefaultsLimit: 25
   resources:
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 200m
+      memory: 256Mi
     limits:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 200m
+      memory: 256Mi
 
 ollama:
   name: ollama
