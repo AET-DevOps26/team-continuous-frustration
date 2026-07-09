@@ -24,6 +24,20 @@ spec:
                 name: {{ .Values.apiGateway.name }}
                 port:
                   number: {{ .Values.apiGateway.port }}
+          - path: /oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.apiGateway.name }}
+                port:
+                  number: {{ .Values.apiGateway.port }}
+          - path: /login/oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.apiGateway.name }}
+                port:
+                  number: {{ .Values.apiGateway.port }}
           - path: /
             pathType: Prefix
             backend:
