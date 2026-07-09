@@ -13,11 +13,13 @@ from fastapi import HTTPException, status
 ALLOWED_EXTENSIONS = {".pdf", ".txt", ".md", ".docx", "pptx"}
 POSTGRES_USER = os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "uploaddocumentdb")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "db")
+
+DSN = f"dbname='{POSTGRES_DB}' user='{POSTGRES_USER}' host='{POSTGRES_HOST}' password='{POSTGRES_PASSWORD}'"
 
 try:
-    conn = psycopg2.connect(
-        f"dbname='uploaddocumentdb' user='{POSTGRES_USER}' host='db' password='{POSTGRES_PASSWORD}'"
-    )
+    conn = psycopg2.connect(DSN)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS documents
@@ -36,9 +38,7 @@ except Exception as e:
 
 
 def store_markdown(markdown_content: str, filename: str, date_uploaded: str) -> str:
-    with psycopg2.connect(
-        f"dbname='uploaddocumentdb' user='{POSTGRES_USER}' host='db' password='{POSTGRES_PASSWORD}'"
-    ) as conn:
+    with psycopg2.connect(DSN) as conn:
         with conn.cursor() as curs:
             curs.execute(
                 """
@@ -54,9 +54,7 @@ def store_markdown(markdown_content: str, filename: str, date_uploaded: str) -> 
 
 
 def get_document(id: str) -> Optional[str]:
-    with psycopg2.connect(
-        f"dbname='uploaddocumentdb' user='{POSTGRES_USER}' host='db' password='{POSTGRES_PASSWORD}'"
-    ) as conn:
+    with psycopg2.connect(DSN) as conn:
         with conn.cursor() as curs:
             curs.execute("SELECT content FROM documents WHERE id = %s", (id,))
             result = curs.fetchone()
