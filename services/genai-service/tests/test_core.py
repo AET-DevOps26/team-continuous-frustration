@@ -1,8 +1,10 @@
 import datetime
 from unittest.mock import MagicMock, patch
+import pytest
 import weaviate
 
 from openapi_server.core.llm_factory import OpenAICompatibleLLM
+from openapi_server.core import vector_store as vector_store_module
 from openapi_server.core.vector_store import (
     upsert_markdown_to_weaviate,
     query_vector_store,
@@ -62,6 +64,19 @@ def test_llm_factory_call():
 # 2. Tests for vector_store.py
 # ----------------------------------------------------------------------
 
+@pytest.fixture(autouse=True)
+def reset_vector_store_singletons():
+    """The client/embeddings/vectorstore are cached module-level singletons;
+    reset them around each test so mocks don't leak between tests."""
+    vector_store_module._client = None
+    vector_store_module._embeddings = None
+    vector_store_module._vectorstore = None
+    yield
+    vector_store_module._client = None
+    vector_store_module._embeddings = None
+    vector_store_module._vectorstore = None
+
+
 def test_ensure_collection_exists_already_exists():
     mock_client = MagicMock()
     # collections.get succeeds, meaning collection already exists
@@ -85,20 +100,35 @@ def test_upsert_markdown_to_weaviate():
     with patch("openapi_server.core.vector_store.weaviate.connect_to_local") as mock_connect, \
          patch("openapi_server.core.vector_store._ensure_collection_exists") as mock_ensure, \
          patch("openapi_server.core.vector_store.get_embeddings") as mock_get_embed, \
-         patch("openapi_server.core.vector_store.WeaviateVectorStore.from_documents") as mock_from_docs:
+         patch("openapi_server.core.vector_store.WeaviateVectorStore") as MockWeaviateVectorStore:
 
         mock_client = MagicMock()
-        mock_connect.return_value.__enter__.return_value = mock_client
+        mock_connect.return_value = mock_client
         mock_get_embed.return_value = MagicMock()
-        mock_from_docs.return_value = "mock_vectorstore"
+
+        mock_vectorstore_instance = MagicMock()
+        MockWeaviateVectorStore.return_value = mock_vectorstore_instance
 
         result = upsert_markdown_to_weaviate("upload-123", "Some markdown split test")
 
-        assert result == "mock_vectorstore"
+        assert result is mock_vectorstore_instance
         mock_connect.assert_called_once()
         mock_ensure.assert_called_once_with(mock_client)
         mock_get_embed.assert_called_once()
-        mock_from_docs.assert_called_once()
+        MockWeaviateVectorStore.assert_called_once_with(
+            client=mock_client,
+            index_name="FlashcardDocument",
+            text_key="text",
+            embedding=mock_get_embed.return_value,
+        )
+        mock_vectorstore_instance.add_documents.assert_called_once()
+
+        # A second call should reuse the cached client/vectorstore instead of
+        # reconnecting or rebuilding them.
+        upsert_markdown_to_weaviate("upload-456", "More markdown")
+        mock_connect.assert_called_once()
+        mock_ensure.assert_called_once()
+        MockWeaviateVectorStore.assert_called_once()
 
 
 def test_query_vector_store():
@@ -108,7 +138,7 @@ def test_query_vector_store():
          patch("openapi_server.core.vector_store.WeaviateVectorStore") as MockWeaviateVectorStore:
 
         mock_client = MagicMock()
-        mock_connect.return_value.__enter__.return_value = mock_client
+        mock_connect.return_value = mock_client
         mock_get_embed.return_value = MagicMock()
 
         mock_vectorstore_instance = MagicMock()
@@ -130,6 +160,13 @@ def test_query_vector_store():
         mock_vectorstore_instance.similarity_search.assert_called_once_with(
             query="test query", k=5, filters="mock filters"
         )
+
+        # A second query should reuse the cached client/vectorstore instead
+        # of reconnecting or rebuilding them.
+        query_vector_store("another query", 3, "mock filters")
+        mock_connect.assert_called_once()
+        mock_ensure.assert_called_once()
+        MockWeaviateVectorStore.assert_called_once()
 
 
 # ----------------------------------------------------------------------
