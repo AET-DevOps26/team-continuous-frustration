@@ -58,7 +58,7 @@ async def api_v1_genai_generate_flashcards_post(
     client = UploadServiceClientAPIs(
         base_url=UPLOAD_SERVICE_BASE_URL, auth_token="your-api-token"
     )
-    markdown_text = client.documents_get_documents_upload_id_get(upload_id)
+    markdown_text = await run_in_threadpool(client.documents_get_documents_upload_id_get, upload_id)
 
     logger.debug("[generate] Upserting markdown to Weaviate")
     await run_in_threadpool(upsert_markdown_to_weaviate, upload_id, markdown_text)
