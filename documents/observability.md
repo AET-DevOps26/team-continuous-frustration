@@ -139,18 +139,18 @@ reachable from a browser, not exposed with default credentials:
 | Prometheus | `https://prometheus.<vm-ip>.nip.io` |
 | Jaeger | `https://jaeger.<vm-ip>.nip.io` |
 
-**Two layers of auth** protect these:
-1. **Traefik HTTP Basic Auth** — required just to load the page. Configured via a Traefik
-   *file-provider* config (`infra/ansible/templates/traefik-dynamic.yml.j2`), rendered by Ansible
-   directly onto the VM — deliberately **not** passed through a docker-compose `${VAR}`, because
-   Compose's env-file interpolation mangles `$` characters found in htpasswd-style hashes
-   (confirmed empirically: `admin:$apr1$abc...` silently collapses to `admin:`). Rendering via
-   Jinja2 sidesteps that entirely.
-2. **Grafana's own login** — a real generated `GRAFANA_ADMIN_USER`/`PASSWORD`, not local's
-   `admin`/`admin`.
+All three sit behind **Traefik HTTP Basic Auth** — required just to load the page. Configured
+via a Traefik *file-provider* config (`infra/ansible/templates/traefik-dynamic.yml.j2`), rendered
+by Ansible directly onto the VM — deliberately **not** passed through a docker-compose `${VAR}`,
+because Compose's env-file interpolation mangles `$` characters found in htpasswd-style hashes
+(confirmed empirically: `admin:$apr1$abc...` silently collapses to `admin:`). Rendering via
+Jinja2 sidesteps that entirely.
 
-Prometheus and Jaeger have no login of their own — Basic Auth is their *only* protection, so
-don't skip setting it up.
+**Grafana alone gets a second layer** on top of that: its own login, a real generated
+`GRAFANA_ADMIN_USER`/`PASSWORD`, not local's `admin`/`admin` default.
+
+**Prometheus and Jaeger have no login of their own** — Basic Auth is their *only* protection, so
+don't skip setting up `MONITORING_BASIC_AUTH_USERS`.
 
 ### One-time setup
 

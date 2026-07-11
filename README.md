@@ -66,8 +66,8 @@ Jaeger) locally, and the same stack runs on the Azure VM behind Traefik + Basic 
 | Jaeger | http://localhost:16686 | `https://jaeger.<vm-ip>.nip.io` |
 
 **→ See [documents/observability.md](documents/observability.md) for the full guide**: querying
-metrics/logs/traces, the dashboard layout, Azure's two-layer auth and one-time GitHub secrets
-setup, and troubleshooting.
+metrics/logs/traces, the dashboard layout, Azure's auth setup (Basic Auth on all three, plus
+Grafana's own login on top) and one-time GitHub secrets setup, and troubleshooting.
 
 ## Azure VM Deployment
 
