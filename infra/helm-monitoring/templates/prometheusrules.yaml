@@ -1,0 +1,78 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: team-continuous-frustration-alerts
+  namespace: {{ .Values.namespace }}
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: team-continuous-frustration.availability
+      rules:
+        - alert: ServiceDown
+          expr: up{job=~"api-gateway|auth-service|flashcard-service|genai-service|upload-service"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{`{{ $labels.job }}`}} is down"
+            description: "Prometheus has not been able to scrape {{`{{ $labels.job }}`}} for 2 minutes."
+
+        - alert: PodRestartingTooMuch
+          expr: increase(kube_pod_container_status_restarts_total{namespace="{{ .Values.appNamespace }}"}[{{ .Values.alerting.podRestartWindow }}]) > {{ .Values.alerting.podRestartThreshold }}
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{`{{ $labels.namespace }}`}}/{{`{{ $labels.pod }}`}} is restarting too often"
+            description: "Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} restarted more than {{ .Values.alerting.podRestartThreshold }} times in the last {{ .Values.alerting.podRestartWindow }}."
+
+    - name: team-continuous-frustration.spring-services
+      rules:
+        - alert: HighErrorRateSpring
+          expr: |
+            sum by (job) (rate(http_server_requests_seconds_count{status=~"5..", job=~"api-gateway|auth-service|flashcard-service"}[{{ .Values.alerting.errorRateWindow }}]))
+              /
+            sum by (job) (rate(http_server_requests_seconds_count{job=~"api-gateway|auth-service|flashcard-service"}[{{ .Values.alerting.errorRateWindow }}]))
+              > {{ .Values.alerting.errorRateThreshold }}
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High 5xx error rate on {{`{{ $labels.job }}`}}"
+            description: "{{`{{ $labels.job }}`}} is returning 5xx responses for more than {{ printf "%.0f" (mulf .Values.alerting.errorRateThreshold 100) }}% of requests over the last {{ .Values.alerting.errorRateWindow }}."
+
+        - alert: SlowResponseTimeSpring
+          expr: |
+            histogram_quantile(0.95, sum by (job, le) (rate(http_server_requests_seconds_bucket{job=~"api-gateway|auth-service|flashcard-service"}[5m]))) > {{ .Values.alerting.slowResponseP95Seconds }}
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "P95 latency on {{`{{ $labels.job }}`}} exceeds budget"
+            description: "P95 request latency for {{`{{ $labels.job }}`}} has been above {{ .Values.alerting.slowResponseP95Seconds }}s for 5 minutes."
+
+    - name: team-continuous-frustration.python-services
+      rules:
+        - alert: HighErrorRatePython
+          expr: |
+            sum by (job) (rate(http_requests_total{status=~"5..", job=~"genai-service|upload-service"}[{{ .Values.alerting.errorRateWindow }}]))
+              /
+            sum by (job) (rate(http_requests_total{job=~"genai-service|upload-service"}[{{ .Values.alerting.errorRateWindow }}]))
+              > {{ .Values.alerting.errorRateThreshold }}
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High 5xx error rate on {{`{{ $labels.job }}`}}"
+            description: "{{`{{ $labels.job }}`}} is returning 5xx responses for more than {{ printf "%.0f" (mulf .Values.alerting.errorRateThreshold 100) }}% of requests over the last {{ .Values.alerting.errorRateWindow }}."
+
+        - alert: SlowResponseTimePython
+          expr: |
+            histogram_quantile(0.95, sum by (job, le) (rate(http_request_duration_seconds_bucket{job=~"genai-service|upload-service"}[5m]))) > {{ .Values.alerting.slowResponseP95Seconds }}
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "P95 latency on {{`{{ $labels.job }}`}} exceeds budget"
+            description: "P95 request latency for {{`{{ $labels.job }}`}} has been above {{ .Values.alerting.slowResponseP95Seconds }}s for 5 minutes."
