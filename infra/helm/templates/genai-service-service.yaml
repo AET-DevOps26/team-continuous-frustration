@@ -3,6 +3,8 @@ kind: Service
 metadata:
   labels:
     io.kompose.service: {{ .Values.genaiService.name }}
+    app: {{ .Values.genaiService.name }}
+    monitoring: "true"
   name: {{ .Values.genaiService.name }}
   namespace: {{ .Values.namespace }}
 spec:

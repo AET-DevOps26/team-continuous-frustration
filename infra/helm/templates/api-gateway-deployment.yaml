@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         io.kompose.service: {{ .Values.apiGateway.name }}
+        app: {{ .Values.apiGateway.name }}
+        monitoring: "true"
     spec:
       containers:
         - env:
@@ -32,6 +34,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
                   key: JWT_SECRET
+            - name: OTLP_TRACING_ENDPOINT
+              value: {{ .Values.tracing.otlpEndpoint | quote }}
+            - name: TRACING_SAMPLING_PROBABILITY
+              value: {{ .Values.tracing.samplingProbability | quote }}
             - name: UPLOAD_SERVICE_URL
               value: http://{{ .Values.uploadService.name }}:{{ .Values.uploadService.port }}
           image: {{ .Values.image.registry }}/{{ .Values.apiGateway.name }}:{{ .Values.image.tag }}

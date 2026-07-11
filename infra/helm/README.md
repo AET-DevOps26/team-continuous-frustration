@@ -7,6 +7,7 @@ Key values (see `values.yaml` for the full list):
 - `image.registry` / `image.tag` / `image.pullPolicy` — container image settings shared by all in-house services
 - `secretName` — name of the externally managed Secret providing `JWT_SECRET`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `LOGOS_API_KEY`
 - `storageClassName` — storage class used by all PersistentVolumeClaims
+- `tracing.otlpEndpoint` / `tracing.samplingProbability` — OTLP trace export target for the Spring services, pointed at the Jaeger instance from `infra/helm-monitoring` by default
 - `ingress.host` / `ingress.tlsSecretName` / `ingress.clusterIssuer` — ingress/TLS settings
 - per-service blocks (`apiGateway`, `authService`, `flashcardService`, `genaiService`, `uploadService`, `webClient`, `db`, `redis`, `weaviate`, `ollama`) — replica counts, ports and resource requests/limits
 
@@ -25,3 +26,7 @@ helm upgrade --install team-continuous-frustration . \
 
 The `app-secrets` Secret referenced by `secretName` is not managed by this
 chart and must be created separately in the target namespace before install.
+
+The five app microservices' Services/Deployments carry `app: <name>` and
+`monitoring: "true"` labels so `infra/helm-monitoring`'s ServiceMonitors can
+discover them - keep both charts in sync if you rename or add a service.

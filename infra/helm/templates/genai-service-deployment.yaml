@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         io.kompose.service: {{ .Values.genaiService.name }}
+        app: {{ .Values.genaiService.name }}
+        monitoring: "true"
     spec:
       containers:
         - env:

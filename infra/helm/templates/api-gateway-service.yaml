@@ -3,6 +3,8 @@ kind: Service
 metadata:
   labels:
     io.kompose.service: {{ .Values.apiGateway.name }}
+    app: {{ .Values.apiGateway.name }}
+    monitoring: "true"
   name: {{ .Values.apiGateway.name }}
   namespace: {{ .Values.namespace }}
 spec:

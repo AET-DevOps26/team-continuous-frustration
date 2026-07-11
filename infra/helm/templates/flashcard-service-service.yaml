@@ -3,6 +3,8 @@ kind: Service
 metadata:
   labels:
     io.kompose.service: {{ .Values.flashcardService.name }}
+    app: {{ .Values.flashcardService.name }}
+    monitoring: "true"
   name: {{ .Values.flashcardService.name }}
   namespace: {{ .Values.namespace }}
 spec:

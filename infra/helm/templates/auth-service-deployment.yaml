@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         io.kompose.service: {{ .Values.authService.name }}
+        app: {{ .Values.authService.name }}
+        monitoring: "true"
     spec:
       containers:
         - env:
@@ -36,6 +38,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
                   key: JWT_SECRET
+            - name: OTLP_TRACING_ENDPOINT
+              value: {{ .Values.tracing.otlpEndpoint | quote }}
             - name: SERVER_PORT
               value: {{ .Values.authService.port | quote }}
             - name: SESSION_EXPIRATION_MS
@@ -52,6 +56,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
                   key: POSTGRES_USER
+            - name: TRACING_SAMPLING_PROBABILITY
+              value: {{ .Values.tracing.samplingProbability | quote }}
           image: {{ .Values.image.registry }}/{{ .Values.authService.name }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: {{ .Values.authService.name }}

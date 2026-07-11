@@ -15,6 +15,14 @@ secretName: app-secrets
 
 storageClassName: csi-rbd-sc
 
+# OTLP trace export target for the Spring services (api-gateway,
+# auth-service, flashcard-service). Points at the Jaeger instance deployed
+# by the infra/helm-monitoring chart, which lives in a different
+# namespace, hence the fully-qualified in-cluster DNS name.
+tracing:
+  otlpEndpoint: http://jaeger-query.team-continuous-frustration-monitoring.svc.cluster.local:4318/v1/traces
+  samplingProbability: "1.0"
+
 ingress:
   host: team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
   tlsSecretName: team-continuous-frustration-tls-secret
