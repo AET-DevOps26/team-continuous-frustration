@@ -342,8 +342,32 @@ kube-prometheus-stack:
         enabled: true
         label: grafana_dashboard
         labelValue: "1"
+        # Chart default is "both" (ConfigMaps AND Secrets). Our dashboard
+        # is a ConfigMap, and watching Secrets makes the sidecar call the
+        # cluster-wide list_secret_for_all_namespaces API regardless of
+        # searchNamespace - which a namespaced Role can never satisfy
+        # ("cannot list resource secrets ... at the cluster scope"),
+        # crash-looping the sidecar. Restrict to configmaps, and pin the
+        # search namespace explicitly rather than relying on the "null
+        # defaults to own namespace" chart default, which evidently doesn't
+        # hold for every resource type/version.
+        resource: "configmap"
+        searchNamespace: team-continuous-frustration-monitoring
       datasources:
-        enabled: false
+        # Was previously disabled entirely, which turned out to be a bigger
+        # hammer than intended: the datasource ConfigMap that carries both
+        # the default Prometheus datasource *and* grafana.additionalDataSources
+        # (Jaeger, below) is itself gated on this flag
+        # (kube-prometheus-stack templates/grafana/configmaps-datasources.yaml
+        # renders nothing unless sidecar.datasources.enabled is true) - so
+        # disabling the sidecar silently dropped every datasource, not just
+        # the runtime watcher. Same RBAC trap as the dashboards sidecar
+        # above (chart default "both" needs cluster-wide secret listing),
+        # so apply the same fix: restrict to ConfigMaps and pin the search
+        # namespace.
+        enabled: true
+        resource: "configmap"
+        searchNamespace: team-continuous-frustration-monitoring
     additionalDataSources:
       # Loki is disabled for now (see loki-stack block below - its
       # Promtail DaemonSet alone would exceed the whole monitoring

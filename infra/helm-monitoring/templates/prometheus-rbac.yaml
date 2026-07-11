@@ -1,0 +1,41 @@
+{{/*
+values.yaml assumes the shared Prometheus Operator auto-provisions namespaced
+Roles for the Prometheus workload's ServiceAccount based on
+serviceMonitorNamespaceSelector/podMonitorNamespaceSelector/ruleNamespaceSelector
+(see kube-prometheus-stack.prometheusOperator comment there). In practice that
+doesn't happen on this cluster - the SA (monitoring-prometheus) has no
+Role/RoleBinding anywhere, so Prometheus can't list pods/services/endpoints
+even in its own namespace, and every scrape target discovery fails with
+"... is forbidden ... cannot list resource ...". Same fix as
+templates/promtail-rbac.yaml: grant namespaced Roles explicitly in both
+namespaces since this account has no cluster-wide RBAC.
+*/}}
+{{- range list .Values.namespace .Values.appNamespace }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: monitoring-prometheus
+  namespace: {{ . }}
+rules:
+  - apiGroups: [""]
+    resources:
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: monitoring-prometheus
+  namespace: {{ . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: monitoring-prometheus
+subjects:
+  - kind: ServiceAccount
+    name: monitoring-prometheus
+    namespace: {{ $.Values.namespace }}
+---
+{{- end }}
