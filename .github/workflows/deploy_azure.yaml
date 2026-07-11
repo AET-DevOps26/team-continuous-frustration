@@ -51,6 +51,9 @@ jobs:
           logos_api_key: "${{ secrets.LOGOS_API_KEY }}"
           llm_base_url: "${{ vars.LLM_BASE_URL }}"
           llm_model: "${{ vars.LLM_MODEL }}"
+          grafana_admin_user: "${{ vars.GRAFANA_ADMIN_USER }}"
+          grafana_admin_password: "${{ secrets.GRAFANA_ADMIN_PASSWORD }}"
+          monitoring_basic_auth_users: "${{ secrets.MONITORING_BASIC_AUTH_USERS }}"
           EOF
 
       - name: Run Ansible playbook

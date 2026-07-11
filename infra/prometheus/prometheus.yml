@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "auth-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["auth-service:8081"]
+
+  - job_name: "flashcard-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["flashcard-service:8082"]
+
+  - job_name: "api-gateway"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["api-gateway:8080"]
+
+  - job_name: "genai-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["genai-service:8090"]
+
+  - job_name: "upload-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["upload-service:8091"]
