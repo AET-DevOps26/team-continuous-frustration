@@ -35,3 +35,7 @@ watchgod==0.7
 websockets==10.0
 markitdown
 psycopg2
+prometheus-fastapi-instrumentator
+opentelemetry-sdk
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation-fastapi

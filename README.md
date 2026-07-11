@@ -35,6 +35,10 @@ docker compose up --build
 | GenAI service | 8090 |
 | Upload service | 8091 |
 | Web client | 5173 |
+| Prometheus | 9090 |
+| Grafana | 3001 |
+| Jaeger UI | 16686 |
+| Loki | 3100 |
 
 To stop all services:
 
@@ -49,6 +53,21 @@ docker compose down -v
 ```
 
 ---
+
+## Observability
+
+`docker compose up` also starts a full monitoring stack (Prometheus, Grafana, Loki/Promtail,
+Jaeger) locally, and the same stack runs on the Azure VM behind Traefik + Basic Auth.
+
+| Tool | Local | Azure |
+|---|---|---|
+| Prometheus | http://localhost:9090 | `https://prometheus.<vm-ip>.nip.io` |
+| Grafana | http://localhost:3001 (`admin`/`admin`) | `https://grafana.<vm-ip>.nip.io` |
+| Jaeger | http://localhost:16686 | `https://jaeger.<vm-ip>.nip.io` |
+
+**→ See [documents/observability.md](documents/observability.md) for the full guide**: querying
+metrics/logs/traces, the dashboard layout, Azure's auth setup (Basic Auth on all three, plus
+Grafana's own login on top) and one-time GitHub secrets setup, and troubleshooting.
 
 ## Azure VM Deployment
 

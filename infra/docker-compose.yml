@@ -79,6 +79,7 @@ services:
       WEAVIATE_URL: http://weaviate:8080
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-change-in-production-32c}
+      OTLP_EXPORTER_ENDPOINT: jaeger:4317
     volumes:
       - ../services/genai-service:/app
     depends_on:
@@ -86,6 +87,7 @@ services:
       - ollama
       - upload-service
       - redis
+      - jaeger
 
   weaviate:
     image: semitechnologies/weaviate:1.27.0
@@ -117,7 +119,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6380}:6379"
     volumes:
       - redis_data:/data
 
@@ -134,11 +136,14 @@ services:
       POSTGRES_DB: uploaddocumentdb
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      OTLP_EXPORTER_ENDPOINT: jaeger:4317
     volumes:
       - ../services/upload-service:/app
     depends_on:
       db:
         condition: service_healthy
+      jaeger:
+        condition: service_started
 
   api-gateway:
     build:
@@ -178,6 +183,66 @@ services:
     depends_on:
       - api-gateway
 
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:2.9.0
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    volumes:
+      - ./promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml:ro
+      - promtail_positions:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   weaviate_data:
@@ -185,3 +250,7 @@ volumes:
   redis_data:
   maven_cache:
   web_client_node_modules:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  promtail_positions:

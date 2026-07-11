@@ -1,0 +1,6 @@
+http:
+  middlewares:
+    monitoring-auth:
+      basicAuth:
+        users:
+          - "{{ monitoring_basic_auth_users }}"

@@ -99,6 +99,49 @@
         owner: "{{ ansible_user }}"
         mode: preserve
 
+    - name: Copy Prometheus config to VM
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../prometheus/"
+        dest: "{{ infra_dir }}/prometheus/"
+        owner: "{{ ansible_user }}"
+        mode: preserve
+
+    - name: Copy Loki config to VM
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../loki/"
+        dest: "{{ infra_dir }}/loki/"
+        owner: "{{ ansible_user }}"
+        mode: preserve
+
+    - name: Copy Promtail config to VM
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../promtail/"
+        dest: "{{ infra_dir }}/promtail/"
+        owner: "{{ ansible_user }}"
+        mode: preserve
+
+    - name: Copy Grafana provisioning config to VM
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../grafana/"
+        dest: "{{ infra_dir }}/grafana/"
+        owner: "{{ ansible_user }}"
+        mode: preserve
+
+    - name: Ensure Traefik dynamic config directory exists
+      ansible.builtin.file:
+        path: "{{ infra_dir }}/traefik/dynamic"
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Render Traefik dynamic config (monitoring basic auth)
+      ansible.builtin.template:
+        src: templates/traefik-dynamic.yml.j2
+        dest: "{{ infra_dir }}/traefik/dynamic/monitoring-auth.yml"
+        owner: "{{ ansible_user }}"
+        mode: "0600"
+      no_log: true
+
     - name: Render production environment file
       ansible.builtin.template:
         src: templates/env.prod.j2
