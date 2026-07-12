@@ -2,32 +2,46 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: app-ingress
-  namespace: team-continuous-frustration
+  namespace: {{ .Values.namespace }}
   annotations:
     # TLS and routing are managed by the cluster-level ingress controller
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer }}
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   tls:
     - hosts:
-        - team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
-      secretName: team-continuous-frustration-tls-secret
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tlsSecretName }}
   rules:
-    - host: team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+    - host: {{ .Values.ingress.host }}
       http:
         paths:
           - path: /api
             pathType: Prefix
             backend:
               service:
-                name: api-gateway
+                name: {{ .Values.apiGateway.name }}
                 port:
-                  number: 8080
+                  number: {{ .Values.apiGateway.port }}
+          - path: /oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.apiGateway.name }}
+                port:
+                  number: {{ .Values.apiGateway.port }}
+          - path: /login/oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.apiGateway.name }}
+                port:
+                  number: {{ .Values.apiGateway.port }}
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: web-client
+                name: {{ .Values.webClient.name }}
                 port:
-                  number: 80
+                  number: {{ .Values.webClient.port }}

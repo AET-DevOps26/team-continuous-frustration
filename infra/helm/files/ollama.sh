@@ -1,0 +1,1 @@
+../../init-ollama/ollama.sh

@@ -1,43 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: db
-  name: db
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.db.name }}
+  name: {{ .Values.db.name }}
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: db
+      io.kompose.service: {{ .Values.db.name }}
   strategy:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-        kompose.version: 1.38.0 (HEAD)
       labels:
-        io.kompose.service: db
+        io.kompose.service: {{ .Values.db.name }}
     spec:
       containers:
         - env:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_USER
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
-          image: postgres:16-alpine
+          image: {{ .Values.db.image }}
           livenessProbe:
             exec:
               command:
@@ -47,17 +41,17 @@ spec:
             failureThreshold: 5
             periodSeconds: 5
             timeoutSeconds: 5
-          name: db
+          name: {{ .Values.db.name }}
           ports:
-            - containerPort: 5432
+            - containerPort: {{ .Values.db.port }}
               protocol: TCP
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: {{ .Values.db.resources.requests.cpu | quote }}
+              memory: {{ .Values.db.resources.requests.memory | quote }}
             limits:
-              cpu: "200m"
-              memory: "192Mi"
+              cpu: {{ .Values.db.resources.limits.cpu | quote }}
+              memory: {{ .Values.db.resources.limits.memory | quote }}
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: postgres-data

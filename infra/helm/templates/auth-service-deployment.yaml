@@ -1,73 +1,68 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-    kompose.version: 1.38.0 (HEAD)
   labels:
-    io.kompose.service: auth-service
-  name: auth-service
-  namespace: team-continuous-frustration
+    io.kompose.service: {{ .Values.authService.name }}
+  name: {{ .Values.authService.name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.authService.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: auth-service
+      io.kompose.service: {{ .Values.authService.name }}
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose -f docker-compose.azure.yml convert -c -n team-continuous-frustration
-        kompose.version: 1.38.0 (HEAD)
       labels:
-        io.kompose.service: auth-service
+        io.kompose.service: {{ .Values.authService.name }}
     spec:
       containers:
         - env:
             - name: FRONTEND_URL
-              value: ""
+              value: https://{{ .Values.ingress.host }}
             - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: GOOGLE_CLIENT_ID
             - name: GOOGLE_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: GOOGLE_CLIENT_SECRET
             - name: JWT_EXPIRATION_MS
-              value: "86400000"
+              value: {{ .Values.authService.jwtExpirationMs | quote }}
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: JWT_SECRET
             - name: SERVER_PORT
-              value: "8081"
+              value: {{ .Values.authService.port | quote }}
             - name: SESSION_EXPIRATION_MS
-              value: "31536000000"
+              value: {{ .Values.authService.sessionExpirationMs | quote }}
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_PASSWORD
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://db:5432/authdb
+              value: jdbc:postgresql://{{ .Values.db.name }}:{{ .Values.db.port }}/{{ .Values.db.authDb }}
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_USER
-          image: ghcr.io/aet-devops26/team-continuous-frustration/auth-service:latest
-          name: auth-service
+          image: {{ .Values.image.registry }}/{{ .Values.authService.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: {{ .Values.authService.name }}
           ports:
-            - containerPort: 8081
+            - containerPort: {{ .Values.authService.port }}
               protocol: TCP
           resources:
             requests:
-              cpu: "100m"
-              memory: "256Mi"
+              cpu: {{ .Values.authService.resources.requests.cpu | quote }}
+              memory: {{ .Values.authService.resources.requests.memory | quote }}
             limits:
-              cpu: "200m"
-              memory: "512Mi"
+              cpu: {{ .Values.authService.resources.limits.cpu | quote }}
+              memory: {{ .Values.authService.resources.limits.memory | quote }}
       restartPolicy: Always
