@@ -25,12 +25,12 @@ export function UploadPage() {
   const [selectedDeckId, setSelectedDeckId] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const testDeck: Deck = {"id": "123", "name": "Deck 1", "tags": []};
+  //const testDeck: Deck = {"id": "123", "name": "Deck 1", "tags": []};
 
   useEffect(() => {
     const fetchDecks = async () => {
       try {
-        const res = {"data": [testDeck]}; //await listDecks();
+        const res = await listDecks();
         setDecks(res.data);
         if (res.data.length > 0) setSelectedDeckId(res.data[0].id);
       } catch (error) {
@@ -165,17 +165,22 @@ export function UploadPage() {
           ) : (
             <div className="card-shadow mb-6 space-y-1.5 rounded-2xl border border-border bg-card p-4">
               <Label htmlFor="deck">Save flashcards to deck</Label>
-              <select
-                id="deck"
-                value={selectedDeckId}
-                onChange={(e) => setSelectedDeckId(e.target.value)}
-                disabled={decksLoading}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
-                {decks.map((deck) => (
-                  <option key={deck.id} value={deck.id}>{deck.name}</option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <select
+                  id="deck"
+                  value={selectedDeckId}
+                  onChange={(e) => setSelectedDeckId(e.target.value)}
+                  disabled={decksLoading}
+                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  {decks.map((deck) => (
+                    <option key={deck.id} value={deck.id}>{deck.name}</option>
+                  ))}
+                </select>
+                <Button variant="outline" size="sm" onClick={() => navigate("/decks")}>
+                  + New Deck
+                </Button>
+              </div>
             </div>
           )}
 
