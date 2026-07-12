@@ -10,6 +10,11 @@ import type {
   AxiosResponse
 } from 'axios';
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
 export interface RegisterRequest {
   email: string;
   /** @minLength 8 */
@@ -39,6 +44,18 @@ export interface ErrorResponse {
 }
 
 /**
+ * @summary Log in with email and password
+ */
+export const login = (
+    loginRequest: LoginRequest, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<MeResponse>> => {
+    return axios.default.post(
+      `/api/v1/auth/login`,
+      loginRequest,options
+    );
+  }
+
+/**
  * @summary Register a new user
  */
 export const registerUser = (
@@ -62,6 +79,18 @@ export const getMe = (
   }
 
 /**
+ * @summary Refresh the access token from the current session
+ */
+export const refresh = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<void>> => {
+    return axios.default.post(
+      `/api/v1/auth/refresh`,
+      undefined,options
+    );
+  }
+
+/**
  * @summary Revoke the current session
  */
 export const logout = (
@@ -73,6 +102,8 @@ export const logout = (
     );
   }
 
+export type LoginResult = AxiosResponse<MeResponse>
 export type RegisterUserResult = AxiosResponse<RegisterResponse>
 export type GetMeResult = AxiosResponse<MeResponse>
+export type RefreshResult = AxiosResponse<void>
 export type LogoutResult = AxiosResponse<void>

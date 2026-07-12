@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sprout } from "lucide-react";
-import axios from "axios";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
+import { login } from "@/api/auth"
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -26,8 +26,7 @@ export function LoginPage() {
     setError("");
     setBusy(true);
     try {
-      const res = await axios.post<{ id: string; email: string; username: string }>(
-        "/api/v1/auth/login",
+      const res = await login(
         { email, password }
       );
       updateUser(res.data);
