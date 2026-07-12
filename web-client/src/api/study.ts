@@ -26,6 +26,13 @@ export interface Deck {
   tags: string[];
 }
 
+export type DeckOverview = Deck & {
+  /** Total number of flashcards in the deck. */
+  cards: number;
+  /** Number of flashcards in the deck due for review today. */
+  dueToday: number;
+};
+
 export interface DeckCreateRequest {
   /** Display name of the deck. */
   name: string;
@@ -102,6 +109,18 @@ export const createDeck = (
   }
 
 /**
+ * Retrieve all decks owned by the authenticated user, including card counts and due-today counts.
+ * @summary List deck overviews
+ */
+export const listDeckOverviews = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<DeckOverview[]>> => {
+    return axios.default.get(
+      `/api/v1/decks/overview`,options
+    );
+  }
+
+/**
  * Return up to 5 due flashcards for the specified deck.
  * @summary Get due flashcards for a deck
  */
@@ -157,6 +176,7 @@ export const deleteDeckFlashcardRecord = (
 
 export type ListDecksResult = AxiosResponse<Deck[]>
 export type CreateDeckResult = AxiosResponse<Deck>
+export type ListDeckOverviewsResult = AxiosResponse<DeckOverview[]>
 export type GetDueFlashcardsForDeckResult = AxiosResponse<StudyDueDateRecord[]>
 export type CreateDeckFlashcardRecordResult = AxiosResponse<StudyDueDateRecord>
 export type UpdateFlashcardStudyStatusResult = AxiosResponse<StudyDueDateRecord>
