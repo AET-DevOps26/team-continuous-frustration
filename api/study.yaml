@@ -16,6 +16,31 @@ security:
   - bearerAuth: []
 paths:
   /api/v1/decks:
+    get:
+      operationId: listDecks
+      summary: List decks
+      description: Retrieve all decks owned by the authenticated user.
+      responses:
+        "200":
+          description: Decks retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deck"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while listing decks.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     post:
       operationId: createDeck
       summary: Create a deck

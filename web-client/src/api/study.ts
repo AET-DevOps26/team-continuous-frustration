@@ -77,6 +77,18 @@ export interface Error {
 }
 
 /**
+ * Retrieve all decks owned by the authenticated user.
+ * @summary List decks
+ */
+export const listDecks = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<Deck[]>> => {
+    return axios.default.get(
+      `/api/v1/decks`,options
+    );
+  }
+
+/**
  * Create a new flashcard deck for the authenticated user.
  * @summary Create a deck
  */
@@ -143,6 +155,7 @@ export const deleteDeckFlashcardRecord = (
     );
   }
 
+export type ListDecksResult = AxiosResponse<Deck[]>
 export type CreateDeckResult = AxiosResponse<Deck>
 export type GetDueFlashcardsForDeckResult = AxiosResponse<StudyDueDateRecord[]>
 export type CreateDeckFlashcardRecordResult = AxiosResponse<StudyDueDateRecord>
