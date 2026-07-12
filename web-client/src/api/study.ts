@@ -133,6 +133,18 @@ export const getDueFlashcardsForDeck = (
   }
 
 /**
+ * Return the identifiers of all flashcards associated with the specified deck.
+ * @summary List flashcard ids for a deck
+ */
+export const listDeckFlashcardIds = (
+    deckId: string, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<string[]>> => {
+    return axios.default.get(
+      `/api/v1/decks/${deckId}/flashcards`,options
+    );
+  }
+
+/**
  * Create a new flashcard study record for the specified deck.
  * @summary Add a flashcard record to a deck
  */
@@ -178,6 +190,7 @@ export type ListDecksResult = AxiosResponse<Deck[]>
 export type CreateDeckResult = AxiosResponse<Deck>
 export type ListDeckOverviewsResult = AxiosResponse<DeckOverview[]>
 export type GetDueFlashcardsForDeckResult = AxiosResponse<StudyDueDateRecord[]>
+export type ListDeckFlashcardIdsResult = AxiosResponse<string[]>
 export type CreateDeckFlashcardRecordResult = AxiosResponse<StudyDueDateRecord>
 export type UpdateFlashcardStudyStatusResult = AxiosResponse<StudyDueDateRecord>
 export type DeleteDeckFlashcardRecordResult = AxiosResponse<void>
