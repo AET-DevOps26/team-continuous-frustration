@@ -1,5 +1,7 @@
+import atexit
 import logging
 import os
+import threading
 from urllib.parse import urlparse
 
 import weaviate
@@ -20,23 +22,40 @@ OLLAMA_MODEL = "nomic-embed-text"
 WEAVIATE_URL = os.getenv("WEAVIATE_URL", "http://weaviate:8080")
 WEAVIATE_HOST = urlparse(WEAVIATE_URL).hostname
 
+# Lazily-initialized singletons, shared across requests to avoid paying for a
+# fresh Weaviate connection + collection-existence check on every call.
+# RLock because _get_vectorstore() holds the lock while calling _get_client()
+# and get_embeddings(), which each acquire it too.
+_init_lock = threading.RLock()
+_client = None
+_embeddings = None
+_vectorstore = None
+
 
 def get_embeddings():
     """
-    Returns OllamaEmbeddings configured to use local Ollama instance.
+    Returns a shared OllamaEmbeddings instance configured to use the local
+    Ollama instance. Initialized once and reused across calls.
     """
-    logger.debug(
-        "Initializing OllamaEmbeddings (base_url=%s, model=%s)",
-        OLLAMA_API_ENDPOINT,
-        OLLAMA_MODEL,
-    )
-    try:
-        embeddings = OllamaEmbeddings(base_url=OLLAMA_API_ENDPOINT, model=OLLAMA_MODEL)
-        logger.debug("OllamaEmbeddings initialized successfully")
-        return embeddings
-    except Exception as e:
-        logger.error("Failed to initialize OllamaEmbeddings: %s", e)
-        return None
+    global _embeddings
+    if _embeddings is not None:
+        return _embeddings
+    with _init_lock:
+        if _embeddings is None:
+            logger.debug(
+                "Initializing OllamaEmbeddings (base_url=%s, model=%s)",
+                OLLAMA_API_ENDPOINT,
+                OLLAMA_MODEL,
+            )
+            try:
+                _embeddings = OllamaEmbeddings(
+                    base_url=OLLAMA_API_ENDPOINT, model=OLLAMA_MODEL
+                )
+                logger.debug("OllamaEmbeddings initialized successfully")
+            except Exception as e:
+                logger.error("Failed to initialize OllamaEmbeddings: %s", e)
+                return None
+    return _embeddings
 
 
 def _ensure_collection_exists(client):
@@ -59,6 +78,51 @@ def _ensure_collection_exists(client):
         logger.info("Collection '%s' created successfully", WEAVIATE_INDEX_NAME)
 
 
+def _get_client():
+    """
+    Returns a shared, long-lived Weaviate client. Connecting involves a
+    gRPC + REST handshake, so this is done once per process rather than
+    per request. The collection-existence check runs once here too, as
+    part of establishing the connection.
+    """
+    global _client
+    if _client is not None:
+        return _client
+    with _init_lock:
+        if _client is None:
+            logger.debug("[vector_store] Connecting to Weaviate at %s", WEAVIATE_HOST)
+            client = weaviate.connect_to_local(host=WEAVIATE_HOST)
+            _ensure_collection_exists(client)
+            _client = client
+    return _client
+
+
+def _get_vectorstore():
+    """
+    Returns a shared WeaviateVectorStore wrapping the singleton client and
+    embeddings, built once and reused across upserts/queries.
+    """
+    global _vectorstore
+    if _vectorstore is not None:
+        return _vectorstore
+    with _init_lock:
+        if _vectorstore is None:
+            _vectorstore = WeaviateVectorStore(
+                client=_get_client(),
+                index_name=WEAVIATE_INDEX_NAME,
+                text_key="text",
+                embedding=get_embeddings(),
+            )
+    return _vectorstore
+
+
+@atexit.register
+def _close_client():
+    if _client is not None:
+        logger.debug("[vector_store] Closing Weaviate client")
+        _client.close()
+
+
 def upsert_markdown_to_weaviate(upload_id: str, markdown_text: str):
     """
     Chunks the input Markdown text and upserts the chunks into Weaviate.
@@ -76,29 +140,19 @@ def upsert_markdown_to_weaviate(upload_id: str, markdown_text: str):
     )
     logger.debug("[upsert] Split into %d chunk(s)", len(chunks))
 
-    logger.debug("[upsert] Connecting to Weaviate at %s", WEAVIATE_HOST)
-    with weaviate.connect_to_local(host=WEAVIATE_HOST) as client:
-        _ensure_collection_exists(client)
-        embeddings = get_embeddings()
-
-        logger.debug(
-            "[upsert] Upserting %d chunk(s) into collection '%s'",
-            len(chunks),
-            WEAVIATE_INDEX_NAME,
-        )
-        vectorstore = WeaviateVectorStore.from_documents(
-            chunks,
-            embedding=embeddings,
-            client=client,
-            index_name=WEAVIATE_INDEX_NAME,
-            text_key="text",
-        )
-        logger.info(
-            "[upsert] Successfully upserted %d chunk(s) for upload_id=%s",
-            len(chunks),
-            upload_id,
-        )
-        return vectorstore
+    vectorstore = _get_vectorstore()
+    logger.debug(
+        "[upsert] Upserting %d chunk(s) into collection '%s'",
+        len(chunks),
+        WEAVIATE_INDEX_NAME,
+    )
+    vectorstore.add_documents(chunks)
+    logger.info(
+        "[upsert] Successfully upserted %d chunk(s) for upload_id=%s",
+        len(chunks),
+        upload_id,
+    )
+    return vectorstore
 
 
 def query_vector_store(query: str, k: int, filters: Filter) -> list:
@@ -107,18 +161,9 @@ def query_vector_store(query: str, k: int, filters: Filter) -> list:
     Returns a list of matching LangChain Documents.
     """
     logger.debug("[query] query=%r | k=%d | filters=%s", query, k, filters)
-    logger.debug("[query] Connecting to Weaviate at %s", WEAVIATE_HOST)
-    with weaviate.connect_to_local(host=WEAVIATE_HOST) as client:
-        _ensure_collection_exists(client)
-        embeddings = get_embeddings()
-        logger.debug(
-            "[query] Running similarity_search in collection '%s'", WEAVIATE_INDEX_NAME
-        )
-        docs = WeaviateVectorStore(
-            client=client,
-            index_name=WEAVIATE_INDEX_NAME,
-            text_key="text",
-            embedding=embeddings,
-        ).similarity_search(query=query, k=k, filters=filters)
-        logger.info("[query] Retrieved %d document(s) from vector store", len(docs))
-        return docs
+    logger.debug(
+        "[query] Running similarity_search in collection '%s'", WEAVIATE_INDEX_NAME
+    )
+    docs = _get_vectorstore().similarity_search(query=query, k=k, filters=filters)
+    logger.info("[query] Retrieved %d document(s) from vector store", len(docs))
+    return docs

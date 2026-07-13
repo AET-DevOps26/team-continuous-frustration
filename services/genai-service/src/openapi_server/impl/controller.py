@@ -6,7 +6,7 @@ from typing import Optional, Tuple
 from collections.abc import AsyncIterable
 
 from fastapi import APIRouter, Body, HTTPException, Security, UploadFile, status
-from starlette.concurrency import run_in_threadpool
+from starlette.concurrency import iterate_in_threadpool, run_in_threadpool
 
 from openapi_server.models.extra_models import TokenModel  # noqa: F401
 from openapi_server.models.error import Error
@@ -58,13 +58,13 @@ async def api_v1_genai_generate_flashcards_post(
     client = UploadServiceClientAPIs(
         base_url=UPLOAD_SERVICE_BASE_URL, auth_token="your-api-token"
     )
-    markdown_text = client.documents_get_documents_upload_id_get(upload_id)
+    markdown_text = await run_in_threadpool(client.documents_get_documents_upload_id_get, upload_id)
 
     logger.debug("[generate] Upserting markdown to Weaviate")
-    upsert_markdown_to_weaviate(upload_id, markdown_text)
+    await run_in_threadpool(upsert_markdown_to_weaviate, upload_id, markdown_text)
     logger.info("[generate] Upsert complete — starting flashcard stream")
 
-    for flashcard in generate_flashcards_stream(upload_id):
+    async for flashcard in iterate_in_threadpool(generate_flashcards_stream(upload_id)):
         yield flashcard
 
 
