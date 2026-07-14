@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,7 +38,7 @@ class FlashcardServiceTest {
     private FlashcardEntity persistedEntity(UUID userId) {
         FlashcardEntity entity = new FlashcardEntity(userId, "Q?", "A.", "slide-1");
         ReflectionTestUtils.setField(entity, "id", UUID.randomUUID());
-        ReflectionTestUtils.setField(entity, "lastUpdated", LocalDateTime.now());
+        ReflectionTestUtils.setField(entity, "lastUpdated", LocalDateTime.now(ZoneOffset.UTC));
         return entity;
     }
 
@@ -47,7 +48,7 @@ class FlashcardServiceTest {
                 .thenAnswer(invocation -> {
                     FlashcardEntity saved = invocation.getArgument(0);
                     ReflectionTestUtils.setField(saved, "id", UUID.randomUUID());
-                    ReflectionTestUtils.setField(saved, "lastUpdated", LocalDateTime.now());
+                    ReflectionTestUtils.setField(saved, "lastUpdated", LocalDateTime.now(ZoneOffset.UTC));
                     return saved;
                 });
 
@@ -84,7 +85,7 @@ class FlashcardServiceTest {
     void updateModifiesOwnedCard() {
         FlashcardEntity existing = persistedEntity(USER_ID);
         when(repository.findByIdAndUserId(existing.getId(), USER_ID)).thenReturn(Optional.of(existing));
-        when(repository.save(existing)).thenReturn(existing);
+        when(repository.saveAndFlush(existing)).thenReturn(existing);
 
         FlashcardUpdateRequest request = new FlashcardUpdateRequest("New Q", "New A", "slide-2");
         Flashcard result = service.update(USER_ID, existing.getId(), request);

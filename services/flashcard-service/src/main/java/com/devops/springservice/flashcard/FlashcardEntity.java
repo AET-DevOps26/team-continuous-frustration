@@ -10,6 +10,7 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 /**
@@ -31,13 +32,13 @@ public class FlashcardEntity {
     @Column(nullable = false, updatable = false)
     private UUID userId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String question;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String answer;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1024)
     private String sourceRef;
 
     @Column(nullable = false)
@@ -57,7 +58,8 @@ public class FlashcardEntity {
     @PrePersist
     @PreUpdate
     void touchLastUpdated() {
-        this.lastUpdated = LocalDateTime.now();
+        // Capture the instant in UTC; FlashcardMapper serializes it as a UTC offset.
+        this.lastUpdated = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public UUID getId() {

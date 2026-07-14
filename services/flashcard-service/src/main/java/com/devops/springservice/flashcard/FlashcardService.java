@@ -50,7 +50,8 @@ public class FlashcardService {
         entity.setQuestion(request.getQuestion());
         entity.setAnswer(request.getAnswer());
         entity.setSourceRef(request.getSourceRef());
-        return FlashcardMapper.toModel(repository.save(entity));
+        // Flush so @PreUpdate runs and the mapped response carries the new timestamp.
+        return FlashcardMapper.toModel(repository.saveAndFlush(entity));
     }
 
     public void delete(UUID userId, UUID flashcardId) {
