@@ -38,6 +38,10 @@ spring:
           uri: ${FLASHCARD_SERVICE_URL:http://flashcard-service:8082}
           predicates:
             - Path=/api/v1/flashcards,/api/v1/flashcards/**
+        - id: study-service
+          uri: ${STUDY_SERVICE_URL:http://study-service:8083}
+          predicates:
+            - Path=/api/v1/decks,/api/v1/decks/**
         - id: genai-service
           uri: ${GENAI_SERVICE_URL:http://genai-service:8090}
           predicates:
