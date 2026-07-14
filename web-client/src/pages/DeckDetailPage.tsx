@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, Play, Plus, Pencil, Search, Sparkles, Check, X, Loader2 } from "lucide-react";
+import { ChevronLeft, Play, Plus, Search, Sparkles, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -8,9 +8,9 @@ import type { Flashcard, FlashcardCreateRequest, FlashcardUpdateRequest } from "
 import { createFlashcard, getFlashcardById, updateFlashcard, deleteFlashcard } from "@/api/flashcard";
 import { listDecks, listDeckFlashcardIds, createDeckFlashcardRecord, deleteDeckFlashcardRecord } from "@/api/study";
 
-type SourceFilter = "all" | "ai" | "manual";
+import { isAiGenerated } from "@/lib/utils"
 
-const isAiGenerated = (card: Flashcard) => card.source_ref.trim().length > 0;
+type SourceFilter = "all" | "ai" | "manual";
 
 export function DeckDetailPage() {
   const navigate = useNavigate();
@@ -41,8 +41,16 @@ export function DeckDetailPage() {
   useEffect(() => {
     if (!deckId) return;
 
+    let active = true;
+
+    setDeckName("");
+    setFlashcardIds([]);
+    setFlashcards({});
+    setError(null);
+
     listDecks()
       .then((res) => {
+        if (!active) return;
         const deck = res.data.find((d) => d.id === deckId);
         if (deck) setDeckName(deck.name);
       })
@@ -51,16 +59,19 @@ export function DeckDetailPage() {
     setLoadingIds(true);
     listDeckFlashcardIds(deckId)
       .then((res) => {
+        if (!active) return;
         setFlashcardIds(res.data);
         setError(null);
         setLoadingCardIds(new Set(res.data));
         res.data.forEach((id) => {
           getFlashcardById(id)
             .then((cardRes) => {
+              if (!active) return;
               setFlashcards((prev) => ({ ...prev, [id]: cardRes.data }));
             })
             .catch((err) => console.error(`Failed to load flashcard ${id}:`, err))
             .finally(() => {
+              if (!active) return;
               setLoadingCardIds((prev) => {
                 const next = new Set(prev);
                 next.delete(id);
@@ -70,10 +81,17 @@ export function DeckDetailPage() {
         });
       })
       .catch((err) => {
+        if (!active) return;
         console.error("Failed to load deck flashcard ids:", err);
         setError("Failed to load flashcards.");
       })
-      .finally(() => setLoadingIds(false));
+      .finally(() => {
+        if (active) setLoadingIds(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [deckId]);
 
   const visibleCards = useMemo(() => {
@@ -98,7 +116,12 @@ export function DeckDetailPage() {
     };
     try {
       const created = await createFlashcard(body);
-      await createDeckFlashcardRecord(deckId, { flashcard_id: created.data.id });
+      try {
+        await createDeckFlashcardRecord(deckId, { flashcard_id: created.data.id });
+      } catch (err) {
+        await deleteFlashcard(created.data.id);
+        throw err;
+      }
       setFlashcards((prev) => ({ ...prev, [created.data.id]: created.data }));
       setFlashcardIds((prev) => [...prev, created.data.id]);
       setNewQuestion("");
@@ -146,18 +169,26 @@ export function DeckDetailPage() {
     if (!deckId) return;
     setDeletingId(card.id);
     try {
-      await Promise.all([
-        deleteFlashcard(card.id),
+      const [recordResult, flashcardResult] = await Promise.allSettled([
         deleteDeckFlashcardRecord(deckId, card.id),
+        deleteFlashcard(card.id),
       ]);
-      setFlashcardIds((prev) => prev.filter((id) => id !== card.id));
-      setFlashcards((prev) => {
-        const next = { ...prev };
-        delete next[card.id];
-        return next;
-      });
-    } catch (err) {
-      console.error("Failed to delete flashcard:", err);
+
+      if (recordResult.status === "fulfilled") {
+        setFlashcardIds((prev) => prev.filter((id) => id !== card.id));
+      } else {
+        console.error("Failed to delete deck flashcard record:", recordResult.reason);
+      }
+
+      if (flashcardResult.status === "fulfilled") {
+        setFlashcards((prev) => {
+          const next = { ...prev };
+          delete next[card.id];
+          return next;
+        });
+      } else {
+        console.error("Failed to delete flashcard:", flashcardResult.reason);
+      }
     } finally {
       setDeletingId(null);
     }
@@ -182,9 +213,6 @@ export function DeckDetailPage() {
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowAddCard((prev) => !prev)}>
             <Plus className="mr-1.5 h-4 w-4" /> Add Card
-          </Button>
-          <Button variant="outline" size="sm">
-            <Pencil className="mr-1.5 h-4 w-4" /> Edit Deck
           </Button>
           <Button size="sm" onClick={() => navigate(`/study/${deckId}`)}>
             <Play className="mr-1.5 h-4 w-4" /> Study Due Cards
@@ -256,6 +284,9 @@ export function DeckDetailPage() {
       {!loadingIds && !error && flashcardIds.length === 0 && (
         <p className="text-muted-foreground">This deck has no flashcards yet.</p>
       )}
+      {!loadingIds && !error && flashcardIds.length > 0 && visibleCards.length === 0 && (
+        <p className="text-muted-foreground">No flashcards match your search or filter.</p>
+      )}
 
       <div className="card-shadow overflow-hidden rounded-3xl border border-border bg-card">
         {visibleCards.map((card, idx) => {
@@ -304,7 +335,7 @@ export function DeckDetailPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => saveEdit(card)}
-                        disabled={savingEditId === card.id}
+                        disabled={savingEditId === card.id || !editQuestion.trim() || !editAnswer.trim()}
                       >
                         <Check className="mr-1 h-4 w-4" />
                         {savingEditId === card.id ? "Saving..." : "Save"}

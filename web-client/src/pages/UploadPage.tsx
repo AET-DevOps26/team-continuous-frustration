@@ -12,7 +12,7 @@ import { apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost } from
 import type { Deck } from '@/api/study';
 import { listDecks, createDeckFlashcardRecord } from '@/api/study';
 import type { FlashcardCreateRequest } from '@/api/flashcard'
-import { createFlashcard } from '@/api/flashcard'
+import { createFlashcard, deleteFlashcard } from '@/api/flashcard'
 
 export function UploadPage() {
   const navigate = useNavigate();
@@ -119,11 +119,11 @@ export function UploadPage() {
     }
   }
 
-  const removeFlashcard = (idx: number) => {
-    setFlashcards((prev) => prev.filter((_, i) => i !== idx));
+  const removeFlashcard = (id: string) => {
+    setFlashcards((prev) => prev.filter((c) => c.id !== id));
   }
 
-  const saveFlashcard = async (flashcard: Flashcard, idx: number) => {
+  const saveFlashcard = async (flashcard: Flashcard) => {
     if (!selectedDeckId) return;
     const body: FlashcardCreateRequest = {
       question: flashcard.question,
@@ -132,10 +132,15 @@ export function UploadPage() {
     };
     try {
       const created = await createFlashcard(body);
-      await createDeckFlashcardRecord(selectedDeckId, { flashcard_id: created.data.id });
-      removeFlashcard(idx);
-    } catch (error) {
-      console.error(error);
+      try {
+        await createDeckFlashcardRecord(selectedDeckId, { flashcard_id: created.data.id });
+      } catch (err) {
+        await deleteFlashcard(created.data.id);
+        throw err;
+      }
+      removeFlashcard(flashcard.id);
+    } catch (err) {
+      console.error("Failed to save flashcard:", err);
     }
   }
 
@@ -275,14 +280,14 @@ export function UploadPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={async () => await saveFlashcard(card, idx)}
+                    onClick={async () => await saveFlashcard(card)}
                     >Save
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     className="text-destructive hover:text-destructive"
-                    onClick={() => removeFlashcard(idx)}
+                    onClick={() => removeFlashcard(card.id)}
                   >
                     Delete
                   </Button>

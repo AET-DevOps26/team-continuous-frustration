@@ -9,7 +9,7 @@ import type { Flashcard } from "@/api/flashcard";
 import { getFlashcardById } from "@/api/flashcard";
 import { apiV1GenaiExplainPostApiV1GenaiExplainPost } from "@/api/genai";
 
-const isAiGenerated = (card: Flashcard) => card.source_ref.trim().length > 0;
+import { isAiGenerated } from "@/lib/utils"
 
 const ratings: { id: StudyStatus; label: string; time: string; color: string }[] = [
   { id: "again", label: "Again", time: "< 1 min", color: "border-red-200 bg-red-50 text-red-700 hover:bg-red-100 data-[active=true]:bg-red-100 data-[active=true]:border-red-400" },
@@ -57,8 +57,18 @@ export function StudySessionPage() {
   useEffect(() => {
     if (!deckId) return;
 
+    let active = true;
+
+    setStudyCards([]);
+    setCurrentIndex(0);
+    setShowAnswer(false);
+    setShowAI(false);
+    setExplanation(null);
+    setSelectedRating(null);
+
     listDecks()
       .then((res) => {
+        if (!active) return;
         const deck = res.data.find((d) => d.id === deckId);
         if (deck) setDeckName(deck.name);
       })
@@ -67,15 +77,23 @@ export function StudySessionPage() {
     setLoadingCards(true);
     loadDueCards(deckId)
       .then((cards) => {
+        if (!active) return;
         setStudyCards(cards);
         setCurrentIndex(0);
         setError(null);
       })
       .catch((err) => {
+        if (!active) return;
         console.error("Failed to load due flashcards:", err);
         setError("Failed to load due flashcards.");
       })
-      .finally(() => setLoadingCards(false));
+      .finally(() => {
+        if (active) setLoadingCards(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [deckId]);
 
   const currentCard = studyCards[currentIndex];
@@ -123,6 +141,7 @@ export function StudySessionPage() {
       await updateFlashcardStudyStatus(deckId, currentCard.id, { study_status: rating });
       await advanceToNextCard();
     } catch (err) {
+      setSelectedRating(null);
       console.error("Failed to update study status:", err);
     } finally {
       setSavingRating(false);
