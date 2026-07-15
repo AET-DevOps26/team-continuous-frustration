@@ -40,7 +40,8 @@ public class FlashcardService {
                 userId,
                 request.getQuestion(),
                 request.getAnswer(),
-                request.getSourceRef()
+                request.getSourceRef(),
+                request.getSourceName()
         );
         return FlashcardMapper.toModel(repository.save(entity));
     }

@@ -61,12 +61,15 @@ export function useFlashcardGeneration() {
   const [isSavingAll, setIsSavingAll] = useState(false);
   const [saveStatus, setSaveStatus] = useState<Record<string, SaveStatus>>({});
   const [error, setError] = useState<string | null>(null);
+  // Human-readable name of the source document, persisted with each saved card.
+  const [sourceName, setSourceName] = useState<string | null>(null);
 
   const generateFromFile = async (file: File): Promise<void> => {
     setIsGenerating(true);
     setError(null);
     setFlashcards([]);
     setSaveStatus({});
+    setSourceName(file.name);
 
     try {
       const uploadBody: BodyDocumentsUploadPostApiV1DocumentsUploadPost = { file };
@@ -99,6 +102,7 @@ export function useFlashcardGeneration() {
       question: card.question,
       answer: card.answer,
       source_ref: card.source_ref,
+      ...(sourceName ? { source_name: sourceName } : {}),
     };
 
     try {

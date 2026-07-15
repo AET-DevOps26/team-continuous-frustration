@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003_add_source_name
+      author: team-continuous-frustration
+      # Human-readable name of the resource a flashcard was generated from
+      # (e.g. the uploaded document's file name). Nullable: legacy rows and
+      # cards created without a source name are permitted.
+      changes:
+        - addColumn:
+            tableName: flashcards
+            columns:
+              - column:
+                  name: source_name
+                  type: varchar(512)
+                  constraints:
+                    nullable: true
