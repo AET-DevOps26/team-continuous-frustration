@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002_drop_orphan_users
+      author: team-continuous-frustration
+      # Older builds of this service shipped a stray `users` table. Users are
+      # owned exclusively by the auth service (authdb); the flashcard service
+      # references them only by user_id. Drop the leftover table where it exists;
+      # on fresh databases the precondition marks this change-set as run.
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: users
+      changes:
+        - dropTable:
+            tableName: users

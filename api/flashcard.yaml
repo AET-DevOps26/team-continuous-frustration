@@ -233,6 +233,11 @@ components:
         source_ref:
           type: string
           description: Reference to the source segment or document chunk.
+        source_name:
+          type: string
+          description: >-
+            Human-readable name of the resource the flashcard was generated
+            from (e.g. the uploaded document's file name).
         last_updated:
           type: string
           format: date-time
@@ -253,6 +258,11 @@ components:
         source_ref:
           type: string
           description: Reference to the source segment or document chunk.
+        source_name:
+          type: string
+          description: >-
+            Human-readable name of the resource the flashcard was generated
+            from (e.g. the uploaded document's file name).
     FlashcardUpdateRequest:
       type: object
       required:

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Upload, BookOpen, GraduationCap } from "lucide-react";
+import { Upload, BookOpen, GraduationCap, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
@@ -11,6 +11,14 @@ const features = [
     description: "Upload PDFs or lecture slides and generate AI flashcards instantly.",
     path: "/upload",
     cta: "Upload now",
+  },
+  {
+    id: "flashcards",
+    icon: Layers,
+    title: "My Flashcards",
+    description: "Browse the flashcards you've saved, grouped by the resource they came from.",
+    path: "/flashcards",
+    cta: "View flashcards",
   },
   {
     id: "decks",
@@ -44,7 +52,7 @@ export function HomePage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {features.map(({ id, icon: Icon, title, description, path, cta }) => (
           <div
             key={id}

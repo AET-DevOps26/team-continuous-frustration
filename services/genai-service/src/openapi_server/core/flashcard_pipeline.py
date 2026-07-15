@@ -6,7 +6,6 @@ from weaviate.classes.query import Filter
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from pydantic import BaseModel
-import uuid
 import datetime
 
 from openapi_server.core.cache import get_cached_explanation, set_cached_explanation
@@ -60,7 +59,10 @@ def generate_flashcards_stream(upload_id: str) -> Iterator[Flashcard]:
         },
     )
 
-    question_chain = question_prompt | llm | question_parser
+    # Force structured JSON output so small local models don't wrap the payload
+    # in markdown fences (which breaks JsonOutputParser).
+    json_llm = llm.bind(response_format={"type": "json_object"})
+    question_chain = question_prompt | json_llm | question_parser
 
     logger.debug("[pipeline] Invoking question generation chain")
     try:
@@ -124,9 +126,7 @@ def generate_explanation(flashcard: Flashcard) -> str:
     Retrieves grounding context for the flashcard's source document and asks
     the LLM to explain the answer, given the question/answer and that context.
     """
-    logger.info(
-        "[explain] Generating explanation for flashcard id=%s", flashcard.id
-    )
+    logger.info("[explain] Generating explanation for flashcard id=%s", flashcard.id)
 
     last_updated = flashcard.last_updated.isoformat()
     cached = get_cached_explanation(flashcard.id, last_updated)
@@ -173,9 +173,7 @@ def generate_explanation(flashcard: Flashcard) -> str:
                 "answer": flashcard.answer,
             }
         )
-        logger.info(
-            "[explain] Generated explanation for flashcard id=%s", flashcard.id
-        )
+        logger.info("[explain] Generated explanation for flashcard id=%s", flashcard.id)
         explanation = explanation.strip()
         set_cached_explanation(flashcard.id, last_updated, explanation)
         return explanation
