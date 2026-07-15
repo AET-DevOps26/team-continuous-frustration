@@ -41,6 +41,10 @@ public class FlashcardEntity {
     @Column(nullable = false, length = 1024)
     private String sourceRef;
 
+    /** Human-readable name of the source resource (e.g. uploaded file name). */
+    @Column(length = 512)
+    private String sourceName;
+
     @Column(nullable = false)
     private LocalDateTime lastUpdated;
 
@@ -48,11 +52,12 @@ public class FlashcardEntity {
         // Required by JPA.
     }
 
-    public FlashcardEntity(UUID userId, String question, String answer, String sourceRef) {
+    public FlashcardEntity(UUID userId, String question, String answer, String sourceRef, String sourceName) {
         this.userId = userId;
         this.question = question;
         this.answer = answer;
         this.sourceRef = sourceRef;
+        this.sourceName = sourceName;
     }
 
     @PrePersist
@@ -92,6 +97,10 @@ public class FlashcardEntity {
 
     public void setSourceRef(String sourceRef) {
         this.sourceRef = sourceRef;
+    }
+
+    public String getSourceName() {
+        return sourceName;
     }
 
     public LocalDateTime getLastUpdated() {

@@ -36,7 +36,7 @@ class FlashcardServiceTest {
     private FlashcardService service;
 
     private FlashcardEntity persistedEntity(UUID userId) {
-        FlashcardEntity entity = new FlashcardEntity(userId, "Q?", "A.", "slide-1");
+        FlashcardEntity entity = new FlashcardEntity(userId, "Q?", "A.", "slide-1", "lecture.pdf");
         ReflectionTestUtils.setField(entity, "id", UUID.randomUUID());
         ReflectionTestUtils.setField(entity, "lastUpdated", LocalDateTime.now(ZoneOffset.UTC));
         return entity;
@@ -52,14 +52,17 @@ class FlashcardServiceTest {
                     return saved;
                 });
 
-        FlashcardCreateRequest request = new FlashcardCreateRequest("Q?", "A.", "slide-1");
+        FlashcardCreateRequest request = new FlashcardCreateRequest("Q?", "A.", "slide-1")
+                .sourceName("lecture.pdf");
         Flashcard result = service.create(USER_ID, request);
 
         ArgumentCaptor<FlashcardEntity> captor = ArgumentCaptor.forClass(FlashcardEntity.class);
         verify(repository).save(captor.capture());
         assertThat(captor.getValue().getUserId()).isEqualTo(USER_ID);
+        assertThat(captor.getValue().getSourceName()).isEqualTo("lecture.pdf");
         assertThat(result.getQuestion()).isEqualTo("Q?");
         assertThat(result.getSourceRef()).isEqualTo("slide-1");
+        assertThat(result.getSourceName()).isEqualTo("lecture.pdf");
     }
 
     @Test

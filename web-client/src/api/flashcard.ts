@@ -22,6 +22,8 @@ export interface Flashcard {
   answer: string;
   /** Reference to the source segment or document chunk. */
   source_ref: string;
+  /** Human-readable name of the resource the flashcard was generated from (e.g. the uploaded document's file name). */
+  source_name?: string;
   /** Timestamp of the last update. */
   last_updated: string;
 }
@@ -33,6 +35,8 @@ export interface FlashcardCreateRequest {
   answer: string;
   /** Reference to the source segment or document chunk. */
   source_ref: string;
+  /** Human-readable name of the resource the flashcard was generated from (e.g. the uploaded document's file name). */
+  source_name?: string;
 }
 
 export interface FlashcardUpdateRequest {

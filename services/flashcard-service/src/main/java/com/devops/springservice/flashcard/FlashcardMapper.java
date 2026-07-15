@@ -17,6 +17,6 @@ final class FlashcardMapper {
                 entity.getAnswer(),
                 entity.getSourceRef(),
                 entity.getLastUpdated().atOffset(ZoneOffset.UTC)
-        );
+        ).sourceName(entity.getSourceName());
     }
 }
