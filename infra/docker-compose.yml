@@ -74,7 +74,7 @@ services:
       LOGOS_MODEL: ${LOGOS_MODEL:-openai/gpt-oss-120b}
       LOGOS_API_KEY: ADD-KEY_HERE
       LLM_BASE_URL: ${LLM_BASE_URL:-http://ollama:11434/v1}
-      LLM_MODEL: ${LLM_MODEL:-gemma4:e2b}
+      LLM_MODEL: ${LLM_MODEL:-gemma3n:e2b}
       UPLOAD_SERVICE_BASE_URL: ${UPLOAD_SERVICE_BASE_URL:-http://upload-service:8091}
       WEAVIATE_URL: http://weaviate:8080
       REDIS_URL: redis://redis:6379/0
@@ -114,7 +114,7 @@ services:
     volumes:
       - ollama_data:/root/.ollama
       - ./init-ollama/ollama.sh:/init-ollama/ollama.sh
-    entrypoint: ["/bin/sh", "/init-ollama/ollama.sh"]
+    entrypoint: ["/bin/sh", "/init-ollama/ollama.sh", "--pull-llm"]
 
   redis:
     image: redis:7-alpine

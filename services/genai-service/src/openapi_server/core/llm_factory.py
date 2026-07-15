@@ -7,14 +7,18 @@ from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 
 
 # Logos profile: TUM-hosted gpt-oss-120b.
-BASE_URL = os.getenv("LOGOS_BASE_URL","https://logos.aet.cit.tum.de/v1")
+BASE_URL = os.getenv("LOGOS_BASE_URL", "https://logos.aet.cit.tum.de/v1")
 LLM_MODEL_NAME = os.getenv("LOGOS_MODEL", "openai/gpt-oss-120b")
 API_KEY = os.getenv("LOGOS_API_KEY")
 
 # Ollama profile
 LOCAL_BASE_URL = os.getenv("LLM_BASE_URL", "http://ollama:11434/v1")
-LOCAL_LLM_MODEL_NAME = os.getenv("LLM_MODEL", "gemma4:e2b")
+LOCAL_LLM_MODEL_NAME = os.getenv("LLM_MODEL", "gemma3n:e2b")
 LOCAL_API_KEY = "ollama"
+
+# Request timeout (seconds). Local models can cold-start slowly on CPU, so this
+# is generous by default and overridable via env.
+REQUEST_TIMEOUT = int(os.getenv("LLM_REQUEST_TIMEOUT", "120"))
 
 
 class OpenAICompatibleLLM(LLM):
@@ -43,16 +47,32 @@ class OpenAICompatibleLLM(LLM):
     ) -> str:
         if self.api_key:
             try:
-                return self._make_api_call(self.base_url, self.api_key, self.model_name, prompt, stop, run_manager, **kwargs)
+                return self._make_api_call(
+                    self.base_url,
+                    self.api_key,
+                    self.model_name,
+                    prompt,
+                    stop,
+                    run_manager,
+                    **kwargs,
+                )
             except Exception as e:
                 logging.error(f"Logos API call failed: {e}")
                 logging.info("Falling back to local LLM")
         try:
-            return self._make_api_call(self.local_base_url, self.local_api_key, self.local_model_name, prompt, stop, run_manager, **kwargs)
+            return self._make_api_call(
+                self.local_base_url,
+                self.local_api_key,
+                self.local_model_name,
+                prompt,
+                stop,
+                run_manager,
+                **kwargs,
+            )
         except Exception as e:
             logging.error(f"Local LLM call failed: {e}")
             raise e
-    
+
     def _make_api_call(
         self,
         base_url: str,
@@ -70,12 +90,19 @@ class OpenAICompatibleLLM(LLM):
         messages = [{"role": "user", "content": prompt}]
         payload = {"model": model_name, "messages": messages}
 
+        # Allow callers to opt into structured output (e.g. Ollama/OpenAI JSON
+        # mode) via `llm.bind(response_format=...)`. Small local models otherwise
+        # tend to wrap JSON in markdown fences, which breaks strict parsers.
+        response_format = kwargs.get("response_format")
+        if response_format:
+            payload["response_format"] = response_format
+
         try:
             response = requests.post(
                 f"{base_url}/chat/completions",
                 headers=headers,
                 json=payload,
-                timeout=30,
+                timeout=REQUEST_TIMEOUT,
             )
             response.raise_for_status()
             result = response.json()

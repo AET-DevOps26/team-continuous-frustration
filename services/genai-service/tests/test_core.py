@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import weaviate
 
-from openapi_server.core.llm_factory import OpenAICompatibleLLM
+from openapi_server.core.llm_factory import OpenAICompatibleLLM, REQUEST_TIMEOUT
 from openapi_server.core import vector_store as vector_store_module
 from openapi_server.core.vector_store import (
     upsert_markdown_to_weaviate,
@@ -56,7 +56,7 @@ def test_llm_factory_call():
                 "model": "mock-model",
                 "messages": [{"role": "user", "content": "mock prompt"}],
             },
-            timeout=30,
+            timeout=REQUEST_TIMEOUT,
         )
 
 
