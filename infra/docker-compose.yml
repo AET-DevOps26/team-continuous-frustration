@@ -62,6 +62,27 @@ services:
       db:
         condition: service_healthy
 
+  study-service:
+    build:
+      context: ..
+      dockerfile: services/study-service/Dockerfile
+      target: dev
+    ports:
+      - "${STUDY_SERVICE_PORT:-8083}:8083"
+    environment:
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/studydb
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-change-in-production-32c}
+    volumes:
+      - ../services/study-service:/app/services/study-service
+      - ../api:/app/api
+      - maven_cache:/root/.m2
+    depends_on:
+      db:
+        condition: service_healthy
+
   genai-service:
     build:
       context: ../services/genai-service
@@ -72,7 +93,7 @@ services:
     environment:
       LOGOS_BASE_URL: ${LOGOS_BASE_URL:-https://logos.aet.cit.tum.de/v1}
       LOGOS_MODEL: ${LOGOS_MODEL:-openai/gpt-oss-120b}
-      LOGOS_API_KEY: ADD-KEY_HERE
+      LOGOS_API_KEY: ${LOGOS_API_KEY}
       LLM_BASE_URL: ${LLM_BASE_URL:-http://ollama:11434/v1}
       LLM_MODEL: ${LLM_MODEL:-gemma3n:e2b}
       UPLOAD_SERVICE_BASE_URL: ${UPLOAD_SERVICE_BASE_URL:-http://upload-service:8091}
@@ -155,6 +176,7 @@ services:
     environment:
       AUTH_SERVICE_URL: http://auth-service:8081
       FLASHCARD_SERVICE_URL: http://flashcard-service:8082
+      STUDY_SERVICE_URL: http://study-service:8083
       GENAI_SERVICE_URL: http://genai-service:8090
       UPLOAD_SERVICE_URL: http://upload-service:8091
       JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-change-in-production-32c}
@@ -166,6 +188,7 @@ services:
     depends_on:
       - auth-service
       - flashcard-service
+      - study-service
 
   web-client:
     build:

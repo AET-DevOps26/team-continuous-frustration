@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001_create_decks
+      author: team-continuous-frustration
+      changes:
+        - createTable:
+            tableName: decks
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_decks_user_id
+            tableName: decks
+            columns:
+              - column:
+                  name: user_id

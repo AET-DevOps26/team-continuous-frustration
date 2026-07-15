@@ -5,7 +5,8 @@ import { documentsUploadPostApiV1DocumentsUploadPost } from "@/api/upload";
 import type { Flashcard } from "@/api/genaiStream";
 import { apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost } from "@/api/genaiStream";
 import type { FlashcardCreateRequest } from "@/api/flashcard";
-import { createFlashcard } from "@/api/flashcard";
+import { createFlashcard, deleteFlashcard } from "@/api/flashcard";
+import { createDeckFlashcardRecord } from "@/api/study";
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
@@ -96,7 +97,9 @@ export function useFlashcardGeneration() {
     }
   };
 
-  const saveFlashcard = async (card: Flashcard): Promise<boolean> => {
+  const saveFlashcard = async (card: Flashcard, deckId: string): Promise<boolean> => {
+    if (!deckId) return false;
+
     setSaveStatus((prev) => ({ ...prev, [card.id]: "saving" }));
     const request: FlashcardCreateRequest = {
       question: card.question,
@@ -106,7 +109,13 @@ export function useFlashcardGeneration() {
     };
 
     try {
-      await createFlashcard(request);
+      const created = await createFlashcard(request);
+      try {
+        await createDeckFlashcardRecord(deckId, { flashcard_id: created.data.id });
+      } catch (err) {
+        await deleteFlashcard(created.data.id);
+        throw err;
+      }
       setSaveStatus((prev) => ({ ...prev, [card.id]: "saved" }));
       return true;
     } catch (err) {
@@ -116,11 +125,11 @@ export function useFlashcardGeneration() {
     }
   };
 
-  const saveAllFlashcards = async (): Promise<void> => {
+  const saveAllFlashcards = async (deckId: string): Promise<void> => {
     setIsSavingAll(true);
     const unsaved = flashcards.filter((card) => saveStatus[card.id] !== "saved");
     for (const card of unsaved) {
-      await saveFlashcard(card);
+      await saveFlashcard(card, deckId);
     }
     setIsSavingAll(false);
   };

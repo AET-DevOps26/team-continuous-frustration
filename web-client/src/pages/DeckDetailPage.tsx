@@ -1,36 +1,198 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, Play, Plus, Pencil, Search, Sparkles } from "lucide-react";
+import { ChevronLeft, Play, Plus, Search, Sparkles, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-type Flashcard = {
-  id: number;
-  question: string;
-  answer: string;
-  source: "AI Generated" | "Manual";
-};
+import type { Flashcard, FlashcardCreateRequest, FlashcardUpdateRequest } from "@/api/flashcard";
+import { createFlashcard, getFlashcardById, updateFlashcard, deleteFlashcard } from "@/api/flashcard";
+import { listDecks, listDeckFlashcardIds, createDeckFlashcardRecord, deleteDeckFlashcardRecord } from "@/api/study";
 
-const flashcards: Flashcard[] = [
-  { id: 1, question: "What is overfitting?", answer: "Overfitting occurs when a model learns the training data too well.", source: "AI Generated" },
-  { id: 2, question: "What is the bias-variance trade-off?", answer: "The bias-variance trade-off refers to the balance between underfitting and overfitting.", source: "AI Generated" },
-  { id: 3, question: "What is cross-validation?", answer: "Cross-validation is a resampling technique used to evaluate model performance.", source: "AI Generated" },
-  { id: 4, question: "What is regularization?", answer: "Regularization is a technique used to prevent overfitting by adding a penalty term.", source: "Manual" },
-  { id: 5, question: "What is gradient descent?", answer: "Gradient descent is an optimization algorithm used to minimize a loss function.", source: "AI Generated" },
-];
+import { isAiGenerated } from "@/lib/utils"
 
-const deckNames: Record<string, string> = {
-  "database-systems": "Database Systems",
-  "software-engineering": "Software Engineering",
-  "operating-systems": "Operating Systems",
-  "mathematics": "Mathematics",
-  "german-vocabulary": "German Vocabulary",
-};
+type SourceFilter = "all" | "ai" | "manual";
 
 export function DeckDetailPage() {
   const navigate = useNavigate();
   const { deckId } = useParams();
-  const deckName = deckNames[deckId ?? ""] ?? "Machine Learning";
-  const currentDeckId = deckId ?? "machine-learning";
+
+  const [deckName, setDeckName] = useState<string>("");
+  const [flashcardIds, setFlashcardIds] = useState<string[]>([]);
+  const [flashcards, setFlashcards] = useState<Record<string, Flashcard>>({});
+  const [loadingIds, setLoadingIds] = useState(true);
+  const [loadingCardIds, setLoadingCardIds] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
+
+  const [showAddCard, setShowAddCard] = useState(false);
+  const [newQuestion, setNewQuestion] = useState("");
+  const [newAnswer, setNewAnswer] = useState("");
+  const [addingCard, setAddingCard] = useState(false);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editQuestion, setEditQuestion] = useState("");
+  const [editAnswer, setEditAnswer] = useState("");
+  const [savingEditId, setSavingEditId] = useState<string | null>(null);
+
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!deckId) return;
+
+    let active = true;
+
+    setDeckName("");
+    setFlashcardIds([]);
+    setFlashcards({});
+    setError(null);
+
+    listDecks()
+      .then((res) => {
+        if (!active) return;
+        const deck = res.data.find((d) => d.id === deckId);
+        if (deck) setDeckName(deck.name);
+      })
+      .catch((err) => console.error("Failed to load deck:", err));
+
+    setLoadingIds(true);
+    listDeckFlashcardIds(deckId)
+      .then((res) => {
+        if (!active) return;
+        setFlashcardIds(res.data);
+        setError(null);
+        setLoadingCardIds(new Set(res.data));
+        res.data.forEach((id) => {
+          getFlashcardById(id)
+            .then((cardRes) => {
+              if (!active) return;
+              setFlashcards((prev) => ({ ...prev, [id]: cardRes.data }));
+            })
+            .catch((err) => console.error(`Failed to load flashcard ${id}:`, err))
+            .finally(() => {
+              if (!active) return;
+              setLoadingCardIds((prev) => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+              });
+            });
+        });
+      })
+      .catch((err) => {
+        if (!active) return;
+        console.error("Failed to load deck flashcard ids:", err);
+        setError("Failed to load flashcards.");
+      })
+      .finally(() => {
+        if (active) setLoadingIds(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [deckId]);
+
+  const visibleCards = useMemo(() => {
+    return flashcardIds
+      .map((id) => flashcards[id])
+      .filter((card): card is Flashcard => Boolean(card))
+      .filter((card) => {
+        if (sourceFilter === "ai" && !isAiGenerated(card)) return false;
+        if (sourceFilter === "manual" && isAiGenerated(card)) return false;
+        if (search.trim() && !card.question.toLowerCase().includes(search.trim().toLowerCase())) return false;
+        return true;
+      });
+  }, [flashcardIds, flashcards, search, sourceFilter]);
+
+  const handleAddCard = async () => {
+    if (!deckId || !newQuestion.trim() || !newAnswer.trim()) return;
+    setAddingCard(true);
+    const body: FlashcardCreateRequest = {
+      question: newQuestion.trim(),
+      answer: newAnswer.trim(),
+      source_ref: "",
+    };
+    try {
+      const created = await createFlashcard(body);
+      try {
+        await createDeckFlashcardRecord(deckId, { flashcard_id: created.data.id });
+      } catch (err) {
+        await deleteFlashcard(created.data.id);
+        throw err;
+      }
+      setFlashcards((prev) => ({ ...prev, [created.data.id]: created.data }));
+      setFlashcardIds((prev) => [...prev, created.data.id]);
+      setNewQuestion("");
+      setNewAnswer("");
+      setShowAddCard(false);
+    } catch (err) {
+      console.error("Failed to add flashcard:", err);
+    } finally {
+      setAddingCard(false);
+    }
+  };
+
+  const startEdit = (card: Flashcard) => {
+    setEditingId(card.id);
+    setEditQuestion(card.question);
+    setEditAnswer(card.answer);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditQuestion("");
+    setEditAnswer("");
+  };
+
+  const saveEdit = async (card: Flashcard) => {
+    if (!editQuestion.trim() || !editAnswer.trim()) return;
+    setSavingEditId(card.id);
+    const body: FlashcardUpdateRequest = {
+      question: editQuestion.trim(),
+      answer: editAnswer.trim(),
+      source_ref: card.source_ref,
+    };
+    try {
+      const res = await updateFlashcard(card.id, body);
+      setFlashcards((prev) => ({ ...prev, [card.id]: res.data }));
+      cancelEdit();
+    } catch (err) {
+      console.error("Failed to update flashcard:", err);
+    } finally {
+      setSavingEditId(null);
+    }
+  };
+
+  const handleDeleteCard = async (card: Flashcard) => {
+    if (!deckId) return;
+    setDeletingId(card.id);
+    try {
+      const [recordResult, flashcardResult] = await Promise.allSettled([
+        deleteDeckFlashcardRecord(deckId, card.id),
+        deleteFlashcard(card.id),
+      ]);
+
+      if (recordResult.status === "fulfilled") {
+        setFlashcardIds((prev) => prev.filter((id) => id !== card.id));
+      } else {
+        console.error("Failed to delete deck flashcard record:", recordResult.reason);
+      }
+
+      if (flashcardResult.status === "fulfilled") {
+        setFlashcards((prev) => {
+          const next = { ...prev };
+          delete next[card.id];
+          return next;
+        });
+      } else {
+        console.error("Failed to delete flashcard:", flashcardResult.reason);
+      }
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
@@ -43,32 +205,73 @@ export function DeckDetailPage() {
 
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">{deckName}</h1>
+          <h1 className="font-display text-4xl font-semibold tracking-tight">{deckName || "Deck"}</h1>
           <p className="mt-1 text-muted-foreground">
             Review, organize, and study the flashcards in this deck.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => setShowAddCard((prev) => !prev)}>
             <Plus className="mr-1.5 h-4 w-4" /> Add Card
           </Button>
-          <Button variant="outline" size="sm">
-            <Pencil className="mr-1.5 h-4 w-4" /> Edit Deck
-          </Button>
-          <Button size="sm" onClick={() => navigate(`/study/${currentDeckId}`)}>
+          <Button size="sm" onClick={() => navigate(`/study/${deckId}`)}>
             <Play className="mr-1.5 h-4 w-4" /> Study Due Cards
           </Button>
         </div>
       </div>
 
+      {showAddCard && (
+        <div className="card-shadow mb-6 rounded-3xl border border-border bg-card p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-display text-lg font-semibold">Add a flashcard</h2>
+            <button
+              type="button"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setShowAddCard(false)}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="space-y-3">
+            <Input
+              placeholder="Question"
+              value={newQuestion}
+              onChange={(e) => setNewQuestion(e.target.value)}
+            />
+            <Input
+              placeholder="Answer"
+              value={newAnswer}
+              onChange={(e) => setNewAnswer(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowAddCard(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddCard}
+                disabled={!newQuestion.trim() || !newAnswer.trim() || addingCard}
+              >
+                {addingCard ? "Adding..." : "Add Card"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mb-4 flex items-center gap-3">
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search cards..." className="pl-9" />
+          <Input
+            placeholder="Search cards..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
         <select
           className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          defaultValue="all"
+          value={sourceFilter}
+          onChange={(e) => setSourceFilter(e.target.value as SourceFilter)}
         >
           <option value="all">All</option>
           <option value="ai">AI Generated</option>
@@ -76,50 +279,105 @@ export function DeckDetailPage() {
         </select>
       </div>
 
-      <div className="card-shadow overflow-hidden rounded-3xl border border-border bg-card">
-        {flashcards.map((card, idx) => (
-          <article
-            key={card.id}
-            className={`flex items-start gap-4 p-5 ${idx < flashcards.length - 1 ? "border-b border-border" : ""}`}
-          >
-            <div className="min-w-0 flex-1 space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                  Q
-                </span>
-                <p className="font-medium">{card.question}</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-                  A
-                </span>
-                <p className="text-sm text-muted-foreground">{card.answer}</p>
-              </div>
-            </div>
+      {loadingIds && <p className="text-muted-foreground">Loading flashcards...</p>}
+      {!loadingIds && error && <p className="text-destructive">{error}</p>}
+      {!loadingIds && !error && flashcardIds.length === 0 && (
+        <p className="text-muted-foreground">This deck has no flashcards yet.</p>
+      )}
+      {!loadingIds && !error && flashcardIds.length > 0 && visibleCards.length === 0 && (
+        <p className="text-muted-foreground">No flashcards match your search or filter.</p>
+      )}
 
-            <div className="flex flex-shrink-0 items-center gap-3">
-              <span
-                className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                  card.source === "AI Generated"
-                    ? "bg-primary/10 text-primary"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {card.source === "AI Generated" && <Sparkles className="h-3 w-3" />}
-                {card.source === "AI Generated" ? "AI" : "Manual"}
-              </span>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="sm">Edit</Button>
-                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                  Delete
-                </Button>
+      <div className="card-shadow overflow-hidden rounded-3xl border border-border bg-card">
+        {visibleCards.map((card, idx) => {
+          const isEditing = editingId === card.id;
+          const aiGenerated = isAiGenerated(card);
+          return (
+            <article
+              key={card.id}
+              className={`flex items-start gap-4 p-5 ${idx < visibleCards.length - 1 ? "border-b border-border" : ""}`}
+            >
+              {isEditing ? (
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Input value={editQuestion} onChange={(e) => setEditQuestion(e.target.value)} />
+                  <Input value={editAnswer} onChange={(e) => setEditAnswer(e.target.value)} />
+                </div>
+              ) : (
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                      Q
+                    </span>
+                    <p className="font-medium">{card.question}</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                      A
+                    </span>
+                    <p className="text-sm text-muted-foreground">{card.answer}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-shrink-0 items-center gap-3">
+                <span
+                  className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                    aiGenerated ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {aiGenerated && <Sparkles className="h-3 w-3" />}
+                  {aiGenerated ? "AI" : "Manual"}
+                </span>
+                <div className="flex gap-1">
+                  {isEditing ? (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => saveEdit(card)}
+                        disabled={savingEditId === card.id || !editQuestion.trim() || !editAnswer.trim()}
+                      >
+                        <Check className="mr-1 h-4 w-4" />
+                        {savingEditId === card.id ? "Saving..." : "Save"}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={cancelEdit}>
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="ghost" size="sm" onClick={() => startEdit(card)}>
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleDeleteCard(card)}
+                        disabled={deletingId === card.id}
+                      >
+                        {deletingId === card.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete"}
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
+        {loadingCardIds.size > 0 && (
+          <div className="flex items-center justify-center gap-2 p-5 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading {loadingCardIds.size} more card{loadingCardIds.size === 1 ? "" : "s"}...
+          </div>
+        )}
       </div>
 
-      <p className="mt-4 text-center text-sm text-muted-foreground">Showing 1–5 of 42 cards</p>
+      {!loadingIds && flashcardIds.length > 0 && (
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          Showing {visibleCards.length} of {flashcardIds.length} cards
+        </p>
+      )}
     </main>
   );
 }

@@ -1,12 +1,17 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { Upload, FileText, X, Lock, Check, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
+import type { Deck } from "@/api/study";
+import { listDecks } from "@/api/study";
 import { useFlashcardGeneration } from "@/hooks/useFlashcardGeneration";
 import type { SaveStatus } from "@/hooks/useFlashcardGeneration";
 
 export function UploadPage() {
+  const navigate = useNavigate();
   const {
     flashcards,
     isGenerating,
@@ -22,7 +27,25 @@ export function UploadPage() {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [decks, setDecks] = useState<Deck[]>([]);
+  const [decksLoading, setDecksLoading] = useState<boolean>(true);
+  const [selectedDeckId, setSelectedDeckId] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const fetchDecks = async () => {
+      try {
+        const res = await listDecks();
+        setDecks(res.data);
+        if (res.data.length > 0) setSelectedDeckId(res.data[0].id);
+      } catch (error) {
+        console.error("Failed to load decks:", error);
+      } finally {
+        setDecksLoading(false);
+      }
+    };
+    fetchDecks();
+  }, []);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -60,6 +83,35 @@ export function UploadPage() {
 
       {flashcards.length === 0 ? (
         <div className="mx-auto max-w-xl">
+          {!decksLoading && decks.length === 0 ? (
+            <div className="card-shadow mb-6 flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                You need a deck before you can generate flashcards.
+              </p>
+              <Button onClick={() => navigate("/decks")}>Create a deck</Button>
+            </div>
+          ) : (
+            <div className="card-shadow mb-6 space-y-1.5 rounded-2xl border border-border bg-card p-4">
+              <Label htmlFor="deck">Save flashcards to deck</Label>
+              <div className="flex items-center gap-2">
+                <select
+                  id="deck"
+                  value={selectedDeckId}
+                  onChange={(e) => setSelectedDeckId(e.target.value)}
+                  disabled={decksLoading}
+                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  {decks.map((deck) => (
+                    <option key={deck.id} value={deck.id}>{deck.name}</option>
+                  ))}
+                </select>
+                <Button variant="outline" size="sm" onClick={() => navigate("/decks")}>
+                  + New Deck
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div
             className={`card-shadow flex flex-col items-center rounded-3xl border-2 border-dashed bg-card p-12 text-center transition-colors ${dragOver ? "border-primary bg-primary/5" : "border-border"
               }`}
@@ -105,10 +157,17 @@ export function UploadPage() {
 
           <Button
             className="mt-6 w-full"
-            disabled={!selectedFile || isGenerating}
+            disabled={!selectedFile || !selectedDeckId || isGenerating}
             onClick={handleGenerate}
           >
-            {isGenerating ? "Generating..." : "Generate Flashcards"}
+            {isGenerating ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating...
+              </span>
+            ) : (
+              "Generate Flashcards"
+            )}
           </Button>
 
           {error && (
@@ -127,7 +186,7 @@ export function UploadPage() {
               {flashcards.length} generated · {savedCount} saved
             </p>
             <Button
-              onClick={saveAllFlashcards}
+              onClick={() => saveAllFlashcards(selectedDeckId)}
               disabled={isSavingAll || allSaved}
             >
               {isSavingAll ? (
@@ -164,7 +223,7 @@ export function UploadPage() {
                 <div className="flex flex-shrink-0 items-center gap-1">
                   <FlashcardSaveButton
                     status={saveStatus[card.id] ?? "idle"}
-                    onSave={() => saveFlashcard(card)}
+                    onSave={() => saveFlashcard(card, selectedDeckId)}
                   />
                   <Button
                     variant="ghost"
