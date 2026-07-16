@@ -9,7 +9,6 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { UploadPage } from "./pages/UploadPage";
 import { SavedFlashcardsPage } from "./pages/SavedFlashcardsPage";
-import { CardStudioPage } from "./pages/CardStudioPage";
 import { DecksPage } from "./pages/DecksPage";
 import { DeckDetailPage } from "./pages/DeckDetailPage";
 import { StudySessionPage } from "./pages/StudySessionPage";
@@ -28,7 +27,6 @@ function App() {
                         <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
                         <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
                         <Route path="/flashcards" element={<ProtectedRoute><SavedFlashcardsPage /></ProtectedRoute>} />
-                        <Route path="/cards" element={<ProtectedRoute><CardStudioPage /></ProtectedRoute>} />
                         <Route path="/decks" element={<ProtectedRoute><DecksPage /></ProtectedRoute>} />
                         <Route path="/decks/:deckId" element={<ProtectedRoute><DeckDetailPage /></ProtectedRoute>} />
                         <Route path="/study" element={<ProtectedRoute><StudySessionPage /></ProtectedRoute>} />
