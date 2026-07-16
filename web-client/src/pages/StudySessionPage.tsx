@@ -1,47 +1,17 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, ChevronDown, ChevronUp, Sparkles, X, ThumbsUp, ThumbsDown, Square } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Sparkles, X, Square, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-type ReviewRating = "again" | "hard" | "good" | "easy";
+import type { StudyStatus } from "@/api/study";
+import { listDecks, getDueFlashcardsForDeck, updateFlashcardStudyStatus } from "@/api/study";
+import type { Flashcard } from "@/api/flashcard";
+import { getFlashcardById } from "@/api/flashcard";
+import { apiV1GenaiExplainPostApiV1GenaiExplainPost } from "@/api/genai";
 
-type StudyCard = {
-  id: number;
-  question: string;
-  answer: string;
-  keyIdea: string;
-};
+import { isAiGenerated } from "@/lib/utils"
 
-const studyCards: StudyCard[] = [
-  {
-    id: 1,
-    question: "What is overfitting?",
-    answer: "Overfitting occurs when a model learns the training data too well, including its noise and outliers, which reduces its ability to generalize to unseen data.",
-    keyIdea: "The model performs very well on training data but poorly on new, unseen data.",
-  },
-  {
-    id: 2,
-    question: "What is the bias-variance trade-off?",
-    answer: "The bias-variance trade-off describes the balance between a model that is too simple and a model that is too complex.",
-    keyIdea: "Good models balance underfitting and overfitting.",
-  },
-  {
-    id: 3,
-    question: "What is cross-validation?",
-    answer: "Cross-validation is a method for evaluating a model by splitting data into training and validation subsets.",
-    keyIdea: "It helps estimate how well a model generalizes to unseen data.",
-  },
-];
-
-const deckNames: Record<string, string> = {
-  "database-systems": "Database Systems",
-  "software-engineering": "Software Engineering",
-  "operating-systems": "Operating Systems",
-  "mathematics": "Mathematics",
-  "german-vocabulary": "German Vocabulary",
-};
-
-const ratings: { id: ReviewRating; label: string; time: string; color: string }[] = [
+const ratings: { id: StudyStatus; label: string; time: string; color: string }[] = [
   { id: "again", label: "Again", time: "< 1 min", color: "border-red-200 bg-red-50 text-red-700 hover:bg-red-100 data-[active=true]:bg-red-100 data-[active=true]:border-red-400" },
   { id: "hard",  label: "Hard",  time: "5 min",   color: "border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 data-[active=true]:bg-orange-100 data-[active=true]:border-orange-400" },
   { id: "good",  label: "Good",  time: "15 min",  color: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 data-[active=true]:bg-blue-100 data-[active=true]:border-blue-400" },
@@ -51,38 +21,184 @@ const ratings: { id: ReviewRating; label: string; time: string; color: string }[
 export function StudySessionPage() {
   const navigate = useNavigate();
   const { deckId } = useParams();
-  const deckName = deckNames[deckId ?? ""] ?? "Machine Learning";
-  const currentDeckId = deckId ?? "machine-learning";
+
+  const [deckName, setDeckName] = useState("");
+  const [studyCards, setStudyCards] = useState<Flashcard[]>([]);
+  const [loadingCards, setLoadingCards] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [selectedRating, setSelectedRating] = useState<ReviewRating | null>(null);
+  const [selectedRating, setSelectedRating] = useState<StudyStatus | null>(null);
+  const [savingRating, setSavingRating] = useState(false);
+
   const [showAI, setShowAI] = useState(false);
-  const [savedExplanation, setSavedExplanation] = useState(false);
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [explanationLoading, setExplanationLoading] = useState(false);
+  const [explanationError, setExplanationError] = useState<string | null>(null);
+
+  const [fetchingMore, setFetchingMore] = useState(false);
+
+  const loadDueCards = async (deckIdParam: string): Promise<Flashcard[]> => {
+    const res = await getDueFlashcardsForDeck(deckIdParam);
+    const cards = await Promise.all(
+      res.data.map((record) =>
+        getFlashcardById(record.flashcard_id)
+          .then((cardRes) => cardRes.data)
+          .catch((err) => {
+            console.error(`Failed to load flashcard ${record.flashcard_id}:`, err);
+            return null;
+          })
+      )
+    );
+    return cards.filter((card): card is Flashcard => card !== null);
+  };
+
+  useEffect(() => {
+    if (!deckId) return;
+
+    let active = true;
+
+    setStudyCards([]);
+    setCurrentIndex(0);
+    setShowAnswer(false);
+    setShowAI(false);
+    setExplanation(null);
+    setSelectedRating(null);
+
+    listDecks()
+      .then((res) => {
+        if (!active) return;
+        const deck = res.data.find((d) => d.id === deckId);
+        if (deck) setDeckName(deck.name);
+      })
+      .catch((err) => console.error("Failed to load deck:", err));
+
+    setLoadingCards(true);
+    loadDueCards(deckId)
+      .then((cards) => {
+        if (!active) return;
+        setStudyCards(cards);
+        setCurrentIndex(0);
+        setError(null);
+      })
+      .catch((err) => {
+        if (!active) return;
+        console.error("Failed to load due flashcards:", err);
+        setError("Failed to load due flashcards.");
+      })
+      .finally(() => {
+        if (active) setLoadingCards(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [deckId]);
 
   const currentCard = studyCards[currentIndex];
-  const progressPercent = useMemo(
-    () => Math.round(((currentIndex + 1) / studyCards.length) * 100),
-    [currentIndex]
-  );
+
+  const resetCardState = () => {
+    setSelectedRating(null);
+    setShowAnswer(false);
+    setShowAI(false);
+    setExplanation(null);
+    setExplanationError(null);
+  };
 
   const handlePrevious = () => {
     setCurrentIndex((i) => Math.max(i - 1, 0));
-    setSelectedRating(null);
-    setShowAnswer(false);
+    resetCardState();
   };
 
-  const handleNext = () => {
-    setCurrentIndex((i) => (i < studyCards.length - 1 ? i + 1 : i));
-    setSelectedRating(null);
-    setShowAnswer(false);
-    setSavedExplanation(false);
+  const advanceToNextCard = async () => {
+    if (currentIndex < studyCards.length - 1) {
+      setCurrentIndex((i) => i + 1);
+      resetCardState();
+      return;
+    }
+
+    if (!deckId) return;
+    setFetchingMore(true);
+    try {
+      const cards = await loadDueCards(deckId);
+      setStudyCards(cards);
+      setCurrentIndex(0);
+      resetCardState();
+    } catch (err) {
+      console.error("Failed to load more due flashcards:", err);
+      setError("Failed to load more due flashcards.");
+    } finally {
+      setFetchingMore(false);
+    }
   };
+
+  const handleRate = async (rating: StudyStatus) => {
+    if (!deckId || !currentCard) return;
+    setSelectedRating(rating);
+    setSavingRating(true);
+    try {
+      await updateFlashcardStudyStatus(deckId, currentCard.id, { study_status: rating });
+      await advanceToNextCard();
+    } catch (err) {
+      setSelectedRating(null);
+      console.error("Failed to update study status:", err);
+    } finally {
+      setSavingRating(false);
+    }
+  };
+
+  const handleAskAI = async () => {
+    if (!currentCard) return;
+    setShowAI(true);
+    setExplanation(null);
+    setExplanationError(null);
+    setExplanationLoading(true);
+    try {
+      const res = await apiV1GenaiExplainPostApiV1GenaiExplainPost(currentCard);
+      setExplanation(res.data.explanation);
+    } catch (err) {
+      console.error("Failed to get AI explanation:", err);
+      setExplanationError("Failed to generate an explanation.");
+    } finally {
+      setExplanationLoading(false);
+    }
+  };
+
+  if (loadingCards) {
+    return (
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        <p className="text-muted-foreground">Loading study session...</p>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        <p className="text-destructive">{error}</p>
+      </main>
+    );
+  }
+
+  if (!currentCard) {
+    return (
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        <Link
+          to={`/decks/${deckId}`}
+          className="mb-6 flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" /> {deckName || "Deck"}
+        </Link>
+        <p className="text-muted-foreground">No cards are due for this deck right now.</p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
       <Link
-        to={`/decks/${currentDeckId}`}
+        to={`/decks/${deckId}`}
         className="mb-6 flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" /> {deckName}
@@ -95,19 +211,9 @@ export function StudySessionPage() {
             Card {currentIndex + 1} of {studyCards.length} · {deckName}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate(`/decks/${currentDeckId}`)}>
+        <Button variant="outline" size="sm" onClick={() => navigate(`/decks/${deckId}`)}>
           <Square className="mr-1.5 h-3.5 w-3.5" /> End Session
         </Button>
-      </div>
-
-      <div className="mb-6 flex items-center gap-3">
-        <div className="h-2 flex-1 rounded-full bg-border">
-          <div
-            className="h-2 rounded-full bg-primary transition-all"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-        <span className="text-sm font-medium text-muted-foreground">{progressPercent}%</span>
       </div>
 
       <div className={`grid gap-6 ${showAI ? "lg:grid-cols-[1fr_360px]" : ""}`}>
@@ -135,11 +241,6 @@ export function StudySessionPage() {
                   <p className="text-base leading-relaxed">{currentCard.answer}</p>
                 </div>
 
-                <div className="rounded-2xl bg-primary/5 p-4 text-sm">
-                  <p className="font-medium text-primary">Key idea</p>
-                  <p className="mt-1 text-muted-foreground">{currentCard.keyIdea}</p>
-                </div>
-
                 <div>
                   <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">How did it go?</p>
                   <div className="grid grid-cols-4 gap-2">
@@ -148,8 +249,9 @@ export function StudySessionPage() {
                         key={r.id}
                         type="button"
                         data-active={selectedRating === r.id}
-                        className={`flex flex-col items-center rounded-2xl border px-2 py-3 text-sm font-medium transition-colors ${r.color}`}
-                        onClick={() => setSelectedRating(r.id)}
+                        disabled={savingRating}
+                        className={`flex flex-col items-center rounded-2xl border px-2 py-3 text-sm font-medium transition-colors disabled:opacity-60 ${r.color}`}
+                        onClick={() => handleRate(r.id)}
                       >
                         {r.label}
                         <span className="mt-0.5 text-xs font-normal opacity-70">{r.time}</span>
@@ -158,33 +260,32 @@ export function StudySessionPage() {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/40 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
-                  onClick={() => setShowAI(true)}
-                >
-                  <Sparkles className="h-4 w-4" /> Ask AI to explain
-                </button>
+                {isAiGenerated(currentCard) && (
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/40 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
+                    onClick={handleAskAI}
+                  >
+                    <Sparkles className="h-4 w-4" /> Ask AI to explain
+                  </button>
+                )}
               </div>
             )}
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className="flex-1"
               onClick={handlePrevious}
-              disabled={currentIndex === 0}
+              disabled={currentIndex === 0 || savingRating || fetchingMore}
             >
               ← Previous
             </Button>
-            <Button
-              className="flex-1"
-              onClick={handleNext}
-              disabled={currentIndex === studyCards.length - 1}
-            >
-              Next →
-            </Button>
+            {(savingRating || fetchingMore) && (
+              <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" /> Loading next card...
+              </span>
+            )}
           </div>
         </div>
 
@@ -205,55 +306,17 @@ export function StudySessionPage() {
             </div>
 
             <div className="flex-1 space-y-4 text-sm">
-              <div>
-                <h3 className="font-semibold">Explanation</h3>
-                <p className="mt-1 text-muted-foreground leading-relaxed">
-                  Overfitting happens when a machine learning model captures not only the underlying
-                  patterns in the training data but also the random noise. As a result, it performs
-                  very well on the training set but fails to generalize to new, unseen data.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold">Real-world analogy</h3>
-                <p className="mt-1 text-muted-foreground leading-relaxed">
-                  It is like memorizing the answers to practice test questions instead of understanding
-                  the concepts — you might ace the practice test but struggle on the real exam.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold">How to prevent it</h3>
-                <ul className="mt-1 space-y-1 text-muted-foreground">
-                  <li>· Use more training data</li>
-                  <li>· Apply regularization (L1/L2)</li>
-                  <li>· Use simpler models</li>
-                  <li>· Apply dropout or early stopping</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setSavedExplanation(true)}
-                disabled={savedExplanation}
-              >
-                {savedExplanation ? "✓ Saved as Flashcard" : "+ Save as Flashcard"}
-              </Button>
-
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Was this helpful?</span>
-                <div className="flex gap-2">
-                  <button type="button" className="rounded-lg p-1.5 hover:bg-muted transition-colors">
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                  </button>
-                  <button type="button" className="rounded-lg p-1.5 hover:bg-muted transition-colors">
-                    <ThumbsDown className="h-3.5 w-3.5" />
-                  </button>
+              {explanationLoading && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Generating explanation...
                 </div>
-              </div>
+              )}
+              {!explanationLoading && explanationError && (
+                <p className="text-destructive">{explanationError}</p>
+              )}
+              {!explanationLoading && explanation && (
+                <p className="text-muted-foreground leading-relaxed">{explanation}</p>
+              )}
             </div>
           </aside>
         )}

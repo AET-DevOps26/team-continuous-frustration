@@ -1,0 +1,59 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003_create_study_records
+      author: team-continuous-frustration
+      changes:
+        - createTable:
+            tableName: study_records
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: deck_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_study_records_deck
+                    references: decks(id)
+                    deleteCascade: true
+              - column:
+                  name: flashcard_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: due_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+              - column:
+                  name: interval_days
+                  type: int
+                  defaultValue: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ease_factor
+                  type: double
+                  defaultValue: 2.5
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: study_records
+            columnNames: deck_id, flashcard_id
+            constraintName: uq_study_records_deck_flashcard
+        - createIndex:
+            indexName: idx_study_records_deck_due
+            tableName: study_records
+            columns:
+              - column:
+                  name: deck_id
+              - column:
+                  name: due_at

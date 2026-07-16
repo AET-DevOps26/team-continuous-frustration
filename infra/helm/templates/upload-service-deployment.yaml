@@ -5,10 +5,15 @@ metadata:
     io.kompose.service: {{ .Values.uploadService.name }}
   name: {{ .Values.uploadService.name }}
   namespace: {{ .Values.namespace }}
+    io.kompose.service: {{ .Values.uploadService.name }}
+  name: {{ .Values.uploadService.name }}
+  namespace: {{ .Values.namespace }}
 spec:
+  replicas: {{ .Values.uploadService.replicaCount }}
   replicas: {{ .Values.uploadService.replicaCount }}
   selector:
     matchLabels:
+      io.kompose.service: {{ .Values.uploadService.name }}
       io.kompose.service: {{ .Values.uploadService.name }}
   template:
     metadata:
@@ -21,31 +26,44 @@ spec:
         - env:
             - name: POSTGRES_DB
               value: {{ .Values.db.uploadDb }}
+              value: {{ .Values.db.uploadDb }}
             - name: POSTGRES_HOST
+              value: {{ .Values.db.name }}
               value: {{ .Values.db.name }}
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_PORT
+              value: {{ .Values.db.port | quote }}
               value: {{ .Values.db.port | quote }}
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_USER
           image: {{ .Values.image.registry }}/{{ .Values.uploadService.name }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: {{ .Values.uploadService.name }}
+          image: {{ .Values.image.registry }}/{{ .Values.uploadService.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: {{ .Values.uploadService.name }}
           ports:
+            - containerPort: {{ .Values.uploadService.port }}
             - containerPort: {{ .Values.uploadService.port }}
               protocol: TCP
           resources:
             requests:
               cpu: {{ .Values.uploadService.resources.requests.cpu | quote }}
               memory: {{ .Values.uploadService.resources.requests.memory | quote }}
+              cpu: {{ .Values.uploadService.resources.requests.cpu | quote }}
+              memory: {{ .Values.uploadService.resources.requests.memory | quote }}
             limits:
+              cpu: {{ .Values.uploadService.resources.limits.cpu | quote }}
+              memory: {{ .Values.uploadService.resources.limits.memory | quote }}
               cpu: {{ .Values.uploadService.resources.limits.cpu | quote }}
               memory: {{ .Values.uploadService.resources.limits.memory | quote }}
       restartPolicy: Always

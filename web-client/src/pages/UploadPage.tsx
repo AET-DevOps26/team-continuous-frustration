@@ -1,19 +1,52 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Upload, FileText, X, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Upload, FileText, X, Lock, Check, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
-import type { BodyDocumentsUploadPostApiV1DocumentsUploadPost } from '@/api/upload'
-import { documentsUploadPostApiV1DocumentsUploadPost } from '@/api/upload'
-import type { ApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostParams, Flashcard } from '@/api/genaiStream'
-import { apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost } from '@/api/genaiStream'
+import type { Deck } from "@/api/study";
+import { listDecks } from "@/api/study";
+import { useFlashcardGeneration } from "@/hooks/useFlashcardGeneration";
+import type { SaveStatus } from "@/hooks/useFlashcardGeneration";
 
 export function UploadPage() {
+  const navigate = useNavigate();
+  const {
+    flashcards,
+    isGenerating,
+    isSavingAll,
+    saveStatus,
+    savedCount,
+    error,
+    generateFromFile,
+    saveFlashcard,
+    saveAllFlashcards,
+    removeFlashcard,
+  } = useFlashcardGeneration();
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [decks, setDecks] = useState<Deck[]>([]);
+  const [decksLoading, setDecksLoading] = useState<boolean>(true);
+  const [selectedDeckId, setSelectedDeckId] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const fetchDecks = async () => {
+      try {
+        const res = await listDecks();
+        setDecks(res.data);
+        if (res.data.length > 0) setSelectedDeckId(res.data[0].id);
+      } catch (error) {
+        console.error("Failed to load decks:", error);
+      } finally {
+        setDecksLoading(false);
+      }
+    };
+    fetchDecks();
+  }, []);
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) setSelectedFile(file);
@@ -31,68 +64,13 @@ export function UploadPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleUploadAndGenerate = async () => {
-    setIsGenerating(true);
-    const body: BodyDocumentsUploadPostApiV1DocumentsUploadPost = {
-      file: selectedFile!,
-    };
-
-    let uploadId: string = "";
-    try {
-      const res = await documentsUploadPostApiV1DocumentsUploadPost(body);
-      uploadId = res.data.upload_id;
-      console.log("Upload successful:", uploadId);
-    } catch (error) {
-      console.error("Upload failed:", error);
-      // Handle error (e.g., show a toast notification)
-    }
-
-    const params: ApiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPostParams = {
-      upload_id: uploadId!,
-    };
-
-    try {
-      const res = await apiV1GenaiGenerateFlashcardsPostApiV1GenaiGenerateFlashcardsPost(params, { credentials: 'include' });
-      if (res.status === 200) {
-        const stream = res.stream
-
-        if (!stream.body) {
-          throw new Error("No body in response");
-        }
-        await readFlashcardsStream(stream.body);
-        setIsGenerating(false);
-      }
-    } catch (error) {
-      console.error("Generate failed:", error);
-    }
+  const handleGenerate = () => {
+    if (selectedFile) generateFromFile(selectedFile);
   };
 
-  const readFlashcardsStream = async (readableStream: ReadableStream<Uint8Array>) => {
-    const reader = readableStream.getReader();
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        break;
-      }
-      const chunk = new TextDecoder().decode(value);
-      const lines = chunk.split('\n');
-      for (const line of lines) {
-        if (line.trim()) {
-          try {
-            const flashcard = JSON.parse(line.trim()) as Flashcard;
-            console.log("Parsed flashcard:", flashcard);
-            setFlashcards((prev) => [...prev, flashcard]);
-          } catch (error) {
-            console.error("Failed to parse flashcard:", error);
-          }
-        }
-      }
-    }
-  }
-
-
   const formatFileSize = (size: number) => `${(size / (1024 * 1024)).toFixed(2)} MB`;
+
+  const allSaved = flashcards.length > 0 && savedCount === flashcards.length;
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
@@ -105,6 +83,35 @@ export function UploadPage() {
 
       {flashcards.length === 0 ? (
         <div className="mx-auto max-w-xl">
+          {!decksLoading && decks.length === 0 ? (
+            <div className="card-shadow mb-6 flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                You need a deck before you can generate flashcards.
+              </p>
+              <Button onClick={() => navigate("/decks")}>Create a deck</Button>
+            </div>
+          ) : (
+            <div className="card-shadow mb-6 space-y-1.5 rounded-2xl border border-border bg-card p-4">
+              <Label htmlFor="deck">Save flashcards to deck</Label>
+              <div className="flex items-center gap-2">
+                <select
+                  id="deck"
+                  value={selectedDeckId}
+                  onChange={(e) => setSelectedDeckId(e.target.value)}
+                  disabled={decksLoading}
+                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  {decks.map((deck) => (
+                    <option key={deck.id} value={deck.id}>{deck.name}</option>
+                  ))}
+                </select>
+                <Button variant="outline" size="sm" onClick={() => navigate("/decks")}>
+                  + New Deck
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div
             className={`card-shadow flex flex-col items-center rounded-3xl border-2 border-dashed bg-card p-12 text-center transition-colors ${dragOver ? "border-primary bg-primary/5" : "border-border"
               }`}
@@ -150,11 +157,22 @@ export function UploadPage() {
 
           <Button
             className="mt-6 w-full"
-            disabled={!selectedFile || isGenerating}
-            onClick={handleUploadAndGenerate}
+            disabled={!selectedFile || !selectedDeckId || isGenerating}
+            onClick={handleGenerate}
           >
-            {isGenerating ? "Generating..." : "Generate Flashcards"}
+            {isGenerating ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating...
+              </span>
+            ) : (
+              "Generate Flashcards"
+            )}
           </Button>
+
+          {error && (
+            <p className="mt-4 text-center text-sm text-destructive">{error}</p>
+          )}
 
           <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
             <Lock className="h-3 w-3" />
@@ -162,51 +180,110 @@ export function UploadPage() {
           </p>
         </div>
       ) : (
-        <div className="card-shadow overflow-hidden rounded-3xl border border-border bg-card">
-          {flashcards.map((card, idx) => (
-            <article
-              key={card.id}
-              className={`flex items-start gap-4 p-5 ${idx < flashcards.length - 1 ? "border-b border-border" : ""}`}
+        <>
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {flashcards.length} generated · {savedCount} saved
+            </p>
+            <Button
+              onClick={() => saveAllFlashcards(selectedDeckId)}
+              disabled={isSavingAll || allSaved}
             >
-              <div className="min-w-0 flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                    Q
-                  </span>
-                  <p className="font-medium">{card.question}</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-                    A
-                  </span>
-                  <p className="text-sm text-muted-foreground">{card.answer}</p>
-                </div>
-              </div>
+              {isSavingAll ? (
+                <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Saving...</>
+              ) : allSaved ? (
+                <><Check className="mr-1.5 h-4 w-4" /> All Saved</>
+              ) : (
+                "Save All"
+              )}
+            </Button>
+          </div>
 
-              <div className="flex flex-shrink-0 items-center gap-3">
+          <div className="card-shadow overflow-hidden rounded-3xl border border-border bg-card">
+            {flashcards.map((card, idx) => (
+              <article
+                key={card.id}
+                className={`flex items-start gap-4 p-5 ${idx < flashcards.length - 1 ? "border-b border-border" : ""}`}
+              >
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                      Q
+                    </span>
+                    <p className="font-medium">{card.question}</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                      A
+                    </span>
+                    <p className="text-sm text-muted-foreground">{card.answer}</p>
+                  </div>
+                </div>
 
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="sm">Save</Button>
-                  <Button variant="ghost" size="sm">Edit</Button>
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                    Delete
+                <div className="flex flex-shrink-0 items-center gap-1">
+                  <FlashcardSaveButton
+                    status={saveStatus[card.id] ?? "idle"}
+                    onSave={() => saveFlashcard(card, selectedDeckId)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => removeFlashcard(card.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
-      {isGenerating && (
-        <div className="mt-6 flex w-full items-center justify-center">
-          <p>Generating Flashcards...</p>
-        </div>
-      )}
-      {flashcards.length > 0 && !isGenerating && (
-        <div className="mt-6 flex w-full items-center justify-center">
-          <p>Finished Generating Flashcards!</p>
-        </div>
+              </article>
+            ))}
+          </div>
+
+          {isGenerating && (
+            <div className="mt-6 flex w-full items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <p>Generating more flashcards...</p>
+            </div>
+          )}
+          {error && (
+            <p className="mt-6 text-center text-sm text-destructive">{error}</p>
+          )}
+        </>
       )}
     </main>
+  );
+}
+
+function FlashcardSaveButton({
+  status,
+  onSave,
+}: {
+  status: SaveStatus;
+  onSave: () => void;
+}) {
+  if (status === "saved") {
+    return (
+      <Button variant="ghost" size="sm" disabled className="text-green-600">
+        <Check className="mr-1.5 h-4 w-4" /> Saved
+      </Button>
+    );
+  }
+
+  if (status === "saving") {
+    return (
+      <Button variant="ghost" size="sm" disabled>
+        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Saving
+      </Button>
+    );
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={onSave}
+      className={status === "error" ? "text-destructive hover:text-destructive" : ""}
+    >
+      {status === "error" ? "Retry" : "Save"}
+    </Button>
   );
 }

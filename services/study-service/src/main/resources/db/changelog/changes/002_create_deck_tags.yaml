@@ -1,31 +1,30 @@
 databaseChangeLog:
   - changeSet:
-      id: 001_create_users
+      id: 002_create_deck_tags
       author: team-continuous-frustration
       changes:
         - createTable:
-            tableName: users
+            tableName: deck_tags
             columns:
               - column:
-                  name: id
+                  name: deck_id
                   type: uuid
                   constraints:
-                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_deck_tags_deck
+                    references: decks(id)
+                    deleteCascade: true
+              - column:
+                  name: tag_order
+                  type: int
+                  constraints:
                     nullable: false
               - column:
-                  name: email
+                  name: tag
                   type: varchar(255)
                   constraints:
                     nullable: false
-                    unique: true
-              - column:
-                  name: username
-                  type: varchar(255)
-                  constraints:
-                    nullable: false
-                    unique: true
-              - column:
-                  name: password_hash
-                  type: varchar(255)
-                  constraints:
-                    nullable: false
+        - addPrimaryKey:
+            tableName: deck_tags
+            columnNames: deck_id, tag_order
+            constraintName: pk_deck_tags

@@ -13,6 +13,33 @@ servers:
     description: Production
 
 paths:
+  /api/v1/auth/login:
+    post:
+      summary: Log in with email and password
+      operationId: login
+      tags:
+        - Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login succeeded and auth cookies were issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/auth/register:
     post:
       summary: Register a new user
@@ -55,13 +82,26 @@ paths:
       security: []
       responses:
         '200':
-          description: Authenticated user info
+          description: Authenticated user info from the access token cookie
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/MeResponse'
         '401':
           description: No valid session
+
+  /api/v1/auth/refresh:
+    post:
+      summary: Refresh the access token from the current session
+      operationId: refresh
+      tags:
+        - Auth
+      security: []
+      responses:
+        '200':
+          description: Access token refreshed and cookie reissued
+        '401':
+          description: Missing, invalid, or expired session
 
   /api/v1/auth/logout:
     post:
@@ -72,10 +112,24 @@ paths:
       security: []
       responses:
         '204':
-          description: Session revoked and cookie cleared
+          description: Session revoked and auth cookies cleared
 
 components:
   schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          example: secret123
+
     RegisterRequest:
       type: object
       required:

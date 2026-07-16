@@ -1,0 +1,92 @@
+name: Python Service Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_changes: ${{ steps.set-matrix.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            genai-service:
+              - 'services/genai-service/**'
+            upload-service:
+              - 'services/upload-service/**'
+            workflow:
+              - '.github/workflows/test_python_services.yaml'
+
+      - name: Build matrix from changes
+        id: set-matrix
+        uses: actions/github-script@v7
+        env:
+          GENAI_SERVICE: ${{ steps.filter.outputs['genai-service'] }}
+          UPLOAD_SERVICE: ${{ steps.filter.outputs['upload-service'] }}
+          WORKFLOW: ${{ steps.filter.outputs.workflow }}
+        with:
+          script: |
+            const items = [];
+            const add = (service) => items.push({ service, path: `services/${service}` });
+            const testAll = process.env.WORKFLOW === 'true';
+
+            if (testAll || process.env.GENAI_SERVICE === 'true') {
+              add('genai-service');
+            }
+            if (testAll || process.env.UPLOAD_SERVICE === 'true') {
+              add('upload-service');
+            }
+
+            core.setOutput('matrix', JSON.stringify({ include: items }));
+            core.setOutput('has_changes', items.length > 0 ? 'true' : 'false');
+
+  test:
+    name: pytest
+    needs: changes
+    if: needs.changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.changes.outputs.matrix) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.path }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+          cache-dependency-path: ${{ matrix.path }}/requirements.txt
+
+      - name: Install system dependencies
+        if: matrix.service == 'upload-service'
+        run: sudo apt-get update && sudo apt-get install -y libpq-dev gcc
+
+      - name: Install dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          pip install --no-cache-dir -e .
+          pip install --no-cache-dir pytest
+
+      - name: Run pytest
+        run: pytest tests

@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001_create_flashcards
+      author: team-continuous-frustration
+      changes:
+        - createTable:
+            tableName: flashcards
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              # References the user id issued by the origin auth service (authdb).
+              # No cross-database foreign key: each service owns its own database.
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: question
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: answer
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_ref
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_updated
+                  type: timestamp
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: flashcards
+            indexName: idx_flashcards_user_id
+            columns:
+              - column:
+                  name: user_id

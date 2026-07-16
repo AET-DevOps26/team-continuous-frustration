@@ -12,5 +12,9 @@ spec:
     - name: {{ .Values.genaiService.port | quote }}
       port: {{ .Values.genaiService.port }}
       targetPort: {{ .Values.genaiService.port }}
+    - name: {{ .Values.genaiService.port | quote }}
+      port: {{ .Values.genaiService.port }}
+      targetPort: {{ .Values.genaiService.port }}
   selector:
+    io.kompose.service: {{ .Values.genaiService.name }}
     io.kompose.service: {{ .Values.genaiService.name }}
