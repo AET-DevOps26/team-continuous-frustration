@@ -6,5 +6,9 @@ metadata:
   labels:
     grafana_dashboard: "1"
 data:
+  # replace does a plain string substitution on the raw file content
+  # instead of running it through tpl - the dashboard JSON also contains
+  # Grafana's own legend-format placeholders, which look like Go template
+  # actions and would fail to parse as one.
   service-overview.json: |-
-{{ .Files.Get "dashboards/service-overview.json" | indent 4 }}
+{{ .Files.Get "dashboards/service-overview.json" | replace "team-continuous-frustration" .Values.appNamespace | indent 4 }}
