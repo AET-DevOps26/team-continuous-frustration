@@ -1,0 +1,41 @@
+{{/*
+loki-stack's promtail subchart ships a ClusterRole by default (needed for
+unrestricted `kubernetes_sd_configs` pod discovery). This account only has
+namespace-scoped RBAC, so promtail.rbac.create is disabled and we grant the
+same "list/watch pods|services|endpoints" rules via namespaced Roles in just
+the two namespaces we actually care about. The matching scrape config
+(loki-stack.promtail.config.snippets.scrapeConfigs in values.yaml) restricts
+kubernetes_sd_configs to those same namespaces so promtail never needs to
+list cluster-wide.
+*/}}
+{{- if (index .Values "loki-stack" "promtail" "enabled") }}
+{{- range list .Values.namespace .Values.appNamespace }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: monitoring-promtail
+  namespace: {{ . }}
+rules:
+  - apiGroups: [""]
+    resources:
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: monitoring-promtail
+  namespace: {{ . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: monitoring-promtail
+subjects:
+  - kind: ServiceAccount
+    name: monitoring-promtail
+    namespace: {{ $.Values.namespace }}
+---
+{{- end }}
+{{- end }}

@@ -5,15 +5,22 @@ metadata:
     io.kompose.service: {{ .Values.genaiService.name }}
   name: {{ .Values.genaiService.name }}
   namespace: {{ .Values.namespace }}
+    io.kompose.service: {{ .Values.genaiService.name }}
+  name: {{ .Values.genaiService.name }}
+  namespace: {{ .Values.namespace }}
 spec:
+  replicas: {{ .Values.genaiService.replicaCount }}
   replicas: {{ .Values.genaiService.replicaCount }}
   selector:
     matchLabels:
+      io.kompose.service: {{ .Values.genaiService.name }}
       io.kompose.service: {{ .Values.genaiService.name }}
   template:
     metadata:
       labels:
         io.kompose.service: {{ .Values.genaiService.name }}
+        app: {{ .Values.genaiService.name }}
+        monitoring: "true"
     spec:
       containers:
         - env:
@@ -21,33 +28,48 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
+                  name: {{ .Values.secretName }}
                   key: JWT_SECRET
             - name: LLM_BASE_URL
               value: http://{{ .Values.ollama.name }}:{{ .Values.ollama.port }}/v1
+              value: http://{{ .Values.ollama.name }}:{{ .Values.ollama.port }}/v1
             - name: LLM_MODEL
+              value: {{ .Values.genaiService.llmModel | quote }}
               value: {{ .Values.genaiService.llmModel | quote }}
             - name: LOGOS_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
+                  name: {{ .Values.secretName }}
                   key: LOGOS_API_KEY
             - name: OLLAMA_API_ENDPOINT
               value: http://{{ .Values.ollama.name }}:{{ .Values.ollama.port }}
+              value: http://{{ .Values.ollama.name }}:{{ .Values.ollama.port }}
             - name: REDIS_URL
+              value: redis://{{ .Values.redis.name }}:{{ .Values.redis.port }}/0
               value: redis://{{ .Values.redis.name }}:{{ .Values.redis.port }}/0
             - name: WEAVIATE_URL
               value: http://{{ .Values.weaviate.name }}:{{ .Values.weaviate.port }}
           image: {{ .Values.image.registry }}/{{ .Values.genaiService.name }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: {{ .Values.genaiService.name }}
+              value: http://{{ .Values.weaviate.name }}:{{ .Values.weaviate.port }}
+          image: {{ .Values.image.registry }}/{{ .Values.genaiService.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: {{ .Values.genaiService.name }}
           ports:
+            - containerPort: {{ .Values.genaiService.port }}
             - containerPort: {{ .Values.genaiService.port }}
               protocol: TCP
           resources:
             requests:
               cpu: {{ .Values.genaiService.resources.requests.cpu | quote }}
               memory: {{ .Values.genaiService.resources.requests.memory | quote }}
+              cpu: {{ .Values.genaiService.resources.requests.cpu | quote }}
+              memory: {{ .Values.genaiService.resources.requests.memory | quote }}
             limits:
+              cpu: {{ .Values.genaiService.resources.limits.cpu | quote }}
+              memory: {{ .Values.genaiService.resources.limits.memory | quote }}
               cpu: {{ .Values.genaiService.resources.limits.cpu | quote }}
               memory: {{ .Values.genaiService.resources.limits.memory | quote }}
       restartPolicy: Always

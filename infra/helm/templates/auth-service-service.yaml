@@ -3,6 +3,8 @@ kind: Service
 metadata:
   labels:
     io.kompose.service: {{ .Values.authService.name }}
+    app: {{ .Values.authService.name }}
+    monitoring: "true"
   name: {{ .Values.authService.name }}
   namespace: {{ .Values.namespace }}
 spec:
@@ -10,5 +12,9 @@ spec:
     - name: {{ .Values.authService.port | quote }}
       port: {{ .Values.authService.port }}
       targetPort: {{ .Values.authService.port }}
+    - name: {{ .Values.authService.port | quote }}
+      port: {{ .Values.authService.port }}
+      targetPort: {{ .Values.authService.port }}
   selector:
+    io.kompose.service: {{ .Values.authService.name }}
     io.kompose.service: {{ .Values.authService.name }}

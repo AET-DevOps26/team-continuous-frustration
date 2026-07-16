@@ -1,0 +1,557 @@
+# Default values for the team-continuous-frustration observability stack.
+# Deploys into its own namespace, separate from the application namespace,
+# per the "separate namespace" best practice.
+
+# Namespace this chart's own resources (ServiceMonitors, PrometheusRules,
+# dashboards, Jaeger) are installed into. Must already exist -
+# `kubectl create namespace team-continuous-frustration-monitoring`.
+namespace: team-continuous-frustration-monitoring
+
+# Namespace where the application microservices (infra/helm chart) run.
+# ServiceMonitors/PodMonitors are scoped to this namespace so Prometheus
+# only discovers app workloads, not unrelated cluster noise.
+appNamespace: team-continuous-frustration
+
+storageClassName: csi-rbd-sc
+
+# Application services to auto-discover via ServiceMonitor. Each entry
+# expects the target Service to carry the labels
+# `monitoring: "true"` and `app: <name>` (see infra/helm templates).
+appServices:
+  - name: api-gateway
+    port: "8080"
+    path: /actuator/prometheus
+    interval: 15s
+  - name: auth-service
+    port: "8081"
+    path: /actuator/prometheus
+    interval: 15s
+  - name: flashcard-service
+    port: "8082"
+    path: /actuator/prometheus
+    interval: 15s
+  - name: genai-service
+    port: "8090"
+    path: /metrics
+    interval: 15s
+  - name: upload-service
+    port: "8091"
+    path: /metrics
+    interval: 15s
+
+# Alert thresholds used by templates/prometheusrules.yaml.
+alerting:
+  errorRateThreshold: 0.05 # 5% of requests returning 5xx over the eval window
+  errorRateWindow: 5m
+  podRestartThreshold: 5 # restarts within podRestartWindow
+  podRestartWindow: 1h
+  slowResponseP95Seconds: 2 # p95 latency budget
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  clusterIssuer: letsencrypt-prod
+  # Base domain; each UI is exposed on a subdomain (grafana.<domain>, etc.),
+  # matching the docker-compose convention (grafana.${FRONTEND_URL}).
+  domain: team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+  # Name of an externally managed Secret containing an htpasswd-format
+  # `auth` key, used for nginx basic-auth in front of every UI in this
+  # chart. Create it with:
+  #   htpasswd -c auth admin
+  #   kubectl create secret generic monitoring-basic-auth \
+  #     --from-file=auth -n team-continuous-frustration-monitoring
+  basicAuthSecretName: monitoring-basic-auth
+
+jaeger:
+  image: jaegertracing/all-in-one:1.57
+  storageSize: 5Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 384Mi
+
+# ---------------------------------------------------------------------------
+# kube-prometheus-stack (Prometheus Operator, Prometheus, Alertmanager,
+# Grafana, kube-state-metrics, node-exporter). See upstream values.yaml for
+# the full set of options:
+# https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+#
+# Resource budget: the Rancher project caps this namespace's ResourceQuota
+# at 1.5 CPU / 2Gi (limits.cpu/limits.memory - see README). There's no
+# LimitRange in this namespace, so *every* container (including operator
+# sidecars) must set explicit resources.limits.cpu/memory or the pod is
+# rejected outright - not just containers that exceed the quota. The sums
+# below land around 1.0 CPU / ~1.5Gi, leaving headroom for rolling-update
+# surges and any sidecar/init container not explicitly listed here; if a
+# fresh install still fails on a missing-limit error for some container we
+# didn't anticipate, add a `containers:` resources override for it (see the
+# config-reloader entries below for the pattern).
+# ---------------------------------------------------------------------------
+kube-prometheus-stack:
+  fullnameOverride: monitoring
+
+  # This account only has namespace-scoped RBAC in the shared Rancher
+  # cluster (no CustomResourceDefinition/ClusterRole/ClusterRoleBinding
+  # rights - verified via `kubectl auth can-i`). The
+  # monitoring.coreos.com CRDs are already registered cluster-wide, which
+  # only happens if a Prometheus Operator is already running centrally
+  # (Rancher Monitoring or similar). So: don't install CRDs or a second
+  # operator - just create the Prometheus/Alertmanager custom resources
+  # and let the existing operator reconcile them. Verify this assumption
+  # holds for your cluster before relying on it (see README).
+  crds:
+    enabled: false
+  prometheusOperator:
+    enabled: false
+  # Chart-level, always-on ClusterRole/ClusterRoleBinding for the
+  # Prometheus workload's ServiceAccount (cluster-wide node/endpoint
+  # listing) - forbidden for this account. The shared operator provisions
+  # namespaced Roles for the SA automatically based on the namespace
+  # selectors above, so this is redundant rather than load-bearing.
+  global:
+    rbac:
+      create: false
+
+  prometheus:
+    prometheusSpec:
+      # Restrict discovery to our two namespaces explicitly (rather than
+      # {} = all namespaces) so the operator provisions the Prometheus
+      # ServiceAccount with namespaced Roles instead of a ClusterRole.
+      serviceMonitorSelectorNilUsesHelmValues: false
+      serviceMonitorNamespaceSelector:
+        matchExpressions:
+          - key: kubernetes.io/metadata.name
+            operator: In
+            values:
+              - team-continuous-frustration-monitoring
+              - team-continuous-frustration
+      podMonitorSelectorNilUsesHelmValues: false
+      podMonitorNamespaceSelector:
+        matchExpressions:
+          - key: kubernetes.io/metadata.name
+            operator: In
+            values:
+              - team-continuous-frustration-monitoring
+              - team-continuous-frustration
+      ruleSelectorNilUsesHelmValues: false
+      ruleNamespaceSelector:
+        matchExpressions:
+          - key: kubernetes.io/metadata.name
+            operator: In
+            values:
+              - team-continuous-frustration-monitoring
+              - team-continuous-frustration
+      retention: 15d
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 350m
+          memory: 512Mi
+      # The shared operator injects a "config-reloader" sidecar plus an
+      # "init-config-reloader" init container into the Prometheus pod;
+      # neither has default resources, so both must be set explicitly here
+      # (merged by container name) or the pod is rejected outright by the
+      # quota's "must specify limits" rule.
+      containers:
+        - name: config-reloader
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 20m
+              memory: 32Mi
+      initContainers:
+        - name: init-config-reloader
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 20m
+              memory: 32Mi
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: csi-rbd-sc
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 20Gi
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        nginx.ingress.kubernetes.io/auth-type: basic
+        nginx.ingress.kubernetes.io/auth-secret: monitoring-basic-auth
+        nginx.ingress.kubernetes.io/auth-secret-type: auth-file
+      hosts:
+        - prometheus.team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+      tls:
+        - secretName: monitoring-prometheus-tls
+          hosts:
+            - prometheus.team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+
+  # This account has read-only rights on the alertmanagers.monitoring.coreos.com
+  # CRD (get/list/watch only - confirmed via `kubectl auth can-i`), so it
+  # cannot create/patch/update/delete the Alertmanager custom resource at
+  # all, unlike Prometheus/ServiceMonitor/PrometheusRule which have full
+  # CRUD. Disabled until that's granted (or a shared Alertmanager instance
+  # is identified to route to instead). PrometheusRule alerts below still
+  # evaluate in Prometheus either way - they just have nowhere to route
+  # until Alertmanager exists.
+  alertmanager:
+    enabled: false
+    alertmanagerSpec:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+      # Same config-reloader sidecar as Prometheus above.
+      containers:
+        - name: config-reloader
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 20m
+              memory: 32Mi
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: csi-rbd-sc
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 2Gi
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        nginx.ingress.kubernetes.io/auth-type: basic
+        nginx.ingress.kubernetes.io/auth-secret: monitoring-basic-auth
+        nginx.ingress.kubernetes.io/auth-secret-type: auth-file
+      hosts:
+        - alertmanager.team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+      tls:
+        - secretName: monitoring-alertmanager-tls
+          hosts:
+            - alertmanager.team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+    # Alerting is disabled (routed to the built-in `null` receiver) until a
+    # real receiver is configured below. To enable Slack delivery:
+    #  1. kubectl create secret generic alertmanager-slack-webhook \
+    #       --from-literal=webhook-url=<incoming-webhook-url> \
+    #       -n team-continuous-frustration-monitoring
+    #  2. Uncomment alertmanagerSpec.secrets and the slack receiver/route
+    #     below, then `helm upgrade`.
+    config:
+      route:
+        receiver: "null"
+        group_by: ["alertname", "namespace"]
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        routes:
+          - receiver: "null"
+            matchers:
+              - alertname = "Watchdog"
+      receivers:
+        - name: "null"
+        # - name: "slack"
+        #   slack_configs:
+        #     - api_url_file: /etc/alertmanager/secrets/alertmanager-slack-webhook/webhook-url
+        #       channel: "#alerts"
+        #       send_resolved: true
+
+  grafana:
+    # Default RollingUpdate strategy tries to bring up the new pod before
+    # killing the old one; with a single ReadWriteOnce PVC that deadlocks
+    # ("Multi-Attach error ... Volume is already used by pod(s) ...") if the
+    # new pod lands on a different node. Recreate avoids that (same fix as
+    # Jaeger's Deployment) at the cost of a brief outage during upgrades.
+    # The previous release never set spec.strategy at all (deploymentStrategy
+    # was {}), so Kubernetes' own defaulting already put
+    # maxSurge/maxUnavailable on the live object outside Helm's field
+    # ownership. Asserting only `type: Recreate` here leaves that stale
+    # rollingUpdate value in place via server-side apply, which the API then
+    # rejects. A `rollingUpdate: null` here does NOT fix this - Helm's
+    # values-merge treats a null value as "delete this key," so it never
+    # even reaches the rendered manifest. The live field has to be cleared
+    # out-of-band once (see README) before this takes effect.
+    deploymentStrategy:
+      type: Recreate
+    resources:
+      requests:
+        cpu: 100m
+        memory: 192Mi
+      limits:
+        cpu: 300m
+        memory: 384Mi
+    # initChownData is an initContainer that runs because persistence is
+    # enabled below - also needs explicit limits under this quota.
+    initChownData:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: 20m
+          memory: 32Mi
+    persistence:
+      enabled: true
+      storageClassName: csi-rbd-sc
+      size: 5Gi
+    admin:
+      # Externally managed Secret (create before install):
+      #   kubectl create secret generic grafana-admin-credentials \
+      #     --from-literal=admin-user=admin \
+      #     --from-literal=admin-password=<strong-password> \
+      #     -n team-continuous-frustration-monitoring
+      existingSecret: grafana-admin-credentials
+      userKey: admin-user
+      passwordKey: admin-password
+    # Namespaced RBAC only (no ClusterRole rights available to this
+    # account); the dashboard ConfigMap lives in this same namespace so no
+    # cross-namespace search is needed.
+    rbac:
+      namespaced: true
+    sidecar:
+      # Shared resources block for the k8s-sidecar container (used by both
+      # the dashboards and datasources sidecars below) - empty by chart
+      # default, which would otherwise fail the "must specify limits" rule.
+      # 32Mi was too tight in practice - it was OOMKilling in a loop.
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 50m
+          memory: 128Mi
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
+        # Chart default is "both" (ConfigMaps AND Secrets). Our dashboard
+        # is a ConfigMap, and watching Secrets makes the sidecar call the
+        # cluster-wide list_secret_for_all_namespaces API regardless of
+        # searchNamespace - which a namespaced Role can never satisfy
+        # ("cannot list resource secrets ... at the cluster scope"),
+        # crash-looping the sidecar. Restrict to configmaps, and pin the
+        # search namespace explicitly rather than relying on the "null
+        # defaults to own namespace" chart default, which evidently doesn't
+        # hold for every resource type/version.
+        resource: "configmap"
+        searchNamespace: team-continuous-frustration-monitoring
+      datasources:
+        # Was previously disabled entirely, which turned out to be a bigger
+        # hammer than intended: the datasource ConfigMap that carries both
+        # the default Prometheus datasource *and* grafana.additionalDataSources
+        # (Jaeger, below) is itself gated on this flag
+        # (kube-prometheus-stack templates/grafana/configmaps-datasources.yaml
+        # renders nothing unless sidecar.datasources.enabled is true) - so
+        # disabling the sidecar silently dropped every datasource, not just
+        # the runtime watcher. Same RBAC trap as the dashboards sidecar
+        # above (chart default "both" needs cluster-wide secret listing),
+        # so apply the same fix: restrict to ConfigMaps and pin the search
+        # namespace.
+        enabled: true
+        resource: "configmap"
+        searchNamespace: team-continuous-frustration-monitoring
+    additionalDataSources:
+      # Loki is disabled for now (see loki-stack block below - its
+      # Promtail DaemonSet alone would exceed the whole monitoring
+      # resource quota on this 28-node cluster). Re-add this once
+      # loki-stack.loki.enabled / promtail.enabled are turned back on:
+      # - name: Loki
+      #   uid: loki
+      #   type: loki
+      #   access: proxy
+      #   url: http://monitoring-loki.team-continuous-frustration-monitoring.svc.cluster.local:3100
+      #   jsonData:
+      #     maxLines: 1000
+      - name: Jaeger
+        uid: jaeger
+        type: jaeger
+        access: proxy
+        url: http://jaeger-query.team-continuous-frustration-monitoring.svc.cluster.local:16686
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        nginx.ingress.kubernetes.io/auth-type: basic
+        nginx.ingress.kubernetes.io/auth-secret: monitoring-basic-auth
+        nginx.ingress.kubernetes.io/auth-secret-type: auth-file
+      hosts:
+        - grafana.team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+      tls:
+        - secretName: monitoring-grafana-tls
+          hosts:
+            - grafana.team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de
+
+  # This account cannot read the kube-system namespace (control-plane
+  # component Services live there), so the chart's control-plane
+  # ServiceMonitors would fail discovery. Disabled - control-plane metrics
+  # aren't part of the 8 best-practice requirements anyway.
+  kubeApiServer:
+    enabled: false
+  kubeControllerManager:
+    enabled: false
+  kubeScheduler:
+    enabled: false
+  kubeProxy:
+    enabled: false
+  kubeEtcd:
+    enabled: false
+  coreDns:
+    enabled: false
+  kubeDns:
+    enabled: false
+
+  kubeStateMetrics:
+    enabled: true
+  # Same account-level constraint: kube-state-metrics is scoped to Roles in
+  # just our two namespaces instead of its default cluster-wide ClusterRole,
+  # which is required for the PodRestartingTooMuch alert
+  # (kube_pod_container_status_restarts_total).
+  kube-state-metrics:
+    rbac:
+      useClusterRole: false
+    namespaces:
+      - team-continuous-frustration
+      - team-continuous-frustration-monitoring
+    # The chart's default collector list includes several inherently
+    # cluster-scoped, admin-only resource types (CSRs, webhook configs,
+    # volumeattachments, storageclasses, nodes, persistentvolumes, ...).
+    # Even as a namespaced Role, granting list/watch on those trips
+    # Kubernetes' RBAC escalation check because this account can't read
+    # them anywhere itself. We only need `pods` for the
+    # PodRestartingTooMuch alert's kube_pod_container_status_restarts_total
+    # metric, so restrict to that.
+    collectors:
+      - pods
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+  # node-exporter needs hostNetwork/hostPID and is typically already
+  # provided cluster-wide by the shared platform; running a second, cluster
+  # unaware instance here would need ClusterRole/host access this account
+  # doesn't have. Disabled - node-level dashboards are out of scope.
+  nodeExporter:
+    enabled: false
+  # Ships ~12 rule groups tuned for a cluster-wide kube-state-metrics /
+  # node-exporter view; noisy and partly inapplicable to a namespace-scoped
+  # install, so we rely on our own PrometheusRule (templates/prometheusrules.yaml)
+  # instead.
+  defaultRules:
+    create: false
+
+# ---------------------------------------------------------------------------
+# loki-stack (Loki + Promtail). Disabled for now: Promtail runs as a
+# DaemonSet (one pod per node), and this cluster has 28 nodes - even at a
+# bare-minimum per-pod limit, the fleet-wide total would blow past the
+# entire 1.5 CPU / 2Gi monitoring ResourceQuota by itself, before Prometheus/
+# Grafana/Alertmanager/Jaeger get anything. Re-enable once either the quota
+# grows enough to absorb a 28-way DaemonSet, or logs move to a design that
+# doesn't need a cluster-wide DaemonSet (e.g. apps pushing directly to Loki
+# over HTTP via a logging appender instead of node-level file tailing).
+# Grafana/Prometheus from this chart stay disabled either way since
+# kube-prometheus-stack already provides them.
+# ---------------------------------------------------------------------------
+loki-stack:
+  loki:
+    enabled: false
+    persistence:
+      enabled: true
+      storageClassName: csi-rbd-sc
+      size: 20Gi
+  promtail:
+    enabled: false
+    # No cluster-wide RBAC available to this account; templates/promtail-rbac.yaml
+    # grants namespaced Roles in our two namespaces instead (see below).
+    rbac:
+      create: false
+    config:
+      # The chart's own default (http://{{ .Release.Name }}:3100/...) only
+      # resolves correctly when the release name contains "loki". Installed
+      # under the "monitoring" release, the actual Loki service is
+      # "monitoring-loki" (release name + "-loki"), so this must be pinned
+      # explicitly or promtail silently ships logs nowhere.
+      clients:
+        - url: http://monitoring-loki:3100/loki/api/v1/push
+      snippets:
+        # Same as the chart default (see charts/promtail values.yaml) but with
+        # `namespaces.names` added to kubernetes_sd_configs, restricting pod
+        # discovery to the two namespaces our namespaced Role (above) actually
+        # grants access to - avoids needing a ClusterRole.
+        scrapeConfigs: |
+          - job_name: kubernetes-pods
+            pipeline_stages:
+              {{- toYaml .Values.config.snippets.pipelineStages | nindent 4 }}
+            kubernetes_sd_configs:
+              - role: pod
+                namespaces:
+                  names:
+                    - team-continuous-frustration
+                    - team-continuous-frustration-monitoring
+            relabel_configs:
+              - source_labels:
+                  - __meta_kubernetes_pod_controller_name
+                regex: ([0-9a-z-.]+?)(-[0-9a-f]{8,10})?
+                action: replace
+                target_label: __tmp_controller_name
+              - source_labels:
+                  - __meta_kubernetes_pod_label_app_kubernetes_io_name
+                  - __meta_kubernetes_pod_label_app
+                  - __tmp_controller_name
+                  - __meta_kubernetes_pod_name
+                regex: ^;*([^;]+)(;.*)?$
+                action: replace
+                target_label: app
+              - source_labels:
+                  - __meta_kubernetes_pod_label_app_kubernetes_io_instance
+                  - __meta_kubernetes_pod_label_instance
+                regex: ^;*([^;]+)(;.*)?$
+                action: replace
+                target_label: instance
+              - source_labels:
+                  - __meta_kubernetes_pod_label_app_kubernetes_io_component
+                  - __meta_kubernetes_pod_label_component
+                regex: ^;*([^;]+)(;.*)?$
+                action: replace
+                target_label: component
+              {{- if .Values.config.snippets.addScrapeJobLabel }}
+              - replacement: kubernetes-pods
+                target_label: scrape_job
+              {{- end }}
+              {{- toYaml .Values.config.snippets.common | nindent 4 }}
+              {{- with .Values.config.snippets.extraRelabelConfigs }}
+              {{- toYaml . | nindent 4 }}
+              {{- end }}
+  grafana:
+    enabled: false
+    # loki-stack renders a Loki datasource ConfigMap (picked up by any
+    # Grafana sidecar) independently of whether its own bundled Grafana is
+    # enabled. We provision the Loki/Jaeger datasources ourselves via
+    # kube-prometheus-stack's grafana.additionalDataSources instead, so
+    # disable this to avoid a duplicate "Loki" datasource.
+    sidecar:
+      datasources:
+        enabled: false
+  prometheus:
+    enabled: false

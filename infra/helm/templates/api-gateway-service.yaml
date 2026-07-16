@@ -3,6 +3,8 @@ kind: Service
 metadata:
   labels:
     io.kompose.service: {{ .Values.apiGateway.name }}
+    app: {{ .Values.apiGateway.name }}
+    monitoring: "true"
   name: {{ .Values.apiGateway.name }}
   namespace: {{ .Values.namespace }}
 spec:
@@ -10,5 +12,9 @@ spec:
     - name: {{ .Values.apiGateway.port | quote }}
       port: {{ .Values.apiGateway.port }}
       targetPort: {{ .Values.apiGateway.port }}
+    - name: {{ .Values.apiGateway.port | quote }}
+      port: {{ .Values.apiGateway.port }}
+      targetPort: {{ .Values.apiGateway.port }}
   selector:
+    io.kompose.service: {{ .Values.apiGateway.name }}
     io.kompose.service: {{ .Values.apiGateway.name }}

@@ -5,15 +5,22 @@ metadata:
     io.kompose.service: {{ .Values.flashcardService.name }}
   name: {{ .Values.flashcardService.name }}
   namespace: {{ .Values.namespace }}
+    io.kompose.service: {{ .Values.flashcardService.name }}
+  name: {{ .Values.flashcardService.name }}
+  namespace: {{ .Values.namespace }}
 spec:
+  replicas: {{ .Values.flashcardService.replicaCount }}
   replicas: {{ .Values.flashcardService.replicaCount }}
   selector:
     matchLabels:
+      io.kompose.service: {{ .Values.flashcardService.name }}
       io.kompose.service: {{ .Values.flashcardService.name }}
   template:
     metadata:
       labels:
         io.kompose.service: {{ .Values.flashcardService.name }}
+        app: {{ .Values.flashcardService.name }}
+        monitoring: "true"
     spec:
       containers:
         - env:
@@ -21,32 +28,46 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
+                  name: {{ .Values.secretName }}
                   key: JWT_SECRET
+            - name: OTLP_TRACING_ENDPOINT
+              value: {{ .Values.tracing.otlpEndpoint | quote }}
             - name: SERVER_PORT
+              value: {{ .Values.flashcardService.port | quote }}
               value: {{ .Values.flashcardService.port | quote }}
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_PASSWORD
             - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://{{ .Values.db.name }}:{{ .Values.db.port }}/{{ .Values.db.flashcardDb }}
               value: jdbc:postgresql://{{ .Values.db.name }}:{{ .Values.db.port }}/{{ .Values.db.flashcardDb }}
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
+                  name: {{ .Values.secretName }}
                   key: POSTGRES_USER
+            - name: TRACING_SAMPLING_PROBABILITY
+              value: {{ .Values.tracing.samplingProbability | quote }}
           image: {{ .Values.image.registry }}/{{ .Values.flashcardService.name }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: {{ .Values.flashcardService.name }}
           ports:
+            - containerPort: {{ .Values.flashcardService.port }}
             - containerPort: {{ .Values.flashcardService.port }}
               protocol: TCP
           resources:
             requests:
               cpu: {{ .Values.flashcardService.resources.requests.cpu | quote }}
               memory: {{ .Values.flashcardService.resources.requests.memory | quote }}
+              cpu: {{ .Values.flashcardService.resources.requests.cpu | quote }}
+              memory: {{ .Values.flashcardService.resources.requests.memory | quote }}
             limits:
+              cpu: {{ .Values.flashcardService.resources.limits.cpu | quote }}
+              memory: {{ .Values.flashcardService.resources.limits.memory | quote }}
               cpu: {{ .Values.flashcardService.resources.limits.cpu | quote }}
               memory: {{ .Values.flashcardService.resources.limits.memory | quote }}
       restartPolicy: Always

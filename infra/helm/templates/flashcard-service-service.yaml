@@ -3,6 +3,8 @@ kind: Service
 metadata:
   labels:
     io.kompose.service: {{ .Values.flashcardService.name }}
+    app: {{ .Values.flashcardService.name }}
+    monitoring: "true"
   name: {{ .Values.flashcardService.name }}
   namespace: {{ .Values.namespace }}
 spec:
@@ -10,5 +12,9 @@ spec:
     - name: {{ .Values.flashcardService.port | quote }}
       port: {{ .Values.flashcardService.port }}
       targetPort: {{ .Values.flashcardService.port }}
+    - name: {{ .Values.flashcardService.port | quote }}
+      port: {{ .Values.flashcardService.port }}
+      targetPort: {{ .Values.flashcardService.port }}
   selector:
+    io.kompose.service: {{ .Values.flashcardService.name }}
     io.kompose.service: {{ .Values.flashcardService.name }}

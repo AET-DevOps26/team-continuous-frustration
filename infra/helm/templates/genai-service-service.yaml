@@ -3,6 +3,8 @@ kind: Service
 metadata:
   labels:
     io.kompose.service: {{ .Values.genaiService.name }}
+    app: {{ .Values.genaiService.name }}
+    monitoring: "true"
   name: {{ .Values.genaiService.name }}
   namespace: {{ .Values.namespace }}
 spec:
@@ -10,5 +12,9 @@ spec:
     - name: {{ .Values.genaiService.port | quote }}
       port: {{ .Values.genaiService.port }}
       targetPort: {{ .Values.genaiService.port }}
+    - name: {{ .Values.genaiService.port | quote }}
+      port: {{ .Values.genaiService.port }}
+      targetPort: {{ .Values.genaiService.port }}
   selector:
+    io.kompose.service: {{ .Values.genaiService.name }}
     io.kompose.service: {{ .Values.genaiService.name }}
