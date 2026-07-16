@@ -51,9 +51,9 @@ export function StudySessionPage() {
     if (ids.length === 0) return [];
     const cardsRes = await getFlashcardsByIds({ ids });
     const cardsById = new Map(cardsRes.data.map((card) => [card.id, card]));
-    return ids
-      .map((id) => cardsById.get(id))
-      .filter((card): card is Flashcard => card !== undefined);
+    return res.data
+      .map((record) => ({flashcard: cardsById.get(record.flashcard_id), record}))
+      .filter((card): card is DueCard => card !== null);
   };
 
   useEffect(() => {
