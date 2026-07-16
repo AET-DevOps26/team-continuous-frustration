@@ -1,0 +1,70 @@
+name: Deploy Kubernetes
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: Kubernetes
+      url: 'https://team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          install -m 600 /dev/null "$RUNNER_TEMP/kubeconfig"
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > "$RUNNER_TEMP/kubeconfig"
+
+      - name: Deploy observability stack (infra/helm-monitoring)
+        working-directory: infra/helm-monitoring
+        env:
+          KUBECONFIG: ${{ runner.temp }}/kubeconfig
+        run: |
+          helm dependency update
+          helm upgrade --install monitoring . \
+            --namespace team-continuous-frustration-monitoring \
+            --values values.yaml \
+            --wait --timeout 5m
+
+      - name: Deploy application stack (infra/helm)
+        working-directory: infra/helm
+        env:
+          KUBECONFIG: ${{ runner.temp }}/kubeconfig
+        run: |
+          helm upgrade --install tcf . \
+            --namespace team-continuous-frustration \
+            --values values.yaml \
+            --wait --timeout 5m
+
+      # imagePullPolicy: Always + a static ":latest" tag means a Deployment's
+      # pod spec never actually changes between builds, so `helm upgrade`
+      # above won't trigger a new rollout on its own - force one so the
+      # freshly built images actually get pulled.
+      - name: Restart app deployments to pull latest images
+        env:
+          KUBECONFIG: ${{ runner.temp }}/kubeconfig
+        run: |
+          kubectl rollout restart deployment \
+            api-gateway auth-service flashcard-service study-service \
+            genai-service upload-service web-client \
+            -n team-continuous-frustration
+          kubectl rollout status deployment/api-gateway -n team-continuous-frustration --timeout=120s
+          kubectl rollout status deployment/auth-service -n team-continuous-frustration --timeout=120s
+          kubectl rollout status deployment/flashcard-service -n team-continuous-frustration --timeout=120s
+          kubectl rollout status deployment/study-service -n team-continuous-frustration --timeout=120s
+          kubectl rollout status deployment/genai-service -n team-continuous-frustration --timeout=120s
+          kubectl rollout status deployment/upload-service -n team-continuous-frustration --timeout=120s
+          kubectl rollout status deployment/web-client -n team-continuous-frustration --timeout=120s
+
+      - name: Clean up kubeconfig
+        if: always()
+        run: rm -f "$RUNNER_TEMP/kubeconfig"
