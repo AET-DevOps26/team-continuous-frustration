@@ -21,6 +21,9 @@ storageClassName: csi-rbd-sc
 # namespace, hence the fully-qualified in-cluster DNS name.
 tracing:
   otlpEndpoint: http://jaeger-query.team-continuous-frustration-monitoring.svc.cluster.local:4318/v1/traces
+  # gRPC OTLP endpoint (host:port, no scheme) for services using the
+  # grpc exporter (genai-service) instead of the http/protobuf one above.
+  otlpGrpcEndpoint: jaeger-query.team-continuous-frustration-monitoring.svc.cluster.local:4317
   samplingProbability: "1.0"
 
 ingress:

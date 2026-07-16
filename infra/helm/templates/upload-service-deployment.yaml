@@ -35,6 +35,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
                   key: POSTGRES_USER
+            - name: OTLP_EXPORTER_ENDPOINT
+              value: {{ .Values.tracing.otlpGrpcEndpoint | quote }}
           image: {{ .Values.image.registry }}/{{ .Values.uploadService.name }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: {{ .Values.uploadService.name }}

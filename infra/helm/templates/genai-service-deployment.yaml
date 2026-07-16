@@ -35,6 +35,8 @@ spec:
                   key: LOGOS_API_KEY
             - name: OLLAMA_API_ENDPOINT
               value: http://{{ .Values.ollama.name }}:{{ .Values.ollama.port }}
+            - name: OTLP_EXPORTER_ENDPOINT
+              value: {{ .Values.tracing.otlpGrpcEndpoint | quote }}
             - name: REDIS_URL
               value: redis://{{ .Values.redis.name }}:{{ .Values.redis.port }}/0
             - name: WEAVIATE_URL
