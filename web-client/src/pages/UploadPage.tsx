@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Upload, FileText, X, Lock, Check, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Markdown } from "@/components/ui/markdown";
 
 import type { Deck } from "@/api/study";
 import { listDecks } from "@/api/study";
@@ -130,7 +131,7 @@ export function UploadPage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.ppt,.pptx"
+              accept=".pdf,.ppt,.pptx,.docx"
               className="hidden"
               onChange={handleFileChange}
             />
@@ -187,12 +188,14 @@ export function UploadPage() {
             </p>
             <Button
               onClick={() => saveAllFlashcards(selectedDeckId)}
-              disabled={isSavingAll || allSaved}
+              disabled={isSavingAll || allSaved || isGenerating}
             >
               {isSavingAll ? (
                 <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Saving...</>
               ) : allSaved ? (
                 <><Check className="mr-1.5 h-4 w-4" /> All Saved</>
+              ) : isGenerating ? (
+                "Waiting for all cards..."
               ) : (
                 "Save All"
               )}
@@ -210,13 +213,13 @@ export function UploadPage() {
                     <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                       Q
                     </span>
-                    <p className="font-medium">{card.question}</p>
+                    <Markdown className="font-medium">{card.question}</Markdown>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
                       A
                     </span>
-                    <p className="text-sm text-muted-foreground">{card.answer}</p>
+                    <Markdown className="text-sm text-muted-foreground">{card.answer}</Markdown>
                   </div>
                 </div>
 
@@ -242,6 +245,13 @@ export function UploadPage() {
             <div className="mt-6 flex w-full items-center justify-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               <p>Generating more flashcards...</p>
+            </div>
+          )}
+          {allSaved && (
+            <div className="mt-6 flex justify-center">
+              <Button variant="outline" onClick={() => navigate(`/decks/${selectedDeckId}`)}>
+                Go to deck →
+              </Button>
             </div>
           )}
           {error && (

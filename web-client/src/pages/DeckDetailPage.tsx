@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Play, Plus, Search, Sparkles, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Markdown } from "@/components/ui/markdown";
 
 import type { Flashcard, FlashcardCreateRequest, FlashcardUpdateRequest } from "@/api/flashcard";
 import { createFlashcard, getFlashcardsByIds, updateFlashcard, deleteFlashcard } from "@/api/flashcard";
@@ -298,13 +299,13 @@ export function DeckDetailPage() {
                     <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                       Q
                     </span>
-                    <p className="font-medium">{card.question}</p>
+                    <Markdown className="font-medium">{card.question}</Markdown>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
                       A
                     </span>
-                    <p className="text-sm text-muted-foreground">{card.answer}</p>
+                    <Markdown className="text-sm text-muted-foreground">{card.answer}</Markdown>
                   </div>
                 </div>
               )}

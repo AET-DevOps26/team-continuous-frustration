@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { FileText, FileQuestion, Trash2, Loader2, Upload, Layers } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Markdown } from "@/components/ui/markdown";
 import { useSavedFlashcards } from "@/hooks/useSavedFlashcards";
 import type { FlashcardGroup } from "@/hooks/useSavedFlashcards";
 
@@ -72,10 +73,10 @@ function SourceGroup({
         </div>
         <div className="min-w-0">
           <p className="truncate font-medium" title={group.sourceName ?? undefined}>
-            {group.sourceName ?? "Unknown source"}
+            {group.sourceName ?? "Manually created"}
           </p>
           <p className="text-xs text-muted-foreground">
-            Generated from this resource
+            {group.sourceName ? "Generated from this resource" : ""}
           </p>
         </div>
         <span className="ml-auto rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
@@ -94,13 +95,13 @@ function SourceGroup({
                 <span className="mt-0.5 grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                   Q
                 </span>
-                <p className="font-medium">{card.question}</p>
+                <Markdown className="font-medium">{card.question}</Markdown>
               </div>
               <div className="flex items-start gap-2">
                 <span className="mt-0.5 grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
                   A
                 </span>
-                <p className="text-sm text-muted-foreground">{card.answer}</p>
+                <Markdown className="text-sm text-muted-foreground">{card.answer}</Markdown>
               </div>
             </div>
 
