@@ -425,6 +425,8 @@ components:
         - deck_id
         - flashcard_id
         - due_at
+        - interval_days
+        - ease_factor
       properties:
         deck_id:
           type: string
@@ -440,6 +442,13 @@ components:
           type: string
           format: date-time
           description: Timestamp of the last due date update.
+        interval_days:
+          type: integer
+          description: Current spaced-repetition interval, in days, used to schedule the next review.
+        ease_factor:
+          type: number
+          format: double
+          description: Current spaced-repetition ease factor applied when growing the interval.
     Error:
       type: object
       required:

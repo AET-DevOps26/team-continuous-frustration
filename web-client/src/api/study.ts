@@ -74,6 +74,10 @@ export interface StudyDueDateRecord {
   due_at: string;
   /** Timestamp of the last due date update. */
   updated_at?: string;
+  /** Current spaced-repetition interval, in days, used to schedule the next review. */
+  interval_days: number;
+  /** Current spaced-repetition ease factor applied when growing the interval. */
+  ease_factor: number;
 }
 
 export interface Error {
