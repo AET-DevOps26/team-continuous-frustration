@@ -4,7 +4,7 @@ Observability stack for team-continuous-frustration on Kubernetes (Rancher):
 Prometheus + Alertmanager + Grafana (via `kube-prometheus-stack`), Loki +
 Promtail (via `loki-stack`), and a hand-rolled Jaeger all-in-one for tracing.
 Deployed into its own `team-continuous-frustration-monitoring` namespace,
-separate from the `team-continuous-frustration` app namespace.
+separate from the `tcf` app namespace.
 
 ## Cluster RBAC constraint (read this first)
 
