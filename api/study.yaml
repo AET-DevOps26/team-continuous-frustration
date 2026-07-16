@@ -70,6 +70,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /api/v1/decks/{deck_id}:
+    get:
+      operationId: getDeckById
+      summary: Get a deck by id
+      description: Retrieve a single deck owned by the authenticated user.
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the deck.
+      responses:
+        "200":
+          description: Deck retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deck"
+        "400":
+          description: Invalid deck identifier.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Deck not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while retrieving deck.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /api/v1/decks/overview:
     get:
       operationId: listDeckOverviews
@@ -388,6 +425,8 @@ components:
         - deck_id
         - flashcard_id
         - due_at
+        - interval_days
+        - ease_factor
       properties:
         deck_id:
           type: string
@@ -403,6 +442,13 @@ components:
           type: string
           format: date-time
           description: Timestamp of the last due date update.
+        interval_days:
+          type: integer
+          description: Current spaced-repetition interval, in days, used to schedule the next review.
+        ease_factor:
+          type: number
+          format: double
+          description: Current spaced-repetition ease factor applied when growing the interval.
     Error:
       type: object
       required:

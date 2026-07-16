@@ -102,6 +102,29 @@ class StudyServiceTest {
     }
 
     @Test
+    void updateStatusHardOnStillLearningCardUsesShortStepInsteadOfAFullDay() {
+        StudyRecordEntity record = existingRecord(0, 2.5);
+        when(studyRecordRepository.findByDeckIdAndFlashcardId(deck.getId(), FLASHCARD_ID)).thenReturn(Optional.of(record));
+        when(studyRecordRepository.save(record)).thenReturn(record);
+
+        StudyRecordEntity result = studyService.updateStatus(deck, FLASHCARD_ID, StudyStatus.HARD);
+
+        assertThat(result.getIntervalDays()).isEqualTo(1);
+        assertThat(result.getDueAt()).isBefore(Instant.now().plus(1, ChronoUnit.HOURS));
+    }
+
+    @Test
+    void updateStatusHardOnGrowingCardStillUsesDayBasedScheduling() {
+        StudyRecordEntity record = existingRecord(5, 2.5);
+        when(studyRecordRepository.findByDeckIdAndFlashcardId(deck.getId(), FLASHCARD_ID)).thenReturn(Optional.of(record));
+        when(studyRecordRepository.save(record)).thenReturn(record);
+
+        StudyRecordEntity result = studyService.updateStatus(deck, FLASHCARD_ID, StudyStatus.HARD);
+
+        assertThat(result.getDueAt()).isAfter(Instant.now().plus(23, ChronoUnit.HOURS));
+    }
+
+    @Test
     void updateStatusEasyGrowsIntervalAndEaseFasterThanGood() {
         StudyRecordEntity easyRecord = existingRecord(4, 2.5);
         StudyRecordEntity goodRecord = existingRecord(4, 2.5);

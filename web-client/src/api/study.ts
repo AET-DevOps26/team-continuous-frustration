@@ -74,6 +74,10 @@ export interface StudyDueDateRecord {
   due_at: string;
   /** Timestamp of the last due date update. */
   updated_at?: string;
+  /** Current spaced-repetition interval, in days, used to schedule the next review. */
+  interval_days: number;
+  /** Current spaced-repetition ease factor applied when growing the interval. */
+  ease_factor: number;
 }
 
 export interface Error {
@@ -105,6 +109,18 @@ export const createDeck = (
     return axios.default.post(
       `/api/v1/decks`,
       deckCreateRequest,options
+    );
+  }
+
+/**
+ * Retrieve a single deck owned by the authenticated user.
+ * @summary Get a deck by id
+ */
+export const getDeckById = (
+    deckId: string, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<Deck>> => {
+    return axios.default.get(
+      `/api/v1/decks/${deckId}`,options
     );
   }
 
@@ -188,6 +204,7 @@ export const deleteDeckFlashcardRecord = (
 
 export type ListDecksResult = AxiosResponse<Deck[]>
 export type CreateDeckResult = AxiosResponse<Deck>
+export type GetDeckByIdResult = AxiosResponse<Deck>
 export type ListDeckOverviewsResult = AxiosResponse<DeckOverview[]>
 export type GetDueFlashcardsForDeckResult = AxiosResponse<StudyDueDateRecord[]>
 export type ListDeckFlashcardIdsResult = AxiosResponse<string[]>

@@ -3,19 +3,25 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, ChevronDown, ChevronUp, Sparkles, X, Square, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import type { StudyStatus } from "@/api/study";
-import { listDecks, getDueFlashcardsForDeck, updateFlashcardStudyStatus } from "@/api/study";
+import type { StudyDueDateRecord, StudyStatus } from "@/api/study";
+import { getDeckById, getDueFlashcardsForDeck, updateFlashcardStudyStatus } from "@/api/study";
 import type { Flashcard } from "@/api/flashcard";
 import { getFlashcardById } from "@/api/flashcard";
 import { apiV1GenaiExplainPostApiV1GenaiExplainPost } from "@/api/genai";
 
 import { isAiGenerated } from "@/lib/utils"
+import { previewNextDueLabel } from "@/lib/spacedRepetition";
 
-const ratings: { id: StudyStatus; label: string; time: string; color: string }[] = [
-  { id: "again", label: "Again", time: "< 1 min", color: "border-red-200 bg-red-50 text-red-700 hover:bg-red-100 data-[active=true]:bg-red-100 data-[active=true]:border-red-400" },
-  { id: "hard",  label: "Hard",  time: "5 min",   color: "border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 data-[active=true]:bg-orange-100 data-[active=true]:border-orange-400" },
-  { id: "good",  label: "Good",  time: "15 min",  color: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 data-[active=true]:bg-blue-100 data-[active=true]:border-blue-400" },
-  { id: "easy",  label: "Easy",  time: "4 days",  color: "border-green-200 bg-green-50 text-green-700 hover:bg-green-100 data-[active=true]:bg-green-100 data-[active=true]:border-green-400" },
+interface DueCard {
+  flashcard: Flashcard;
+  record: StudyDueDateRecord;
+}
+
+const ratings: { id: StudyStatus; label: string; color: string }[] = [
+  { id: "again", label: "Again", color: "border-red-200 bg-red-50 text-red-700 hover:bg-red-100 data-[active=true]:bg-red-100 data-[active=true]:border-red-400" },
+  { id: "hard",  label: "Hard",  color: "border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 data-[active=true]:bg-orange-100 data-[active=true]:border-orange-400" },
+  { id: "good",  label: "Good",  color: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 data-[active=true]:bg-blue-100 data-[active=true]:border-blue-400" },
+  { id: "easy",  label: "Easy",  color: "border-green-200 bg-green-50 text-green-700 hover:bg-green-100 data-[active=true]:bg-green-100 data-[active=true]:border-green-400" },
 ];
 
 export function StudySessionPage() {
@@ -23,7 +29,7 @@ export function StudySessionPage() {
   const { deckId } = useParams();
 
   const [deckName, setDeckName] = useState("");
-  const [studyCards, setStudyCards] = useState<Flashcard[]>([]);
+  const [studyCards, setStudyCards] = useState<DueCard[]>([]);
   const [loadingCards, setLoadingCards] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,19 +45,19 @@ export function StudySessionPage() {
 
   const [fetchingMore, setFetchingMore] = useState(false);
 
-  const loadDueCards = async (deckIdParam: string): Promise<Flashcard[]> => {
+  const loadDueCards = async (deckIdParam: string): Promise<DueCard[]> => {
     const res = await getDueFlashcardsForDeck(deckIdParam);
     const cards = await Promise.all(
       res.data.map((record) =>
         getFlashcardById(record.flashcard_id)
-          .then((cardRes) => cardRes.data)
+          .then((cardRes): DueCard => ({ flashcard: cardRes.data, record }))
           .catch((err) => {
             console.error(`Failed to load flashcard ${record.flashcard_id}:`, err);
             return null;
           })
       )
     );
-    return cards.filter((card): card is Flashcard => card !== null);
+    return cards.filter((card): card is DueCard => card !== null);
   };
 
   useEffect(() => {
@@ -66,11 +72,10 @@ export function StudySessionPage() {
     setExplanation(null);
     setSelectedRating(null);
 
-    listDecks()
+    getDeckById(deckId)
       .then((res) => {
         if (!active) return;
-        const deck = res.data.find((d) => d.id === deckId);
-        if (deck) setDeckName(deck.name);
+        setDeckName(res.data.name);
       })
       .catch((err) => console.error("Failed to load deck:", err));
 
@@ -96,7 +101,9 @@ export function StudySessionPage() {
     };
   }, [deckId]);
 
-  const currentCard = studyCards[currentIndex];
+  const currentEntry = studyCards[currentIndex];
+  const currentCard = currentEntry?.flashcard;
+  const currentRecord = currentEntry?.record;
 
   const resetCardState = () => {
     setSelectedRating(null);
@@ -254,7 +261,9 @@ export function StudySessionPage() {
                         onClick={() => handleRate(r.id)}
                       >
                         {r.label}
-                        <span className="mt-0.5 text-xs font-normal opacity-70">{r.time}</span>
+                        <span className="mt-0.5 text-xs font-normal opacity-70">
+                          {currentRecord ? previewNextDueLabel(currentRecord, r.id) : ""}
+                        </span>
                       </button>
                     ))}
                   </div>

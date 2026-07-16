@@ -81,6 +81,27 @@ services:
       db:
         condition: service_healthy
 
+  study-service:
+    image: ghcr.io/aet-devops26/team-continuous-frustration/study-service:latest
+    expose:
+      - "8083"
+    environment:
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/studydb
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      TRACING_SAMPLING_PROBABILITY: ${TRACING_SAMPLING_PROBABILITY:-0.1}
+      STUDY_EASE_DEFAULT: ${STUDY_EASE_DEFAULT:-2.5}
+      STUDY_EASE_MIN: ${STUDY_EASE_MIN:-1.3}
+      STUDY_EASE_AGAIN_PENALTY: ${STUDY_EASE_AGAIN_PENALTY:-0.20}
+      STUDY_EASE_HARD_PENALTY: ${STUDY_EASE_HARD_PENALTY:-0.15}
+      STUDY_EASE_EASY_BONUS: ${STUDY_EASE_EASY_BONUS:-0.15}
+      STUDY_HARD_FIRST_STEP_MINUTES: ${STUDY_HARD_FIRST_STEP_MINUTES:-10}
+    depends_on:
+      db:
+        condition: service_healthy
+
   genai-service:
     image: ghcr.io/aet-devops26/team-continuous-frustration/genai-service:latest
     expose:
@@ -157,6 +178,7 @@ services:
     environment:
       AUTH_SERVICE_URL: http://auth-service:8081
       FLASHCARD_SERVICE_URL: http://flashcard-service:8082
+      STUDY_SERVICE_URL: http://study-service:8083
       GENAI_SERVICE_URL: http://genai-service:8090
       UPLOAD_SERVICE_URL: http://upload-service:8091
       JWT_SECRET: ${JWT_SECRET}
@@ -167,6 +189,8 @@ services:
       auth-service:
         condition: service_healthy
       flashcard-service:
+        condition: service_started
+      study-service:
         condition: service_started
     restart: unless-stopped
     labels:
