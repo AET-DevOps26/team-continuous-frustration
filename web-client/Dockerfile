@@ -16,6 +16,18 @@ FROM node:22.18.0-slim AS builder
 
 WORKDIR /app
 
+# Baked into the built JS bundle at compile time (Vite), so they must be
+# passed as build-args, not runtime container env vars. Keep in sync with
+# study-service's STUDY_EASE_* env vars (see services/study-service/README.md).
+ARG VITE_STUDY_EASE_MIN
+ARG VITE_STUDY_EASE_AGAIN_PENALTY
+ARG VITE_STUDY_EASE_HARD_PENALTY
+ARG VITE_STUDY_EASE_EASY_BONUS
+ENV VITE_STUDY_EASE_MIN=$VITE_STUDY_EASE_MIN \
+    VITE_STUDY_EASE_AGAIN_PENALTY=$VITE_STUDY_EASE_AGAIN_PENALTY \
+    VITE_STUDY_EASE_HARD_PENALTY=$VITE_STUDY_EASE_HARD_PENALTY \
+    VITE_STUDY_EASE_EASY_BONUS=$VITE_STUDY_EASE_EASY_BONUS
+
 COPY package.json package-lock.json* ./
 RUN npm ci
 

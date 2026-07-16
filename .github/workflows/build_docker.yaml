@@ -38,6 +38,9 @@ jobs:
             flashcard-service:
               - 'services/flashcard-service/**'
               - 'api/**'
+            study-service:
+              - 'services/study-service/**'
+              - 'api/**'
             genai-service:
               - 'services/genai-service/**'
             upload-service:
@@ -54,6 +57,7 @@ jobs:
           WEB_CLIENT: ${{ steps.filter.outputs['web-client'] }}
           AUTH_SERVICE: ${{ steps.filter.outputs['auth-service'] }}
           FLASHCARD_SERVICE: ${{ steps.filter.outputs['flashcard-service'] }}
+          STUDY_SERVICE: ${{ steps.filter.outputs['study-service'] }}
           GENAI_SERVICE: ${{ steps.filter.outputs['genai-service'] }}
           UPLOAD_SERVICE: ${{ steps.filter.outputs['upload-service'] }}
           API_GATEWAY: ${{ steps.filter.outputs['api-gateway'] }}
@@ -72,6 +76,9 @@ jobs:
             }
             if (buildAll || process.env.FLASHCARD_SERVICE === 'true') {
               add('flashcard-service', '.', './services/flashcard-service/Dockerfile');
+            }
+            if (buildAll || process.env.STUDY_SERVICE === 'true') {
+              add('study-service', '.', './services/study-service/Dockerfile');
             }
             if (buildAll || process.env.GENAI_SERVICE === 'true') {
               add('genai-service', './services/genai-service', './services/genai-service/Dockerfile');
@@ -136,3 +143,10 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Only consumed by web-client's build stage; harmlessly ignored by other
+          # services' Dockerfiles, which don't declare these ARGs.
+          build-args: |
+            VITE_STUDY_EASE_MIN=${{ vars.STUDY_EASE_MIN }}
+            VITE_STUDY_EASE_AGAIN_PENALTY=${{ vars.STUDY_EASE_AGAIN_PENALTY }}
+            VITE_STUDY_EASE_HARD_PENALTY=${{ vars.STUDY_EASE_HARD_PENALTY }}
+            VITE_STUDY_EASE_EASY_BONUS=${{ vars.STUDY_EASE_EASY_BONUS }}
