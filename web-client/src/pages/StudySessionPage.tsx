@@ -404,7 +404,7 @@ export function StudySessionPage() {
                 <p className="text-destructive">{explanationError}</p>
               )}
               {!explanationLoading && explanation && (
-                <p className="text-muted-foreground leading-relaxed">{explanation}</p>
+                <Markdown className="text-muted-foreground leading-relaxed">{explanation}</Markdown>
               )}
             </div>
           </aside>
