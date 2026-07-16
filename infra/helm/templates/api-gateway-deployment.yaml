@@ -5,15 +5,10 @@ metadata:
     io.kompose.service: {{ .Values.apiGateway.name }}
   name: {{ .Values.apiGateway.name }}
   namespace: {{ .Values.namespace }}
-    io.kompose.service: {{ .Values.apiGateway.name }}
-  name: {{ .Values.apiGateway.name }}
-  namespace: {{ .Values.namespace }}
 spec:
-  replicas: {{ .Values.apiGateway.replicaCount }}
   replicas: {{ .Values.apiGateway.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: {{ .Values.apiGateway.name }}
       io.kompose.service: {{ .Values.apiGateway.name }}
   template:
     metadata:
@@ -26,22 +21,17 @@ spec:
         - env:
             - name: AUTH_SERVICE_URL
               value: http://{{ .Values.authService.name }}:{{ .Values.authService.port }}
-              value: http://{{ .Values.authService.name }}:{{ .Values.authService.port }}
             - name: CORS_ALLOWED_ORIGINS
-              value: https://{{ .Values.ingress.host }}
               value: https://{{ .Values.ingress.host }}
             - name: FLASHCARD_SERVICE_URL
               value: http://{{ .Values.flashcardService.name }}:{{ .Values.flashcardService.port }}
-              value: http://{{ .Values.flashcardService.name }}:{{ .Values.flashcardService.port }}
             - name: GENAI_SERVICE_URL
-              value: http://{{ .Values.genaiService.name }}:{{ .Values.genaiService.port }}
               value: http://{{ .Values.genaiService.name }}:{{ .Values.genaiService.port }}
             - name: JAVA_TOOL_OPTIONS
               value: -Djava.net.preferIPv4Stack=true
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secretName }}
                   name: {{ .Values.secretName }}
                   key: JWT_SECRET
             - name: OTLP_TRACING_ENDPOINT
@@ -53,23 +43,14 @@ spec:
           image: {{ .Values.image.registry }}/{{ .Values.apiGateway.name }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: {{ .Values.apiGateway.name }}
-              value: http://{{ .Values.uploadService.name }}:{{ .Values.uploadService.port }}
-          image: {{ .Values.image.registry }}/{{ .Values.apiGateway.name }}:{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          name: {{ .Values.apiGateway.name }}
           ports:
-            - containerPort: {{ .Values.apiGateway.port }}
             - containerPort: {{ .Values.apiGateway.port }}
               protocol: TCP
           resources:
             requests:
               cpu: {{ .Values.apiGateway.resources.requests.cpu | quote }}
               memory: {{ .Values.apiGateway.resources.requests.memory | quote }}
-              cpu: {{ .Values.apiGateway.resources.requests.cpu | quote }}
-              memory: {{ .Values.apiGateway.resources.requests.memory | quote }}
             limits:
-              cpu: {{ .Values.apiGateway.resources.limits.cpu | quote }}
-              memory: {{ .Values.apiGateway.resources.limits.memory | quote }}
               cpu: {{ .Values.apiGateway.resources.limits.cpu | quote }}
               memory: {{ .Values.apiGateway.resources.limits.memory | quote }}
       restartPolicy: Always

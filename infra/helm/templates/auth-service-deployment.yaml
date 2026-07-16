@@ -5,15 +5,10 @@ metadata:
     io.kompose.service: {{ .Values.authService.name }}
   name: {{ .Values.authService.name }}
   namespace: {{ .Values.namespace }}
-    io.kompose.service: {{ .Values.authService.name }}
-  name: {{ .Values.authService.name }}
-  namespace: {{ .Values.namespace }}
 spec:
-  replicas: {{ .Values.authService.replicaCount }}
   replicas: {{ .Values.authService.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: {{ .Values.authService.name }}
       io.kompose.service: {{ .Values.authService.name }}
   template:
     metadata:
@@ -26,49 +21,39 @@ spec:
         - env:
             - name: FRONTEND_URL
               value: https://{{ .Values.ingress.host }}
-              value: https://{{ .Values.ingress.host }}
             - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secretName }}
                   name: {{ .Values.secretName }}
                   key: GOOGLE_CLIENT_ID
             - name: GOOGLE_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
-                  name: {{ .Values.secretName }}
                   key: GOOGLE_CLIENT_SECRET
             - name: JWT_EXPIRATION_MS
-              value: {{ .Values.authService.jwtExpirationMs | quote }}
               value: {{ .Values.authService.jwtExpirationMs | quote }}
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secretName }}
                   name: {{ .Values.secretName }}
                   key: JWT_SECRET
             - name: OTLP_TRACING_ENDPOINT
               value: {{ .Values.tracing.otlpEndpoint | quote }}
             - name: SERVER_PORT
               value: {{ .Values.authService.port | quote }}
-              value: {{ .Values.authService.port | quote }}
             - name: SESSION_EXPIRATION_MS
-              value: {{ .Values.authService.sessionExpirationMs | quote }}
               value: {{ .Values.authService.sessionExpirationMs | quote }}
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
-                  name: {{ .Values.secretName }}
                   key: POSTGRES_PASSWORD
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://{{ .Values.db.name }}:{{ .Values.db.port }}/{{ .Values.db.authDb }}
               value: jdbc:postgresql://{{ .Values.db.name }}:{{ .Values.db.port }}/{{ .Values.db.authDb }}
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secretName }}
                   name: {{ .Values.secretName }}
                   key: POSTGRES_USER
             - name: TRACING_SAMPLING_PROBABILITY
@@ -78,17 +63,12 @@ spec:
           name: {{ .Values.authService.name }}
           ports:
             - containerPort: {{ .Values.authService.port }}
-            - containerPort: {{ .Values.authService.port }}
               protocol: TCP
           resources:
             requests:
               cpu: {{ .Values.authService.resources.requests.cpu | quote }}
               memory: {{ .Values.authService.resources.requests.memory | quote }}
-              cpu: {{ .Values.authService.resources.requests.cpu | quote }}
-              memory: {{ .Values.authService.resources.requests.memory | quote }}
             limits:
-              cpu: {{ .Values.authService.resources.limits.cpu | quote }}
-              memory: {{ .Values.authService.resources.limits.memory | quote }}
               cpu: {{ .Values.authService.resources.limits.cpu | quote }}
               memory: {{ .Values.authService.resources.limits.memory | quote }}
       restartPolicy: Always
