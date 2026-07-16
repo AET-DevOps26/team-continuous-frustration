@@ -5,14 +5,14 @@ import { cn } from "@/lib/utils";
 
 const components: Components = {
   p: ({ node: _node, ...props }) => <span {...props} />,
-  a: ({ node: _node, ...props }) => (
-    <a className="underline underline-offset-2" target="_blank" rel="noreferrer" {...props} />
+  a: ({ node: _node, className, ...props }) => (
+    <a className={cn("underline underline-offset-2", className)} target="_blank" rel="noreferrer" {...props} />
   ),
-  code: ({ node: _node, ...props }) => (
-    <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em]" {...props} />
+  code: ({ node: _node, className, ...props }) => (
+    <code className={cn("rounded bg-muted px-1 py-0.5 font-mono text-[0.85em]", className)} {...props} />
   ),
-  ul: ({ node: _node, ...props }) => <ul className="ml-4 list-disc" {...props} />,
-  ol: ({ node: _node, ...props }) => <ol className="ml-4 list-decimal" {...props} />,
+  ul: ({ node: _node, className, ...props }) => <ul className={cn("ml-4 list-disc", className)} {...props} />,
+  ol: ({ node: _node, className, ...props }) => <ol className={cn("ml-4 list-decimal", className)} {...props} />,
 };
 
 export function Markdown({
