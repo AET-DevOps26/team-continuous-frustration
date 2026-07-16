@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 
 import type { Flashcard, FlashcardCreateRequest, FlashcardUpdateRequest } from "@/api/flashcard";
 import { createFlashcard, getFlashcardById, updateFlashcard, deleteFlashcard } from "@/api/flashcard";
-import { listDecks, listDeckFlashcardIds, createDeckFlashcardRecord, deleteDeckFlashcardRecord } from "@/api/study";
+import { getDeckById, listDeckFlashcardIds, createDeckFlashcardRecord, deleteDeckFlashcardRecord } from "@/api/study";
 
 import { isAiGenerated } from "@/lib/utils"
 
@@ -48,11 +48,10 @@ export function DeckDetailPage() {
     setFlashcards({});
     setError(null);
 
-    listDecks()
+    getDeckById(deckId)
       .then((res) => {
         if (!active) return;
-        const deck = res.data.find((d) => d.id === deckId);
-        if (deck) setDeckName(deck.name);
+        setDeckName(res.data.name);
       })
       .catch((err) => console.error("Failed to load deck:", err));
 

@@ -109,6 +109,18 @@ export const createDeck = (
   }
 
 /**
+ * Retrieve a single deck owned by the authenticated user.
+ * @summary Get a deck by id
+ */
+export const getDeckById = (
+    deckId: string, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<Deck>> => {
+    return axios.default.get(
+      `/api/v1/decks/${deckId}`,options
+    );
+  }
+
+/**
  * Retrieve all decks owned by the authenticated user, including card counts and due-today counts.
  * @summary List deck overviews
  */
@@ -188,6 +200,7 @@ export const deleteDeckFlashcardRecord = (
 
 export type ListDecksResult = AxiosResponse<Deck[]>
 export type CreateDeckResult = AxiosResponse<Deck>
+export type GetDeckByIdResult = AxiosResponse<Deck>
 export type ListDeckOverviewsResult = AxiosResponse<DeckOverview[]>
 export type GetDueFlashcardsForDeckResult = AxiosResponse<StudyDueDateRecord[]>
 export type ListDeckFlashcardIdsResult = AxiosResponse<string[]>

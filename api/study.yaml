@@ -70,6 +70,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /api/v1/decks/{deck_id}:
+    get:
+      operationId: getDeckById
+      summary: Get a deck by id
+      description: Retrieve a single deck owned by the authenticated user.
+      parameters:
+        - name: deck_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the deck.
+      responses:
+        "200":
+          description: Deck retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deck"
+        "400":
+          description: Invalid deck identifier.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Deck not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while retrieving deck.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /api/v1/decks/overview:
     get:
       operationId: listDeckOverviews
