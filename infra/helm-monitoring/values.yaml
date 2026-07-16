@@ -87,12 +87,20 @@ jaeger:
 # at 1.5 CPU / 2Gi (limits.cpu/limits.memory - see README). There's no
 # LimitRange in this namespace, so *every* container (including operator
 # sidecars) must set explicit resources.limits.cpu/memory or the pod is
-# rejected outright - not just containers that exceed the quota. The sums
-# below land around 1.0 CPU / ~1.5Gi, leaving headroom for rolling-update
-# surges and any sidecar/init container not explicitly listed here; if a
-# fresh install still fails on a missing-limit error for some container we
-# didn't anticipate, add a `containers:` resources override for it (see the
-# config-reloader entries below for the pattern).
+# rejected outright - not just containers that exceed the quota. The
+# kube-prometheus-stack sums below land around 1.07 CPU / ~1.66Gi (verified
+# via `helm template` + manually summing every rendered
+# Deployment/StatefulSet/Prometheus CR's container limits - init containers
+# don't add on top of that since Kubernetes takes max(sum(app containers),
+# max(each init container)) per resource, not a flat sum). The loki-stack
+# (Loki) + alloy (log shipper) blocks further down add roughly another
+# 0.16 CPU / 0.25Gi, landing around 1.25 CPU / 1.98Gi total - leaving only
+# ~250m CPU / ~65Mi of headroom for rolling-update surges, so Loki/Alloy are
+# sized deliberately small (see their own comments). If a fresh install
+# still fails on a missing-limit error for some container we didn't
+# anticipate, add a `containers:` resources override for it (see the
+# config-reloader entries below for the pattern) - and if it fails on quota
+# exceeded instead, something here needs to shrink further first.
 # ---------------------------------------------------------------------------
 kube-prometheus-stack:
   fullnameOverride: monitoring
@@ -373,17 +381,13 @@ kube-prometheus-stack:
         resource: "configmap"
         searchNamespace: team-continuous-frustration-monitoring
     additionalDataSources:
-      # Loki is disabled for now (see loki-stack block below - its
-      # Promtail DaemonSet alone would exceed the whole monitoring
-      # resource quota on this 28-node cluster). Re-add this once
-      # loki-stack.loki.enabled / promtail.enabled are turned back on:
-      # - name: Loki
-      #   uid: loki
-      #   type: loki
-      #   access: proxy
-      #   url: http://monitoring-loki.team-continuous-frustration-monitoring.svc.cluster.local:3100
-      #   jsonData:
-      #     maxLines: 1000
+      - name: Loki
+        uid: loki
+        type: loki
+        access: proxy
+        url: http://monitoring-loki.team-continuous-frustration-monitoring.svc.cluster.local:3100
+        jsonData:
+          maxLines: 1000
       - name: Jaeger
         uid: jaeger
         type: jaeger
@@ -466,87 +470,51 @@ kube-prometheus-stack:
     create: false
 
 # ---------------------------------------------------------------------------
-# loki-stack (Loki + Promtail). Disabled for now: Promtail runs as a
-# DaemonSet (one pod per node), and this cluster has 28 nodes - even at a
-# bare-minimum per-pod limit, the fleet-wide total would blow past the
-# entire 1.5 CPU / 2Gi monitoring ResourceQuota by itself, before Prometheus/
-# Grafana/Alertmanager/Jaeger get anything. Re-enable once either the quota
-# grows enough to absorb a 28-way DaemonSet, or logs move to a design that
-# doesn't need a cluster-wide DaemonSet (e.g. apps pushing directly to Loki
-# over HTTP via a logging appender instead of node-level file tailing).
-# Grafana/Prometheus from this chart stay disabled either way since
-# kube-prometheus-stack already provides them.
+# loki-stack (Loki only - Promtail is replaced by the `alloy` block below).
+# Promtail collects logs by tailing local files on every node via hostPath,
+# which is why it ships as a DaemonSet; with 28 nodes in this cluster, even
+# bare-minimum per-pod limits blow past the entire 1.5 CPU / 2Gi monitoring
+# ResourceQuota before Prometheus/Grafana/Jaeger get anything - and that cost
+# is driven by node count, not by how tightly RBAC scopes what it's allowed
+# to read. Alloy's `loki.source.kubernetes` component instead tails logs
+# through the Kubernetes API (like `kubectl logs -f`), so it runs as a single
+# small Deployment with no hostPath and no per-node fan-out. Loki itself
+# (the storage/query side) is unaffected by any of this and just runs as one
+# small StatefulSet pod, same as it always would have.
+# Grafana/Prometheus from this chart stay disabled since kube-prometheus-stack
+# already provides them.
 # ---------------------------------------------------------------------------
 loki-stack:
   loki:
-    enabled: false
+    enabled: true
+    # Matches the docker-compose stack's `grafana/loki:2.9.0` for parity
+    # (chart default is the older 2.6.1).
+    image:
+      tag: 2.9.0
+    # Loki itself doesn't talk to the Kubernetes API (no service discovery,
+    # no log tailing) - it only serves the push/query HTTP API, so it needs
+    # no RBAC at all. The chart's default Role only exists to grant
+    # `use` on a PodSecurityPolicy, which this cluster doesn't have.
+    rbac:
+      create: false
+    # Kept deliberately small - `helm template` + a manual quota tally
+    # (see top-of-file resource budget comment) shows only ~350m CPU /
+    # ~350Mi mem of headroom left once kube-prometheus-stack + Jaeger are
+    # accounted for. Bump if this OOMs in practice (same thing already
+    # happened with the Grafana sidecar at 32Mi - see its comment above).
+    resources:
+      requests:
+        cpu: 30m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 160Mi
     persistence:
       enabled: true
       storageClassName: csi-rbd-sc
       size: 20Gi
   promtail:
     enabled: false
-    # No cluster-wide RBAC available to this account; templates/promtail-rbac.yaml
-    # grants namespaced Roles in our two namespaces instead (see below).
-    rbac:
-      create: false
-    config:
-      # The chart's own default (http://{{ .Release.Name }}:3100/...) only
-      # resolves correctly when the release name contains "loki". Installed
-      # under the "monitoring" release, the actual Loki service is
-      # "monitoring-loki" (release name + "-loki"), so this must be pinned
-      # explicitly or promtail silently ships logs nowhere.
-      clients:
-        - url: http://monitoring-loki:3100/loki/api/v1/push
-      snippets:
-        # Same as the chart default (see charts/promtail values.yaml) but with
-        # `namespaces.names` added to kubernetes_sd_configs, restricting pod
-        # discovery to the two namespaces our namespaced Role (above) actually
-        # grants access to - avoids needing a ClusterRole.
-        scrapeConfigs: |
-          - job_name: kubernetes-pods
-            pipeline_stages:
-              {{- toYaml .Values.config.snippets.pipelineStages | nindent 4 }}
-            kubernetes_sd_configs:
-              - role: pod
-                namespaces:
-                  names:
-                    - team-continuous-frustration
-                    - team-continuous-frustration-monitoring
-            relabel_configs:
-              - source_labels:
-                  - __meta_kubernetes_pod_controller_name
-                regex: ([0-9a-z-.]+?)(-[0-9a-f]{8,10})?
-                action: replace
-                target_label: __tmp_controller_name
-              - source_labels:
-                  - __meta_kubernetes_pod_label_app_kubernetes_io_name
-                  - __meta_kubernetes_pod_label_app
-                  - __tmp_controller_name
-                  - __meta_kubernetes_pod_name
-                regex: ^;*([^;]+)(;.*)?$
-                action: replace
-                target_label: app
-              - source_labels:
-                  - __meta_kubernetes_pod_label_app_kubernetes_io_instance
-                  - __meta_kubernetes_pod_label_instance
-                regex: ^;*([^;]+)(;.*)?$
-                action: replace
-                target_label: instance
-              - source_labels:
-                  - __meta_kubernetes_pod_label_app_kubernetes_io_component
-                  - __meta_kubernetes_pod_label_component
-                regex: ^;*([^;]+)(;.*)?$
-                action: replace
-                target_label: component
-              {{- if .Values.config.snippets.addScrapeJobLabel }}
-              - replacement: kubernetes-pods
-                target_label: scrape_job
-              {{- end }}
-              {{- toYaml .Values.config.snippets.common | nindent 4 }}
-              {{- with .Values.config.snippets.extraRelabelConfigs }}
-              {{- toYaml . | nindent 4 }}
-              {{- end }}
   grafana:
     enabled: false
     # loki-stack renders a Loki datasource ConfigMap (picked up by any
@@ -559,3 +527,111 @@ loki-stack:
         enabled: false
   prometheus:
     enabled: false
+
+# ---------------------------------------------------------------------------
+# Grafana Alloy - collects logs for the two app/monitoring namespaces and
+# forwards them to Loki above, replacing Promtail (see loki-stack comment).
+# Deployed as a single Deployment replica rather than the chart's default
+# DaemonSet, since `loki.source.kubernetes` pulls logs via the Kubernetes API
+# instead of tailing node-local files - it has no reason to run per-node.
+# ---------------------------------------------------------------------------
+alloy:
+  controller:
+    type: deployment
+    replicas: 1
+    # Default RollingUpdate would briefly schedule a second pod during
+    # upgrades (maxSurge), which can exceed the tight quota headroom here
+    # and deadlock the rollout. Recreate avoids that at the cost of a brief
+    # gap in log collection during upgrades (same trade-off already made for
+    # Grafana/Jaeger elsewhere in this chart).
+    updateStrategy:
+      type: Recreate
+  # No hostPath log tailing, so no need to mount the node's /var/log or
+  # /var/lib/docker/containers (both default to false already, listed here
+  # for clarity given how central that distinction is to why this works).
+  mounts:
+    varlog: false
+    dockercontainers: false
+  # This account only has namespace-scoped RBAC (see README). `rbac.namespaces`
+  # makes the chart create namespaced Role/RoleBindings in exactly the
+  # listed namespaces instead of a ClusterRole - no custom RBAC template
+  # needed, unlike the old Promtail setup.
+  rbac:
+    create: true
+    namespaces:
+      - team-continuous-frustration
+      - team-continuous-frustration-monitoring
+    # Trimmed to just what the config below actually uses (discovery.kubernetes
+    # role="pod" + loki.source.kubernetes), rather than the chart's much
+    # broader default rule set (services/endpoints/ingresses/events/secrets/...
+    # for components we don't run).
+    rules:
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: [""]
+        resources: ["pods/log"]
+        verbs: ["get"]
+  # No CRDs used (we don't run loki.source.podlogs or any Prometheus-Operator
+  # components) and this account can't create CRDs anyway.
+  crds:
+    create: false
+  alloy:
+    resources:
+      requests:
+        cpu: 20m
+        memory: 32Mi
+      limits:
+        cpu: 60m
+        memory: 96Mi
+    configMap:
+      content: |
+        discovery.kubernetes "pods" {
+          role = "pod"
+          namespaces {
+            names = ["team-continuous-frustration", "team-continuous-frustration-monitoring"]
+          }
+        }
+
+        discovery.relabel "pod_logs" {
+          targets = discovery.kubernetes.pods.targets
+
+          rule {
+            source_labels = ["__meta_kubernetes_namespace"]
+            target_label  = "namespace"
+          }
+          rule {
+            source_labels = ["__meta_kubernetes_pod_name"]
+            target_label  = "pod"
+          }
+          rule {
+            source_labels = ["__meta_kubernetes_pod_container_name"]
+            target_label  = "container"
+          }
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app"]
+            target_label  = "app"
+          }
+        }
+
+        loki.source.kubernetes "pods" {
+          targets    = discovery.relabel.pod_logs.output
+          forward_to = [loki.write.default.receiver]
+        }
+
+        loki.write "default" {
+          endpoint {
+            url = "http://monitoring-loki:3100/loki/api/v1/push"
+          }
+        }
+  # config-reloader sidecar watches the ConfigMap for changes - trivial
+  # workload, but still needs explicit limits under this quota (same rule
+  # as every other sidecar in this chart).
+  configReloader:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 16Mi
+      limits:
+        cpu: 20m
+        memory: 32Mi
