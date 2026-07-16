@@ -1,0 +1,17 @@
+meta {
+  name: Generate Flashcards
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/genai/generate-flashcards
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "upload_id": "your-upload-id-here"
+  }
+}
