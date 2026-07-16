@@ -130,7 +130,7 @@ export function UploadPage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.ppt,.pptx"
+              accept=".pdf,.ppt,.pptx,.docx"
               className="hidden"
               onChange={handleFileChange}
             />
@@ -187,12 +187,14 @@ export function UploadPage() {
             </p>
             <Button
               onClick={() => saveAllFlashcards(selectedDeckId)}
-              disabled={isSavingAll || allSaved}
+              disabled={isSavingAll || allSaved || isGenerating}
             >
               {isSavingAll ? (
                 <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Saving...</>
               ) : allSaved ? (
                 <><Check className="mr-1.5 h-4 w-4" /> All Saved</>
+              ) : isGenerating ? (
+                "Waiting for all cards..."
               ) : (
                 "Save All"
               )}
@@ -242,6 +244,13 @@ export function UploadPage() {
             <div className="mt-6 flex w-full items-center justify-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               <p>Generating more flashcards...</p>
+            </div>
+          )}
+          {allSaved && (
+            <div className="mt-6 flex justify-center">
+              <Button variant="outline" onClick={() => navigate(`/decks/${selectedDeckId}`)}>
+                Go to deck →
+              </Button>
             </div>
           )}
           {error && (
