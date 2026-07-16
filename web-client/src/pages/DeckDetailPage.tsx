@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import type { Flashcard, FlashcardCreateRequest, FlashcardUpdateRequest } from "@/api/flashcard";
-import { createFlashcard, getFlashcardById, updateFlashcard, deleteFlashcard } from "@/api/flashcard";
+import { createFlashcard, getFlashcardsByIds, updateFlashcard, deleteFlashcard } from "@/api/flashcard";
 import { getDeckById, listDeckFlashcardIds, createDeckFlashcardRecord, deleteDeckFlashcardRecord } from "@/api/study";
 
 import { isAiGenerated } from "@/lib/utils"
@@ -20,7 +20,6 @@ export function DeckDetailPage() {
   const [flashcardIds, setFlashcardIds] = useState<string[]>([]);
   const [flashcards, setFlashcards] = useState<Record<string, Flashcard>>({});
   const [loadingIds, setLoadingIds] = useState(true);
-  const [loadingCardIds, setLoadingCardIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
@@ -57,27 +56,19 @@ export function DeckDetailPage() {
 
     setLoadingIds(true);
     listDeckFlashcardIds(deckId)
-      .then((res) => {
+      .then(async (res) => {
         if (!active) return;
         setFlashcardIds(res.data);
         setError(null);
-        setLoadingCardIds(new Set(res.data));
-        res.data.forEach((id) => {
-          getFlashcardById(id)
-            .then((cardRes) => {
-              if (!active) return;
-              setFlashcards((prev) => ({ ...prev, [id]: cardRes.data }));
-            })
-            .catch((err) => console.error(`Failed to load flashcard ${id}:`, err))
-            .finally(() => {
-              if (!active) return;
-              setLoadingCardIds((prev) => {
-                const next = new Set(prev);
-                next.delete(id);
-                return next;
-              });
-            });
-        });
+        if (res.data.length === 0) return;
+        try {
+          const cardsRes = await getFlashcardsByIds({ ids: res.data });
+          if (!active) return;
+          setFlashcards(Object.fromEntries(cardsRes.data.map((card) => [card.id, card])));
+        } catch (err) {
+          console.error("Failed to load flashcards:", err);
+          if (active) setError("Failed to load flashcards.");
+        }
       })
       .catch((err) => {
         if (!active) return;
@@ -364,12 +355,6 @@ export function DeckDetailPage() {
             </article>
           );
         })}
-        {loadingCardIds.size > 0 && (
-          <div className="flex items-center justify-center gap-2 p-5 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading {loadingCardIds.size} more card{loadingCardIds.size === 1 ? "" : "s"}...
-          </div>
-        )}
       </div>
 
       {!loadingIds && flashcardIds.length > 0 && (

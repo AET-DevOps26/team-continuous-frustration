@@ -1,6 +1,7 @@
 package com.devops.springservice.flashcard;
 
 import com.devops.springservice.model.Flashcard;
+import com.devops.springservice.model.FlashcardBatchGetRequest;
 import com.devops.springservice.model.FlashcardCreateRequest;
 import com.devops.springservice.model.FlashcardUpdateRequest;
 import jakarta.validation.Valid;
@@ -44,6 +45,14 @@ public class FlashcardController {
             @Valid @RequestBody FlashcardCreateRequest request) {
         Flashcard created = service.create(currentUserId(subject), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PostMapping("/batch-get")
+    public List<Flashcard> getByIds(
+            @AuthenticationPrincipal String subject,
+            @Valid @RequestBody FlashcardBatchGetRequest request) {
+        List<UUID> flashcardIds = request.getIds().stream().map(UUID::fromString).toList();
+        return service.getForUser(currentUserId(subject), flashcardIds);
     }
 
     @GetMapping("/{flashcard_id}")

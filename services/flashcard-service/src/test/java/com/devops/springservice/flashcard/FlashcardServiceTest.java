@@ -77,6 +77,18 @@ class FlashcardServiceTest {
     }
 
     @Test
+    void getForUserByIdsReturnsOnlyOwnedMatches() {
+        FlashcardEntity owned = persistedEntity(USER_ID);
+        when(repository.findByIdInAndUserId(List.of(owned.getId(), OTHER_CARD_ID), USER_ID))
+                .thenReturn(List.of(owned));
+
+        List<Flashcard> result = service.getForUser(USER_ID, List.of(owned.getId(), OTHER_CARD_ID));
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(owned.getId().toString());
+    }
+
+    @Test
     void getThrowsWhenCardNotOwnedByUser() {
         when(repository.findByIdAndUserId(OTHER_CARD_ID, USER_ID)).thenReturn(Optional.empty());
 

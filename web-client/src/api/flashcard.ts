@@ -39,6 +39,11 @@ export interface FlashcardCreateRequest {
   source_name?: string;
 }
 
+export interface FlashcardBatchGetRequest {
+  /** Identifiers of the flashcards to retrieve. */
+  ids: string[];
+}
+
 export interface FlashcardUpdateRequest {
   /** The flashcard question. */
   question: string;
@@ -97,6 +102,19 @@ export const createFlashcard = (
   }
 
 /**
+ * Retrieve several flashcards in one request by their identifiers. Identifiers that do not exist or are not owned by the caller are silently omitted from the response.
+ * @summary Get multiple flashcards
+ */
+export const getFlashcardsByIds = (
+    flashcardBatchGetRequest: FlashcardBatchGetRequest, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<Flashcard[]>> => {
+    return axios.default.post(
+      `/api/v1/flashcards/batch-get`,
+      flashcardBatchGetRequest,options
+    );
+  }
+
+/**
  * Retrieve a flashcard by its identifier.
  * @summary Get a flashcard
  */
@@ -137,6 +155,7 @@ export const deleteFlashcard = (
 export type GetFlashcardHealthResult = AxiosResponse<GetFlashcardHealth200>
 export type ListFlashcardsResult = AxiosResponse<Flashcard[]>
 export type CreateFlashcardResult = AxiosResponse<Flashcard>
+export type GetFlashcardsByIdsResult = AxiosResponse<Flashcard[]>
 export type GetFlashcardByIdResult = AxiosResponse<Flashcard>
 export type UpdateFlashcardResult = AxiosResponse<Flashcard>
 export type DeleteFlashcardResult = AxiosResponse<void>

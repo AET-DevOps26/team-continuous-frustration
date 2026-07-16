@@ -35,6 +35,13 @@ public class FlashcardService {
         return FlashcardMapper.toModel(requireOwned(userId, flashcardId));
     }
 
+    @Transactional(readOnly = true)
+    public List<Flashcard> getForUser(UUID userId, List<UUID> flashcardIds) {
+        return repository.findByIdInAndUserId(flashcardIds, userId).stream()
+                .map(FlashcardMapper::toModel)
+                .toList();
+    }
+
     public Flashcard create(UUID userId, FlashcardCreateRequest request) {
         FlashcardEntity entity = new FlashcardEntity(
                 userId,

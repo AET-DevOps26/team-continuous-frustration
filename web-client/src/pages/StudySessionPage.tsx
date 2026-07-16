@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { StudyDueDateRecord, StudyStatus } from "@/api/study";
 import { getDeckById, getDueFlashcardsForDeck, updateFlashcardStudyStatus } from "@/api/study";
 import type { Flashcard } from "@/api/flashcard";
-import { getFlashcardById } from "@/api/flashcard";
+import { getFlashcardsByIds } from "@/api/flashcard";
 import { apiV1GenaiExplainPostApiV1GenaiExplainPost } from "@/api/genai";
 
 import { isAiGenerated } from "@/lib/utils"
@@ -47,17 +47,13 @@ export function StudySessionPage() {
 
   const loadDueCards = async (deckIdParam: string): Promise<DueCard[]> => {
     const res = await getDueFlashcardsForDeck(deckIdParam);
-    const cards = await Promise.all(
-      res.data.map((record) =>
-        getFlashcardById(record.flashcard_id)
-          .then((cardRes): DueCard => ({ flashcard: cardRes.data, record }))
-          .catch((err) => {
-            console.error(`Failed to load flashcard ${record.flashcard_id}:`, err);
-            return null;
-          })
-      )
-    );
-    return cards.filter((card): card is DueCard => card !== null);
+    const ids = res.data.map((record) => record.flashcard_id);
+    if (ids.length === 0) return [];
+    const cardsRes = await getFlashcardsByIds({ ids });
+    const cardsById = new Map(cardsRes.data.map((card) => [card.id, card]));
+    return res.data
+      .map((record) => ({flashcard: cardsById.get(record.flashcard_id), record}))
+      .filter((card): card is DueCard => card !== null);
   };
 
   useEffect(() => {

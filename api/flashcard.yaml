@@ -94,6 +94,41 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /api/v1/flashcards/batch-get:
+    post:
+      operationId: getFlashcardsByIds
+      summary: Get multiple flashcards
+      description: >-
+        Retrieve several flashcards in one request by their identifiers.
+        Identifiers that do not exist or are not owned by the caller are
+        silently omitted from the response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlashcardBatchGetRequest"
+      responses:
+        "200":
+          description: Flashcards retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Flashcard"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error while retrieving flashcards.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /api/v1/flashcards/{flashcard_id}:
     get:
       operationId: getFlashcardById
@@ -263,6 +298,16 @@ components:
           description: >-
             Human-readable name of the resource the flashcard was generated
             from (e.g. the uploaded document's file name).
+    FlashcardBatchGetRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+          description: Identifiers of the flashcards to retrieve.
     FlashcardUpdateRequest:
       type: object
       required:
