@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, ChevronDown, ChevronUp, Sparkles, X, Square, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Sparkles, X, Square, Loader2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import type { StudyStatus } from "@/api/study";
-import { listDecks, getDueFlashcardsForDeck, updateFlashcardStudyStatus } from "@/api/study";
+import type { StudyStatus, DeckOverview } from "@/api/study";
+import { listDecks, listDeckOverviews, getDueFlashcardsForDeck, updateFlashcardStudyStatus } from "@/api/study";
 import type { Flashcard } from "@/api/flashcard";
 import { getFlashcardById } from "@/api/flashcard";
 import { apiV1GenaiExplainPostApiV1GenaiExplainPost } from "@/api/genai";
@@ -38,6 +38,35 @@ export function StudySessionPage() {
   const [explanationError, setExplanationError] = useState<string | null>(null);
 
   const [fetchingMore, setFetchingMore] = useState(false);
+
+  const [deckOptions, setDeckOptions] = useState<DeckOverview[]>([]);
+  const [deckOptionsLoading, setDeckOptionsLoading] = useState(true);
+  const [deckOptionsError, setDeckOptionsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (deckId) return;
+
+    let active = true;
+    setDeckOptionsLoading(true);
+    listDeckOverviews()
+      .then((res) => {
+        if (!active) return;
+        setDeckOptions(res.data);
+        setDeckOptionsError(null);
+      })
+      .catch((err) => {
+        if (!active) return;
+        console.error("Failed to load decks:", err);
+        setDeckOptionsError("Failed to load decks.");
+      })
+      .finally(() => {
+        if (active) setDeckOptionsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [deckId]);
 
   const loadDueCards = async (deckIdParam: string): Promise<Flashcard[]> => {
     const res = await getDueFlashcardsForDeck(deckIdParam);
@@ -164,6 +193,58 @@ export function StudySessionPage() {
       setExplanationLoading(false);
     }
   };
+
+  if (!deckId) {
+    return (
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        <div className="mb-10">
+          <h1 className="font-display text-4xl font-semibold tracking-tight">Study</h1>
+          <p className="mt-2 text-muted-foreground">Choose a deck to start studying.</p>
+        </div>
+
+        {deckOptionsLoading && <p className="text-muted-foreground">Loading decks...</p>}
+        {!deckOptionsLoading && deckOptionsError && (
+          <p className="text-destructive">{deckOptionsError}</p>
+        )}
+        {!deckOptionsLoading && !deckOptionsError && deckOptions.length === 0 && (
+          <div className="card-shadow flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 text-center">
+            <p className="text-sm text-muted-foreground">You don't have any decks yet.</p>
+            <Button onClick={() => navigate("/decks")}>Create a deck</Button>
+          </div>
+        )}
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {deckOptions.map((deck) => (
+            <button
+              key={deck.id}
+              type="button"
+              onClick={() => navigate(`/study/${deck.id}`)}
+              className="card-shadow flex flex-col items-start rounded-3xl border border-border bg-card p-6 text-left transition-colors hover:border-primary/50"
+            >
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
+                <BookOpen className="h-5 w-5" />
+              </div>
+              <h2 className="mt-4 font-display text-lg font-semibold">{deck.name}</h2>
+              <div className="mt-4 flex items-center gap-4 text-sm">
+                <div>
+                  <span className="font-semibold">{deck.cards}</span>
+                  <span className="ml-1 text-muted-foreground">cards</span>
+                </div>
+                <div>
+                  <span
+                    className={`font-semibold ${deck.dueToday > 0 ? "text-destructive" : "text-muted-foreground"}`}
+                  >
+                    {deck.dueToday}
+                  </span>
+                  <span className="ml-1 text-muted-foreground">due today</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </main>
+    );
+  }
 
   if (loadingCards) {
     return (
