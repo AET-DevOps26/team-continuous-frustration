@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, ChevronDown, ChevronUp, Sparkles, X, Square, Loader2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Markdown } from "@/components/ui/markdown";
 
 import type { StudyStatus, DeckOverview } from "@/api/study";
 import { listDecks, listDeckOverviews, getDueFlashcardsForDeck, updateFlashcardStudyStatus } from "@/api/study";
@@ -301,7 +302,9 @@ export function StudySessionPage() {
         <div className="space-y-4">
           <div className="card-shadow rounded-3xl border border-border bg-card p-8">
             <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">Question</p>
-            <h2 className="font-display text-2xl font-semibold leading-snug">{currentCard.question}</h2>
+            <h2 className="font-display text-2xl font-semibold leading-snug">
+              <Markdown as="span">{currentCard.question}</Markdown>
+            </h2>
 
             <button
               type="button"
@@ -319,7 +322,7 @@ export function StudySessionPage() {
               <div className="mt-6 space-y-4">
                 <div>
                   <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">Answer</p>
-                  <p className="text-base leading-relaxed">{currentCard.answer}</p>
+                  <Markdown className="text-base leading-relaxed">{currentCard.answer}</Markdown>
                 </div>
 
                 <div>
