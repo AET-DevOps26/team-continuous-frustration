@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: {{ .Values.studyService.name }}
+  name: {{ .Values.studyService.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.studyService.replicaCount }}
+  selector:
+    matchLabels:
+      io.kompose.service: {{ .Values.studyService.name }}
+  template:
+    metadata:
+      labels:
+        io.kompose.service: {{ .Values.studyService.name }}
+        app: {{ .Values.studyService.name }}
+        monitoring: "true"
+    spec:
+      containers:
+        - env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: JWT_SECRET
+            - name: OTLP_TRACING_ENDPOINT
+              value: {{ .Values.tracing.otlpEndpoint | quote }}
+            - name: SERVER_PORT
+              value: {{ .Values.studyService.port | quote }}
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: POSTGRES_PASSWORD
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://{{ .Values.db.name }}:{{ .Values.db.port }}/{{ .Values.db.studyDb }}
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: POSTGRES_USER
+            - name: TRACING_SAMPLING_PROBABILITY
+              value: {{ .Values.tracing.samplingProbability | quote }}
+            - name: STUDY_EASE_DEFAULT
+              value: {{ .Values.studyService.studyEaseDefault | quote }}
+            - name: STUDY_EASE_MIN
+              value: {{ .Values.studyService.studyEaseMin | quote }}
+            - name: STUDY_EASE_AGAIN_PENALTY
+              value: {{ .Values.studyService.studyEaseAgainPenalty | quote }}
+            - name: STUDY_EASE_HARD_PENALTY
+              value: {{ .Values.studyService.studyEaseHardPenalty | quote }}
+            - name: STUDY_EASE_EASY_BONUS
+              value: {{ .Values.studyService.studyEaseEasyBonus | quote }}
+            - name: STUDY_HARD_FIRST_STEP_MINUTES
+              value: {{ .Values.studyService.studyHardFirstStepMinutes | quote }}
+          image: {{ .Values.image.registry }}/{{ .Values.studyService.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: {{ .Values.studyService.name }}
+          ports:
+            - containerPort: {{ .Values.studyService.port }}
+              protocol: TCP
+          resources:
+            requests:
+              cpu: {{ .Values.studyService.resources.requests.cpu | quote }}
+              memory: {{ .Values.studyService.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.studyService.resources.limits.cpu | quote }}
+              memory: {{ .Values.studyService.resources.limits.memory | quote }}
+      restartPolicy: Always
