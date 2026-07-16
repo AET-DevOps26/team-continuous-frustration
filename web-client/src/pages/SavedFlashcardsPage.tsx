@@ -72,10 +72,10 @@ function SourceGroup({
         </div>
         <div className="min-w-0">
           <p className="truncate font-medium" title={group.sourceName ?? undefined}>
-            {group.sourceName ?? "Unknown source"}
+            {group.sourceName ?? "Manually created"}
           </p>
           <p className="text-xs text-muted-foreground">
-            Generated from this resource
+            {group.sourceName ? "Generated from this resource" : ""}
           </p>
         </div>
         <span className="ml-auto rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
