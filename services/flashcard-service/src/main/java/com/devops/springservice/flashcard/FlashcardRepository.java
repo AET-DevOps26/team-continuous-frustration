@@ -14,5 +14,7 @@ public interface FlashcardRepository extends JpaRepository<FlashcardEntity, UUID
 
     Optional<FlashcardEntity> findByIdAndUserId(UUID id, UUID userId);
 
+    List<FlashcardEntity> findByIdInAndUserId(List<UUID> ids, UUID userId);
+
     long deleteByIdAndUserId(UUID id, UUID userId);
 }
