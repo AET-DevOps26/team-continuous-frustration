@@ -10,7 +10,7 @@ import { getFlashcardById } from "@/api/flashcard";
 import { apiV1GenaiExplainPostApiV1GenaiExplainPost } from "@/api/genai";
 
 import { isAiGenerated } from "@/lib/utils"
-import { formatIntervalDays, previewNextIntervalDays } from "@/lib/spacedRepetition";
+import { previewNextDueLabel } from "@/lib/spacedRepetition";
 
 interface DueCard {
   flashcard: Flashcard;
@@ -262,7 +262,7 @@ export function StudySessionPage() {
                       >
                         {r.label}
                         <span className="mt-0.5 text-xs font-normal opacity-70">
-                          {currentRecord ? formatIntervalDays(previewNextIntervalDays(currentRecord, r.id)) : ""}
+                          {currentRecord ? previewNextDueLabel(currentRecord, r.id) : ""}
                         </span>
                       </button>
                     ))}

@@ -6,16 +6,17 @@ import type { StudyStatus } from "@/api/study";
 // values as the backend's STUDY_EASE_* env vars (see its README) to avoid drift.
 // The interval multipliers are fixed algorithm constants on the backend (not ease
 // factors), so they stay hardcoded here too.
-function readEaseEnv(value: string | undefined, fallback: number): number {
+function readNumberEnv(value: string | undefined, fallback: number): number {
   if (!value) return fallback;
   const parsed = Number(value);
   return Number.isNaN(parsed) ? fallback : parsed;
 }
 
-const MIN_EASE_FACTOR = readEaseEnv(import.meta.env.VITE_STUDY_EASE_MIN, 1.3);
-const AGAIN_EASE_PENALTY = readEaseEnv(import.meta.env.VITE_STUDY_EASE_AGAIN_PENALTY, 0.2);
-const HARD_EASE_PENALTY = readEaseEnv(import.meta.env.VITE_STUDY_EASE_HARD_PENALTY, 0.15);
-const EASY_EASE_BONUS = readEaseEnv(import.meta.env.VITE_STUDY_EASE_EASY_BONUS, 0.15);
+const MIN_EASE_FACTOR = readNumberEnv(import.meta.env.VITE_STUDY_EASE_MIN, 1.3);
+const AGAIN_EASE_PENALTY = readNumberEnv(import.meta.env.VITE_STUDY_EASE_AGAIN_PENALTY, 0.2);
+const HARD_EASE_PENALTY = readNumberEnv(import.meta.env.VITE_STUDY_EASE_HARD_PENALTY, 0.15);
+const EASY_EASE_BONUS = readNumberEnv(import.meta.env.VITE_STUDY_EASE_EASY_BONUS, 0.15);
+const HARD_FIRST_STEP_MINUTES = readNumberEnv(import.meta.env.VITE_STUDY_HARD_FIRST_STEP_MINUTES, 10);
 const HARD_INTERVAL_MULTIPLIER = 1.2;
 const EASY_INTERVAL_MULTIPLIER = 1.3;
 
@@ -61,4 +62,14 @@ export function formatIntervalDays(days: number): string {
   if (days <= 0) return "< 1 min";
   if (days === 1) return "1 day";
   return `${days} days`;
+}
+
+// A card that hasn't graduated past the reset state yet (interval_days <= 0) gets a
+// short learning-step retry on "Hard" instead of jumping straight to a full day —
+// mirrors StudyService.updateStatus's stillLearning handling for HARD.
+export function previewNextDueLabel(state: SchedulingState, rating: StudyStatus): string {
+  if (rating === "hard" && state.interval_days <= 0) {
+    return `${HARD_FIRST_STEP_MINUTES} min`;
+  }
+  return formatIntervalDays(previewNextIntervalDays(state, rating));
 }
