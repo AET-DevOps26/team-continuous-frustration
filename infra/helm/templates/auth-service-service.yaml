@@ -12,9 +12,5 @@ spec:
     - name: {{ .Values.authService.port | quote }}
       port: {{ .Values.authService.port }}
       targetPort: {{ .Values.authService.port }}
-    - name: {{ .Values.authService.port | quote }}
-      port: {{ .Values.authService.port }}
-      targetPort: {{ .Values.authService.port }}
   selector:
-    io.kompose.service: {{ .Values.authService.name }}
     io.kompose.service: {{ .Values.authService.name }}

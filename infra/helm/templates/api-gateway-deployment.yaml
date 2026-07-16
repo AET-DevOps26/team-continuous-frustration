@@ -36,6 +36,8 @@ spec:
                   key: JWT_SECRET
             - name: OTLP_TRACING_ENDPOINT
               value: {{ .Values.tracing.otlpEndpoint | quote }}
+            - name: STUDY_SERVICE_URL
+              value: http://{{ .Values.studyService.name }}:{{ .Values.studyService.port }}
             - name: TRACING_SAMPLING_PROBABILITY
               value: {{ .Values.tracing.samplingProbability | quote }}
             - name: UPLOAD_SERVICE_URL
