@@ -40,6 +40,12 @@ public class StudyController implements DefaultApi {
     }
 
     @Override
+    public ResponseEntity<Deck> getDeckById(String deckId) {
+        DeckEntity deck = deckService.requireDeck(deckId, currentUserId());
+        return ResponseEntity.ok(toDeck(deck));
+    }
+
+    @Override
     public ResponseEntity<Deck> createDeck(DeckCreateRequest request) {
         DeckEntity deck = deckService.createDeck(currentUserId(), request.getName(), request.getTags());
         return ResponseEntity.status(HttpStatus.CREATED).body(toDeck(deck));
@@ -105,7 +111,9 @@ public class StudyController implements DefaultApi {
         StudyDueDateRecord record = new StudyDueDateRecord(
                 entity.getDeckId().toString(),
                 entity.getFlashcardId(),
-                OffsetDateTime.ofInstant(entity.getDueAt(), ZoneOffset.UTC)
+                OffsetDateTime.ofInstant(entity.getDueAt(), ZoneOffset.UTC),
+                entity.getIntervalDays(),
+                entity.getEaseFactor()
         );
         if (entity.getUpdatedAt() != null) {
             record.setUpdatedAt(OffsetDateTime.ofInstant(entity.getUpdatedAt(), ZoneOffset.UTC));
