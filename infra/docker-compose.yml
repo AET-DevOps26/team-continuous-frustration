@@ -21,7 +21,7 @@ services:
       dockerfile: services/auth-service/Dockerfile
       target: dev
     ports:
-      - "${AUTH_SERVICE_PORT:-8031}:8081"
+      - "8081:8081"
     environment:
       SERVER_PORT: 8081
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/authdb
@@ -32,7 +32,7 @@ services:
       SESSION_EXPIRATION_MS: ${SESSION_EXPIRATION_MS:-31536000000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-local-placeholder}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-local-placeholder}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5273}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     volumes:
       - ../services/auth-service:/app/services/auth-service
       - ../api:/app/api
@@ -47,7 +47,7 @@ services:
       dockerfile: services/flashcard-service/Dockerfile
       target: dev
     ports:
-      - "${FLASHCARD_SERVICE_PORT:-8082}:8082"
+      - "8082:8082"
     environment:
       SERVER_PORT: 8082
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/flashcarddb
@@ -68,7 +68,7 @@ services:
       dockerfile: services/study-service/Dockerfile
       target: dev
     ports:
-      - "${STUDY_SERVICE_PORT:-8083}:8083"
+      - "8083:8083"
     environment:
       SERVER_PORT: 8083
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/studydb
@@ -95,7 +95,7 @@ services:
       dockerfile: Dockerfile
       target: service
     ports:
-      - "${GENAI_SERVICE_PORT:-8090}:8090"
+      - "8090:8090"
     environment:
       LOGOS_BASE_URL: ${LOGOS_BASE_URL:-https://logos.aet.cit.tum.de/v1}
       LOGOS_MODEL: ${LOGOS_MODEL:-openai/gpt-oss-120b}
@@ -119,7 +119,7 @@ services:
   weaviate:
     image: semitechnologies/weaviate:1.27.0
     ports:
-      - "8010:8080"
+      - "8080:8080"
       - "50051:50051"
     environment:
       QUERY_DEFAULTS_LIMIT: 25
@@ -141,12 +141,12 @@ services:
     volumes:
       - ollama_data:/root/.ollama
       - ./init-ollama/ollama.sh:/init-ollama/ollama.sh
-    entrypoint: ["/bin/sh", "/init-ollama/ollama.sh", "--pull-llm"]
+    entrypoint: ["/bin/sh", "/init-ollama/ollama.sh"]
 
   redis:
     image: redis:7-alpine
     ports:
-      - "${REDIS_PORT:-6380}:6379"
+      - "6379:6379"
     volumes:
       - redis_data:/data
 
@@ -178,7 +178,7 @@ services:
       dockerfile: services/api-gateway/Dockerfile
       target: dev
     ports:
-      - "${GATEWAY_PORT:-8088}:8080"
+      - "8088:8080"
     environment:
       AUTH_SERVICE_URL: http://auth-service:8081
       FLASHCARD_SERVICE_URL: http://flashcard-service:8082
@@ -186,7 +186,7 @@ services:
       GENAI_SERVICE_URL: http://genai-service:8090
       UPLOAD_SERVICE_URL: http://upload-service:8091
       JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-change-in-production-32c}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5273,http://localhost:${GATEWAY_PORT:-8088}}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8088}
       JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
     volumes:
       - ../services/api-gateway:/app/services/api-gateway
@@ -201,7 +201,7 @@ services:
       context: ../web-client
       target: dev
     ports:
-      - "5273:5173"
+      - "5173:5173"
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8088}
       VITE_STUDY_EASE_MIN: ${STUDY_EASE_MIN:-1.3}

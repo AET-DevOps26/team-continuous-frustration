@@ -68,8 +68,11 @@ all of the above can be safely re-enabled for a more complete picture
    available cluster-wide (same ones the `infra/helm` app chart uses) -
    confirm with your cluster admin if unsure, or adjust
    `ingress.ingressClassName` / `*.clusterIssuer` in `values.yaml`.
-3. Externally managed secrets (never commit these - created once via `kubectl`,
-   same convention as `app-secrets` in `infra/helm`):
+3. Externally managed secrets (never commit these). `.github/workflows/deploy_k8s.yaml`
+   creates/updates both from GitHub Actions secrets/vars (`GRAFANA_ADMIN_USER`,
+   `GRAFANA_ADMIN_PASSWORD`, `MONITORING_BASIC_AUTH_USERS`) before every
+   install. For a manual/local install, create them yourself, same convention
+   as `app-secrets` in `infra/helm`:
 
    ```bash
    # Grafana admin login

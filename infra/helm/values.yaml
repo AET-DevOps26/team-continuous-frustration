@@ -128,7 +128,7 @@ db:
   name: db
   image: postgres:16-alpine
   port: 5432
-  storageSize: 100Mi
+  storageSize: 500Mi
   authDb: authdb
   flashcardDb: flashcarddb
   uploadDb: uploaddocumentdb
@@ -145,7 +145,7 @@ redis:
   name: redis
   image: redis:7-alpine
   port: 6379
-  storageSize: 100Mi
+  storageSize: 200Mi
   resources:
     requests:
       cpu: 100m
@@ -159,7 +159,7 @@ weaviate:
   image: semitechnologies/weaviate:1.27.0
   port: 8080
   grpcPort: 50051
-  storageSize: 100Mi
+  storageSize: 500Mi
   queryDefaultsLimit: 25
   resources:
     requests:
@@ -174,7 +174,7 @@ ollama:
   image: ollama/ollama:0.30.8
   port: 11434
   pullLlm: false
-  storageSize: 1Gi
+  storageSize: 10Gi
   resources:
     requests:
       cpu: 100m

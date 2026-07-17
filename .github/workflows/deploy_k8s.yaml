@@ -37,6 +37,56 @@ jobs:
           install -m 600 /dev/null "$RUNNER_TEMP/kubeconfig"
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > "$RUNNER_TEMP/kubeconfig"
 
+      # app-secrets / grafana-admin-credentials / monitoring-basic-auth are
+      # externally managed (not templated by either Helm chart - see
+      # infra/helm/README.md and infra/helm-monitoring/README.md) and must
+      # exist before the corresponding `helm upgrade --install` runs.
+      # `--dry-run=client -o yaml | kubectl apply` makes this create-or-update
+      # so re-running the workflow on an already-provisioned cluster is safe.
+      - name: Create/update application secrets
+        env:
+          KUBECONFIG: ${{ runner.temp }}/kubeconfig
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          POSTGRES_USER: ${{ vars.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          LOGOS_API_KEY: ${{ secrets.LOGOS_API_KEY }}
+        run: |
+          kubectl create namespace team-continuous-frustration \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic app-secrets \
+            --namespace team-continuous-frustration \
+            --from-literal=JWT_SECRET="$JWT_SECRET" \
+            --from-literal=POSTGRES_USER="$POSTGRES_USER" \
+            --from-literal=POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+            --from-literal=GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
+            --from-literal=GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
+            --from-literal=LOGOS_API_KEY="$LOGOS_API_KEY" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create/update monitoring secrets
+        env:
+          KUBECONFIG: ${{ runner.temp }}/kubeconfig
+          GRAFANA_ADMIN_USER: ${{ vars.GRAFANA_ADMIN_USER }}
+          GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+          MONITORING_BASIC_AUTH_USERS: ${{ secrets.MONITORING_BASIC_AUTH_USERS }}
+        run: |
+          kubectl create namespace team-continuous-frustration-monitoring \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic grafana-admin-credentials \
+            --namespace team-continuous-frustration-monitoring \
+            --from-literal=admin-user="$GRAFANA_ADMIN_USER" \
+            --from-literal=admin-password="$GRAFANA_ADMIN_PASSWORD" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic monitoring-basic-auth \
+            --namespace team-continuous-frustration-monitoring \
+            --from-literal=auth="$MONITORING_BASIC_AUTH_USERS" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Deploy observability stack (infra/helm-monitoring)
         working-directory: infra/helm-monitoring
         env:
@@ -76,7 +126,7 @@ jobs:
           kubectl rollout status deployment/study-service -n team-continuous-frustration --timeout=120s
           kubectl rollout status deployment/genai-service -n team-continuous-frustration --timeout=120s
           kubectl rollout status deployment/upload-service -n team-continuous-frustration --timeout=120s
-          kubectl rollout status deployment/web-client -n team-continuous-frustration --timeout=120s
+          kubectl rollout status deployment/web-client -n team-continuous-frustration --timeout=240s
 
       - name: Clean up kubeconfig
         if: always()

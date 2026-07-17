@@ -10,7 +10,7 @@ traces — both locally and on the Azure VM. For architecture/service decomposit
 |---|---|---|
 | Metrics | **Prometheus** | Scrapes request rate/error/latency from every backend service |
 | Dashboards | **Grafana** | Visualizes Prometheus (metrics), Loki (logs), and Jaeger (traces) in one place |
-| Logs | **Loki** + **Promtail** | Aggregates every container's stdout/stderr, queryable by service |
+| Logs | **Loki** + **Promtail/Alloy** | Aggregates every container's stdout/stderr, queryable by service |
 | Traces | **Jaeger** (OpenTelemetry) | Connects one request across every service it touches |
 
 All 5 backend services are instrumented:

@@ -23,7 +23,9 @@ helm upgrade --install tcf . \
 ```
 
 The `app-secrets` Secret referenced by `secretName` is not managed by this
-chart and must be created separately in the target namespace before install.
+chart. `.github/workflows/deploy_k8s.yaml` creates/updates it from GitHub
+Actions secrets/vars before every install; for a manual/local install, create
+it yourself in the target namespace first.
 
 The app microservices' Services/Deployments carry `app: <name>` and
 `monitoring: "true"` labels so `infra/helm-monitoring`'s ServiceMonitors can
