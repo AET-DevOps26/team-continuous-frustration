@@ -28,3 +28,7 @@ skip = [
     '.venv', '_build', 'buck-out', 'build', 'dist', 'node_modules', 'venv',
 ]
 skip_gitignore = true
+
+[tool.ruff]
+# Generated OpenAPI code (apis/models) is not hand-maintained — don't lint it.
+extend-exclude = ["src/openapi_server/apis", "src/openapi_server/models"]

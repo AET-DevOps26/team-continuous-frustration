@@ -31,8 +31,8 @@ export function LoginPage() {
       );
       updateUser(res.data);
       navigate("/", { replace: true });
-    } catch (err: any) {
-      const code = err?.response?.data?.code;
+    } catch (err) {
+      const code = (err as { response?: { data?: { code?: string } } })?.response?.data?.code;
       if (code === "INVALID_CREDENTIALS") {
         setError("Invalid email or password.");
       } else {

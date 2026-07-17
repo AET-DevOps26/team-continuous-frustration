@@ -2,17 +2,15 @@
 
 import logging
 import os
-from typing import Optional, Tuple
 from collections.abc import AsyncIterable
 
-from fastapi import APIRouter, Body, HTTPException, Security, UploadFile, status
+from fastapi import APIRouter, Body, HTTPException
 from starlette.concurrency import iterate_in_threadpool, run_in_threadpool
 
 from openapi_server.models.extra_models import TokenModel  # noqa: F401
 from openapi_server.models.error import Error
 from openapi_server.models.explanation_response import ExplanationResponse
 from openapi_server.models.flashcard import Flashcard
-from openapi_server.security_api import get_token_bearerAuth
 
 from openapi_server.core.vector_store import upsert_markdown_to_weaviate
 from openapi_server.core.flashcard_pipeline import (
@@ -25,7 +23,9 @@ from upload_service_client import UploadServiceClientAPIs
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-UPLOAD_SERVICE_BASE_URL = os.getenv("UPLOAD_SERVICE_BASE_URL", "http://upload-service:8091")
+UPLOAD_SERVICE_BASE_URL = os.getenv(
+    "UPLOAD_SERVICE_BASE_URL", "http://upload-service:8091"
+)
 
 
 @router.get("/api/v1/genai/health", response_model=dict, tags=["default"])
@@ -58,7 +58,9 @@ async def api_v1_genai_generate_flashcards_post(
     client = UploadServiceClientAPIs(
         base_url=UPLOAD_SERVICE_BASE_URL, auth_token="your-api-token"
     )
-    markdown_text = await run_in_threadpool(client.documents_get_documents_upload_id_get, upload_id)
+    markdown_text = await run_in_threadpool(
+        client.documents_get_documents_upload_id_get, upload_id
+    )
 
     logger.debug("[generate] Upserting markdown to Weaviate")
     await run_in_threadpool(upsert_markdown_to_weaviate, upload_id, markdown_text)
@@ -92,4 +94,3 @@ async def api_v1_genai_explain_post(
     except Exception as e:
         logger.error("[explain] Failed to generate explanation: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
-

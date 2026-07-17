@@ -1,11 +1,24 @@
 name: Deploy Kubernetes
 
 on:
+  # Manual trigger (deploy any branch on demand).
   workflow_dispatch:
+  # Continuous Deployment: run automatically once images are (re)built on main.
+  # Chaining off "Build Docker Images" ensures the freshly built :latest images
+  # exist before we roll out.
+  workflow_run:
+    workflows: ["Build Docker Images"]
+    types:
+      - completed
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # For the automatic (workflow_run) trigger, only deploy when the build
+    # actually succeeded. Manual dispatches always run.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     environment:
       name: Kubernetes
       url: 'https://team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de'

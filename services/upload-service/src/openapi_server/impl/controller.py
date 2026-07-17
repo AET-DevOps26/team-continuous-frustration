@@ -3,13 +3,12 @@
 import datetime
 from typing import Optional, Tuple
 
-from fastapi import APIRouter, HTTPException, Security, UploadFile, status
+from fastapi import APIRouter, HTTPException, UploadFile, status
 from fastapi.responses import PlainTextResponse
 
 from openapi_server.models.extra_models import TokenModel  # noqa: F401
 from openapi_server.models.error import Error
 from openapi_server.models.upload_response import UploadResponse
-from openapi_server.security_api import get_token_bearerAuth
 from openapi_server.storage import (
     convert_to_markdown,
     store_markdown,
