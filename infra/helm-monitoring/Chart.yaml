@@ -1,7 +1,7 @@
 apiVersion: v2
 name: monitoring
 description: >
-  Observability stack (Prometheus, Alertmanager, Grafana, Loki, Promtail, Jaeger)
+  Observability stack (Prometheus, Alertmanager, Grafana, Loki, Alloy, Jaeger)
   for the team-continuous-frustration platform on Kubernetes.
 type: application
 version: 0.1.0
@@ -19,4 +19,7 @@ dependencies:
     repository: "https://prometheus-community.github.io/helm-charts"
   - name: loki-stack
     version: "2.10.3"
+    repository: "https://grafana.github.io/helm-charts"
+  - name: alloy
+    version: "1.10.1"
     repository: "https://grafana.github.io/helm-charts"

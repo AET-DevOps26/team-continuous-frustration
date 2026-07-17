@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: {{ .Values.studyService.name }}
+    app: {{ .Values.studyService.name }}
+    monitoring: "true"
+  name: {{ .Values.studyService.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+    - name: {{ .Values.studyService.port | quote }}
+      port: {{ .Values.studyService.port }}
+      targetPort: {{ .Values.studyService.port }}
+  selector:
+    io.kompose.service: {{ .Values.studyService.name }}

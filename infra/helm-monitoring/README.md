@@ -1,10 +1,11 @@
 # infra/helm-monitoring
 
 Observability stack for team-continuous-frustration on Kubernetes (Rancher):
-Prometheus + Alertmanager + Grafana (via `kube-prometheus-stack`), Loki +
-Promtail (via `loki-stack`), and a hand-rolled Jaeger all-in-one for tracing.
-Deployed into its own `team-continuous-frustration-monitoring` namespace,
-separate from the `team-continuous-frustration` app namespace.
+Prometheus + Alertmanager + Grafana (via `kube-prometheus-stack`), Loki (via
+`loki-stack`) with Grafana Alloy shipping logs to it, and a hand-rolled
+Jaeger all-in-one for tracing. Deployed into its own
+`team-continuous-frustration-monitoring` namespace, separate from the
+`team-continuous-frustration` app namespace.
 
 ## Cluster RBAC constraint (read this first)
 
@@ -42,12 +43,15 @@ create until the dry-run passed cleanly. As a result, this chart assumes:
 - `defaultRules.create` is `false` - the ~12 stock alert-rule groups assume
   cluster-wide kube-state-metrics/node-exporter data we don't have. Our own
   alerts live in `templates/prometheusrules.yaml`.
-- Promtail's default ClusterRole (needed for unrestricted Kubernetes pod
-  discovery) is replaced with namespaced Roles in the same two namespaces
-  (`templates/promtail-rbac.yaml`) plus a matching scrape config
-  (`loki-stack.promtail.config.snippets.scrapeConfigs` in `values.yaml`)
-  that restricts `kubernetes_sd_configs` to those namespaces instead of the
-  whole cluster.
+- Logs are shipped by Grafana Alloy rather than Promtail. Promtail tails
+  local files via hostPath, so it needs a DaemonSet (one pod per node) and a
+  cluster-wide ClusterRole for unrestricted pod discovery - neither of which
+  this account/quota can afford on a 28-node cluster (see the `loki-stack`
+  comment in `values.yaml`). Alloy's `loki.source.kubernetes` component
+  instead tails logs through the Kubernetes API, so it runs as a single
+  Deployment replica with namespaced Roles in our two namespaces
+  (`alloy.rbac.namespaces` in `values.yaml` - the chart creates these
+  natively, no custom RBAC template needed) instead of a ClusterRole.
 - Grafana's dashboard/datasource sidecar runs with `rbac.namespaced: true`
   (Role, not ClusterRole) since the dashboard ConfigMap lives in the same
   namespace as Grafana anyway.
@@ -97,8 +101,8 @@ ServiceMonitor discovery) and points the three Spring services'
 
 ```bash
 cd infra/helm
-helm upgrade --install team-continuous-frustration . \
-  --namespace tcf \
+helm upgrade --install tcf . \
+  --namespace team-continuous-frustration \
   --values values.yaml
 ```
 
@@ -111,7 +115,7 @@ helm upgrade --install team-continuous-frustration . \
 | `templates/servicemonitors.yaml` | one `ServiceMonitor` per app microservice, label-selected | 3, 4 |
 | `templates/prometheusrules.yaml` | `ServiceDown`, `PodRestartingTooMuch`, `HighErrorRate*`, `SlowResponseTime*` | 8 |
 | `templates/grafana-dashboards.yaml` + `dashboards/service-overview.json` | dashboard as code, auto-loaded via the Grafana sidecar | 5 |
-| `loki-stack` (Loki + Promtail) | log aggregation | **disabled** - see below, parity with docker-compose stack |
+| `loki-stack` (Loki) + `alloy` (log shipper) | log aggregation | parity with docker-compose stack |
 | `templates/jaeger.yaml` | distributed tracing (all-in-one, badger-persisted) | parity with docker-compose stack |
 | Ingress + `monitoring-basic-auth` on every UI | access control | 6 |
 | PVCs (Prometheus, Grafana, Jaeger) | data survives restarts | 2 |
@@ -135,6 +139,11 @@ helm upgrade --install team-continuous-frustration . \
   Slack-via-secret example is still in `values.yaml`, commented out.
 - Confirm the shared Prometheus Operator assumption above actually holds
   before treating this as production-ready monitoring.
+- **Alloy's API-based log tailing shifts cost onto the kubelets** instead of
+  this namespace's quota - pulling logs via the Kubernetes API is more
+  CPU/network-expensive per log line for the kubelet than local file tailing
+  would be. Negligible at this app's traffic volume, but worth knowing if
+  log volume grows a lot or the cluster admin flags kubelet load.
 - **One-time manual fix required for the Grafana `Recreate` strategy
   change**: earlier releases of this chart left `deploymentStrategy` empty,
   so Kubernetes defaulted `spec.strategy` on the live Deployment to

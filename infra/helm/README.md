@@ -9,24 +9,22 @@ Key values (see `values.yaml` for the full list):
 - `storageClassName` — storage class used by all PersistentVolumeClaims
 - `tracing.otlpEndpoint` / `tracing.samplingProbability` — OTLP trace export target for the Spring services, pointed at the Jaeger instance from `infra/helm-monitoring` by default
 - `ingress.host` / `ingress.tlsSecretName` / `ingress.clusterIssuer` — ingress/TLS settings
-- per-service blocks (`apiGateway`, `authService`, `flashcardService`, `genaiService`, `uploadService`, `webClient`, `db`, `redis`, `weaviate`, `ollama`) — replica counts, ports and resource requests/limits
+- per-service blocks (`apiGateway`, `authService`, `flashcardService`, `studyService`, `genaiService`, `uploadService`, `webClient`, `db`, `redis`, `weaviate`, `ollama`) — replica counts, ports and resource requests/limits
 
 Example usage:
 
 ```bash
-helm template team-continuous-frustration . \
+helm template tcf . \
   --namespace team-continuous-frustration \
   --values values.yaml
 
-helm upgrade --install team-continuous-frustration . \
+helm upgrade --install tcf . \
   --namespace team-continuous-frustration \
-  --set image.tag=sha-abc123 \
-  --set ingress.host=my-cluster.example.com
 ```
 
 The `app-secrets` Secret referenced by `secretName` is not managed by this
 chart and must be created separately in the target namespace before install.
 
-The five app microservices' Services/Deployments carry `app: <name>` and
+The app microservices' Services/Deployments carry `app: <name>` and
 `monitoring: "true"` labels so `infra/helm-monitoring`'s ServiceMonitors can
 discover them - keep both charts in sync if you rename or add a service.

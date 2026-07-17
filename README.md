@@ -101,7 +101,22 @@ ssh -i ./team-continuous-frustration_key.pem azureuser@68.210.146.30
 - Namespace: team-continuous-frustration
 - URL: https://team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de/
 
-### Run Helm deployment (upgrade current release)
+### Run Kubernetes CI
+
+1. Go to https://github.com/AET-DevOps26/team-continuous-frustration/actions/workflows/deploy_k8s.yaml
+2. Click on "Run workflow"
+3. Select branch to deploy
+4. Click on "Run workflow" to start the deployment action
+
+Deploys `infra/helm-monitoring` then `infra/helm` (both via `helm upgrade --install`) against the
+`stud` cluster, then restarts the app Deployments so they pick up freshly built `:latest` images.
+Requires a `KUBE_CONFIG` secret (base64-encoded kubeconfig for the `stud` cluster) under the
+repo's `Kubernetes` GitHub environment - the `app-secrets`, `grafana-admin-credentials` and
+`monitoring-basic-auth` Kubernetes Secrets referenced by both charts' `values.yaml` must already
+exist in-cluster (see `infra/helm/README.md` / `infra/helm-monitoring/README.md`); this workflow
+does not create them.
+
+### Run Helm deployment manually (upgrade current release)
 ```bash
 cd infra/helm
 helm upgrade tcf . --namespace team-continuous-frustration

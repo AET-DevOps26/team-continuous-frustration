@@ -12,9 +12,5 @@ spec:
     - name: {{ .Values.uploadService.port | quote }}
       port: {{ .Values.uploadService.port }}
       targetPort: {{ .Values.uploadService.port }}
-    - name: {{ .Values.uploadService.port | quote }}
-      port: {{ .Values.uploadService.port }}
-      targetPort: {{ .Values.uploadService.port }}
   selector:
-    io.kompose.service: {{ .Values.uploadService.name }}
     io.kompose.service: {{ .Values.uploadService.name }}

@@ -21,6 +21,9 @@ storageClassName: csi-rbd-sc
 # namespace, hence the fully-qualified in-cluster DNS name.
 tracing:
   otlpEndpoint: http://jaeger-query.team-continuous-frustration-monitoring.svc.cluster.local:4318/v1/traces
+  # gRPC OTLP endpoint (host:port, no scheme) for services using the
+  # grpc exporter (genai-service) instead of the http/protobuf one above.
+  otlpGrpcEndpoint: jaeger-query.team-continuous-frustration-monitoring.svc.cluster.local:4317
   samplingProbability: "1.0"
 
 ingress:
@@ -58,6 +61,24 @@ flashcardService:
   name: flashcard-service
   replicaCount: 1
   port: 8082
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+studyService:
+  name: study-service
+  replicaCount: 1
+  port: 8083
+  studyEaseDefault: "2.5"
+  studyEaseMin: "1.3"
+  studyEaseAgainPenalty: "0.20"
+  studyEaseHardPenalty: "0.15"
+  studyEaseEasyBonus: "0.15"
+  studyHardFirstStepMinutes: "10"
   resources:
     requests:
       cpu: 100m
@@ -111,6 +132,7 @@ db:
   authDb: authdb
   flashcardDb: flashcarddb
   uploadDb: uploaddocumentdb
+  studyDb: studydb
   resources:
     requests:
       cpu: 100m
