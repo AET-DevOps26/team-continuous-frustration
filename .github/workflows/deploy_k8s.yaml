@@ -126,7 +126,7 @@ jobs:
           kubectl rollout status deployment/study-service -n team-continuous-frustration --timeout=120s
           kubectl rollout status deployment/genai-service -n team-continuous-frustration --timeout=120s
           kubectl rollout status deployment/upload-service -n team-continuous-frustration --timeout=120s
-          kubectl rollout status deployment/web-client -n team-continuous-frustration --timeout=120s
+          kubectl rollout status deployment/web-client -n team-continuous-frustration --timeout=240s
 
       - name: Clean up kubeconfig
         if: always()
