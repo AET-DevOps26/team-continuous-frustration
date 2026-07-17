@@ -1,35 +1,47 @@
 {
   "id": "933502b9-c565-4931-9b08-0a0c492a5dd2",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "title": "Analysis Object Model",
   "type": "ClassDiagram",
   "nodes": [
     {
       "id": "user-1",
-      "width": 200,
-      "height": 110,
+      "width": 210,
+      "height": 200,
       "type": "class",
       "position": {
-        "x": -260,
-        "y": -40
+        "x": -335,
+        "y": -90
       },
       "data": {
         "name": "User",
         "methods": [],
         "attributes": [
           {
-            "id": "user-attr-2",
-            "name": "+ username: String"
+            "id": "c6e7545b-4e06-4348-8437-1cdff4521356",
+            "name": "id: UUID"
           },
           {
             "id": "user-attr-3",
-            "name": "+ email: String"
+            "name": "email: String"
+          },
+          {
+            "id": "user-attr-2",
+            "name": "username: String"
+          },
+          {
+            "id": "7a4f9c7c-6d63-4038-b66b-72167bb8e496",
+            "name": "password_hash: String"
+          },
+          {
+            "id": "576cd7ab-aaae-46b7-9b3e-9c952df2eed5",
+            "name": "google_id: String"
           }
         ]
       },
       "measured": {
-        "width": 200,
-        "height": 110
+        "width": 210,
+        "height": 200
       }
     },
     {
@@ -43,24 +55,23 @@
       },
       "data": {
         "name": "Deck",
-        "methods": [
-          {
-            "id": "deck-method-1",
-            "name": "+ addFlashcard()"
-          },
-          {
-            "id": "deck-method-2",
-            "name": "+ getDueFlashcards()"
-          }
-        ],
+        "methods": [],
         "attributes": [
           {
+            "id": "d43e44f2-9814-4dd4-b953-ea11331b05fb",
+            "name": "id: UUID"
+          },
+          {
             "id": "deck-attr-2",
-            "name": "+ name: String"
+            "name": "name: String"
+          },
+          {
+            "id": "99b4a26d-53dc-4f99-a56e-1bc0c5abc87d",
+            "name": "user_id: UUID"
           },
           {
             "id": "deck-attr-3",
-            "name": "+ createdAt: Date"
+            "name": "tags: String[]"
           }
         ]
       },
@@ -72,174 +83,79 @@
     {
       "id": "material-1",
       "width": 220,
-      "height": 190,
+      "height": 160,
       "type": "class",
       "position": {
-        "x": 370,
-        "y": -80
+        "x": 495,
+        "y": -90
       },
       "data": {
-        "name": "Material",
-        "methods": [
-          {
-            "id": "b9a0891c-a5f7-4003-8006-3f06b64886c1",
-            "name": "+ generateFlashCards()"
-          }
-        ],
+        "name": "Documents",
+        "methods": [],
         "attributes": [
           {
             "id": "material-attr-2",
-            "name": "+ fileName: String"
+            "name": "id: UUID"
           },
           {
             "id": "material-attr-4",
-            "name": "+ uploadDate: Date"
+            "name": "uploadDate: Date"
           },
           {
             "id": "material-attr-5",
-            "name": "+ contentType: String"
+            "name": "content: String"
           },
           {
             "id": "material-attr-6",
-            "name": "+ processedAt: Date"
+            "name": "date_uploaded: Date"
           }
         ]
       },
       "measured": {
         "width": 220,
-        "height": 190
+        "height": 160
       }
     },
     {
       "id": "flashcard-1",
       "width": 220,
-      "height": 280,
-      "type": "class",
-      "position": {
-        "x": 230,
-        "y": 380
-      },
-      "data": {
-        "name": "Flashcard",
-        "methods": [
-          {
-            "id": "baa1b8e9-e36a-475b-94b9-f51a6066686c",
-            "name": "+ requestAIExplanation()"
-          },
-          {
-            "id": "cc493238-5619-40fe-b2bc-fc2d1cc3ad76",
-            "name": "+ setNextReviewDate()"
-          },
-          {
-            "id": "flashcard-method-1",
-            "name": "+ gradeRecall()"
-          }
-        ],
-        "attributes": [
-          {
-            "id": "flashcard-attr-2",
-            "name": "+ question: String"
-          },
-          {
-            "id": "flashcard-attr-3",
-            "name": "+ answer: String"
-          },
-          {
-            "id": "flashcard-attr-4",
-            "name": "+ nextReviewDate: Date"
-          },
-          {
-            "id": "flashcard-attr-5",
-            "name": "+ tags: String[]"
-          },
-          {
-            "id": "flashcard-attr-6",
-            "name": "+ lastReviewedAt: Date"
-          }
-        ]
-      },
-      "measured": {
-        "width": 220,
-        "height": 280
-      }
-    },
-    {
-      "id": "reviewlog-1",
-      "width": 240,
-      "height": 160,
-      "type": "class",
-      "position": {
-        "x": 700,
-        "y": 110
-      },
-      "data": {
-        "name": "ReviewLog",
-        "methods": [],
-        "attributes": [
-          {
-            "id": "reviewlog-attr-2",
-            "name": "+ recallQuality: Int"
-          },
-          {
-            "id": "reviewlog-attr-3",
-            "name": "+ interval: Int"
-          },
-          {
-            "id": "reviewlog-attr-4",
-            "name": "+ nextReviewDate: Date"
-          },
-          {
-            "id": "reviewlog-attr-5",
-            "name": "+ reviewedAt: Date"
-          }
-        ]
-      },
-      "measured": {
-        "width": 240,
-        "height": 160
-      }
-    },
-    {
-      "id": "studysession-1",
-      "width": 220,
       "height": 250,
       "type": "class",
       "position": {
-        "x": -250,
-        "y": 380
+        "x": 495,
+        "y": 185
       },
       "data": {
-        "name": "StudySession",
-        "methods": [
-          {
-            "id": "studysession-method-1",
-            "name": "+ start()"
-          },
-          {
-            "id": "studysession-method-2",
-            "name": "+ end()"
-          },
-          {
-            "id": "studysession-method-3",
-            "name": "+ logAnswer()"
-          }
-        ],
+        "name": "Flashcard",
+        "methods": [],
         "attributes": [
           {
-            "id": "studysession-attr-2",
-            "name": "+ startedAt: Date"
+            "id": "3a09fc63-4b35-41b4-8a96-6b100f2185cc",
+            "name": "id: UUID"
           },
           {
-            "id": "studysession-attr-3",
-            "name": "+ endedAt: Date"
+            "id": "flashcard-attr-2",
+            "name": "question: String"
           },
           {
-            "id": "studysession-attr-4",
-            "name": "+ correctCount: Int"
+            "id": "flashcard-attr-3",
+            "name": "answer: String"
           },
           {
-            "id": "studysession-attr-5",
-            "name": "+ totalCount: Int"
+            "id": "d553518d-0196-4c4d-9f3d-7b6e649b1001",
+            "name": "source_ref: UUID"
+          },
+          {
+            "id": "7d19714b-0219-4142-af82-1d985aebc7f2",
+            "name": "source_name: String"
+          },
+          {
+            "id": "4fc350ac-beca-4985-ab3a-2d951ddb00bc",
+            "name": "last_updated: Date"
+          },
+          {
+            "id": "09d080fb-f66a-4584-9856-5b0599c56d71",
+            "name": "user_id: UUID"
           }
         ]
       },
@@ -250,11 +166,11 @@
     },
     {
       "id": "explanation-1",
-      "width": 200,
-      "height": 100,
+      "width": 220,
+      "height": 130,
       "type": "class",
       "position": {
-        "x": 600,
+        "x": 495,
         "y": 530
       },
       "data": {
@@ -263,17 +179,102 @@
         "attributes": [
           {
             "id": "explanation-attr-2",
-            "name": "+ content: String"
+            "name": "content: String"
           },
           {
             "id": "explanation-attr-3",
-            "name": "+ createdAt: Date"
+            "name": "last_updated: Date"
+          },
+          {
+            "id": "a55d582d-3dbd-4700-9696-1148f58cef71",
+            "name": "explanation_text: String"
           }
         ]
       },
       "measured": {
-        "width": 200,
-        "height": 100
+        "width": 220,
+        "height": 130
+      }
+    },
+    {
+      "id": "7a5f51cd-a323-4de0-b354-8808c1bc256b",
+      "width": 230,
+      "height": 190,
+      "type": "class",
+      "position": {
+        "x": 50,
+        "y": 215
+      },
+      "data": {
+        "name": "Deck Flashcard Record",
+        "methods": [],
+        "attributes": [
+          {
+            "id": "6b26417f-a459-40d7-a2c1-e74790291a1d",
+            "name": "deck_id: UUID"
+          },
+          {
+            "id": "67870491-3591-4859-9ad0-6e29a2989991",
+            "name": "flashcard_id: UUID"
+          },
+          {
+            "id": "b52e58fa-2519-42c7-ae6e-0f7ad6fbf2bc",
+            "name": "due_date: Date"
+          },
+          {
+            "id": "08ec7c0a-d004-41eb-a3b1-0646a2cdfbdb",
+            "name": "study_status: StudyStatus"
+          },
+          {
+            "id": "c5740eb4-bcf1-4118-86fc-d61869c47fce",
+            "name": "ease_factor: float"
+          }
+        ]
+      },
+      "measured": {
+        "width": 230,
+        "height": 190
+      }
+    },
+    {
+      "id": "c6df5bf9-08b6-4456-b3c6-c16f2a4258a0",
+      "width": 160,
+      "height": 200,
+      "type": "class",
+      "position": {
+        "x": 85,
+        "y": 530
+      },
+      "data": {
+        "name": "StudyStatus",
+        "stereotype": "enumeration",
+        "methods": [],
+        "attributes": [
+          {
+            "id": "b1f6d633-df04-44dd-8a30-acc22ee77cef",
+            "name": "again"
+          },
+          {
+            "id": "a80c3695-9bfb-4850-b878-cca3059a60af",
+            "name": "hard"
+          },
+          {
+            "id": "82ca0831-465b-4599-80f5-35b0774f1928",
+            "name": "medium"
+          },
+          {
+            "id": "5d13cd5a-a173-4475-b7b9-b46261636489",
+            "name": "easy"
+          },
+          {
+            "id": "08c12218-e1b7-4321-a90f-a2bdddc2f83d",
+            "name": "new"
+          }
+        ]
+      },
+      "measured": {
+        "width": 160,
+        "height": 200
       }
     }
   ],
@@ -292,58 +293,6 @@
       }
     },
     {
-      "id": "edge-deck-material",
-      "source": "deck-1",
-      "target": "material-1",
-      "type": "ClassBidirectional",
-      "sourceHandle": "right",
-      "targetHandle": "left",
-      "data": {
-        "sourceMultiplicity": "1",
-        "targetMultiplicity": "*",
-        "points": []
-      }
-    },
-    {
-      "id": "edge-deck-flashcard",
-      "source": "deck-1",
-      "target": "flashcard-1",
-      "type": "ClassBidirectional",
-      "sourceHandle": "bottom",
-      "targetHandle": "left",
-      "data": {
-        "sourceMultiplicity": "1",
-        "targetMultiplicity": "*",
-        "points": []
-      }
-    },
-    {
-      "id": "edge-flashcard-reviewlog",
-      "source": "flashcard-1",
-      "target": "reviewlog-1",
-      "type": "ClassBidirectional",
-      "sourceHandle": "right",
-      "targetHandle": "left",
-      "data": {
-        "sourceMultiplicity": "1",
-        "targetMultiplicity": "*",
-        "points": []
-      }
-    },
-    {
-      "id": "edge-user-reviewlog",
-      "source": "user-1",
-      "target": "reviewlog-1",
-      "type": "ClassBidirectional",
-      "sourceHandle": "bottom",
-      "targetHandle": "left",
-      "data": {
-        "sourceMultiplicity": "1",
-        "targetMultiplicity": "*",
-        "points": []
-      }
-    },
-    {
       "id": "edge-material-flashcard",
       "source": "material-1",
       "target": "flashcard-1",
@@ -351,47 +300,8 @@
       "sourceHandle": "bottom",
       "targetHandle": "top",
       "data": {
-        "sourceMultiplicity": "1",
-        "targetMultiplicity": "*",
-        "points": []
-      }
-    },
-    {
-      "id": "edge-user-studysession",
-      "source": "user-1",
-      "target": "studysession-1",
-      "type": "ClassBidirectional",
-      "sourceHandle": "bottom",
-      "targetHandle": "top",
-      "data": {
-        "sourceMultiplicity": "1",
-        "targetMultiplicity": "*",
-        "points": []
-      }
-    },
-    {
-      "id": "edge-deck-studysession",
-      "source": "deck-1",
-      "target": "studysession-1",
-      "type": "ClassBidirectional",
-      "sourceHandle": "bottom",
-      "targetHandle": "top",
-      "data": {
-        "sourceMultiplicity": "1",
-        "targetMultiplicity": "*",
-        "points": []
-      }
-    },
-    {
-      "id": "edge-studysession-flashcard",
-      "source": "studysession-1",
-      "target": "flashcard-1",
-      "type": "ClassBidirectional",
-      "sourceHandle": "right",
-      "targetHandle": "left",
-      "data": {
-        "sourceMultiplicity": "*",
-        "targetMultiplicity": "*",
+        "sourceMultiplicity": "0..1",
+        "targetMultiplicity": "1..*",
         "points": []
       }
     },
@@ -399,12 +309,53 @@
       "id": "d711e7d3-79ff-4179-ae67-7851099a8bac",
       "source": "flashcard-1",
       "target": "explanation-1",
-      "type": "ClassUnidirectional",
+      "type": "ClassBidirectional",
       "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "data": {
+        "sourceMultiplicity": "1",
+        "targetMultiplicity": "0..1",
+        "points": [],
+        "targetAnchor": {
+          "side": "top",
+          "ratio": 0.5
+        }
+      }
+    },
+    {
+      "id": "d0c35015-fa06-4d03-bae3-4815e6a0ae12",
+      "source": "deck-1",
+      "target": "7a5f51cd-a323-4de0-b354-8808c1bc256b",
+      "type": "ClassBidirectional",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "data": {
+        "sourceMultiplicity": "1",
+        "targetMultiplicity": "1",
+        "points": []
+      }
+    },
+    {
+      "id": "ba8c2c95-e543-4686-9e91-43df0df42c2a",
+      "source": "7a5f51cd-a323-4de0-b354-8808c1bc256b",
+      "target": "flashcard-1",
+      "type": "ClassBidirectional",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "data": {
+        "sourceMultiplicity": "1",
+        "targetMultiplicity": "1",
+        "points": []
+      }
+    },
+    {
+      "id": "a6b7e9b4-0aaf-4efc-b796-096d494f9770",
+      "source": "c6df5bf9-08b6-4456-b3c6-c16f2a4258a0",
+      "target": "7a5f51cd-a323-4de0-b354-8808c1bc256b",
+      "type": "ClassBidirectional",
+      "sourceHandle": "top",
       "targetHandle": "bottom",
       "data": {
-        "sourceMultiplicity": "0..1",
-        "targetMultiplicity": "1",
         "points": []
       }
     }
