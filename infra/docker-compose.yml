@@ -146,7 +146,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "${REDIS_PORT:-6380}:6379"
+      - "6379:6379"
     volumes:
       - redis_data:/data
 

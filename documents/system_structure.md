@@ -66,7 +66,7 @@ This section summarizes the deployed services, their container ports, and the HT
 | Upload Service | 8091 | 8091 | `/api/v1/documents` | Document upload, health, retrieval |
 | Weaviate | 8080 / 50051 | 8080 / 50051 | — | Vector DB, internal only in prod |
 | Ollama | 11434 | 11434 | — | Local LLM runtime, internal only in prod |
-| Redis | 6379 | 6380 (mapped) | — | GenAI cache, internal only in prod |
+| Redis | 6379 | 6379 | — | GenAI cache, internal only in prod |
 | Postgres | 5432 | 5432 | — | Shared instance, one DB per service |
 | Reverse Proxy (Traefik) | 80/443 | — | `/` | Deployed environment only; TLS + routing to gateway/web-client/monitoring |
 | Prometheus | 9090 | 9090 | — | Metrics |
