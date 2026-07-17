@@ -21,9 +21,7 @@ spec:
         - command:
             - /bin/sh
             - /ollama.sh
-            {{- if .Values.ollama.pullLlm }}
             - --pull-llm
-            {{- end }}
           image: {{ .Values.ollama.image }}
           name: {{ .Values.ollama.name }}
           ports:
