@@ -8,6 +8,7 @@ import com.devops.studyservice.model.StudyStatus;
 import com.devops.studyservice.repository.StudyRecordRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -106,6 +107,7 @@ public class StudyService {
         return studyRecordRepository.save(record);
     }
 
+    @Transactional
     public void deleteRecord(DeckEntity deck, String flashcardId) {
         StudyRecordEntity record = findRecord(deck, flashcardId);
         studyRecordRepository.delete(record);

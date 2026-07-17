@@ -10,7 +10,7 @@ from markitdown import MarkItDown
 from fastapi import HTTPException, status
 
 
-ALLOWED_EXTENSIONS = {".pdf", ".txt", ".md", ".docx", "pptx"}
+ALLOWED_EXTENSIONS = {".pdf", ".txt", ".md", ".docx", ".pptx"}
 POSTGRES_USER = os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 POSTGRES_DB = os.getenv("POSTGRES_DB", "uploaddocumentdb")
