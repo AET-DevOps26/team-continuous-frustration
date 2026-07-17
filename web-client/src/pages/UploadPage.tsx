@@ -131,7 +131,7 @@ export function UploadPage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.ppt,.pptx,.docx"
+              accept=".pdf,.pptx,.docx,"
               className="hidden"
               onChange={handleFileChange}
             />

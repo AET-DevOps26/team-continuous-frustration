@@ -11,6 +11,7 @@ from openapi_server.storage import validate_extension
     ("slides.pdf", ".pdf"),
     ("report.DOCX", ".docx"),
     ("readme.md", ".md"),
+    ("presentation.pptx", ".pptx"),
 ])
 def test_allowed_extensions_are_returned_lowercased(filename, expected):
     assert validate_extension(filename) == expected
