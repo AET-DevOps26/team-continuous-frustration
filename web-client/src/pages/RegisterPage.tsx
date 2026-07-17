@@ -44,8 +44,8 @@ export function RegisterPage() {
       const { id, email: e, username: u } = res.data;
       if (id && e && u) updateUser({ id, email: e, username: u });
       navigate("/", { replace: true });
-    } catch (err: any) {
-      const code = err?.response?.data?.code;
+    } catch (err) {
+      const code = (err as { response?: { data?: { code?: string } } })?.response?.data?.code;
       if (code === "EMAIL_ALREADY_EXISTS") {
         setError("An account with this email already exists.");
       } else if (code === "USERNAME_ALREADY_EXISTS") {

@@ -78,7 +78,7 @@ Grafana's own login on top) and one-time GitHub secrets setup, and troubleshooti
 - SSH user: `azureuser`
 - Client URL: https://68.210.146.30.nip.io
 
-### Run Azure CI 
+### Run Azure CI
 
 1. Go to https://github.com/AET-DevOps26/team-continuous-frustration/actions/workflows/deploy_azure.yaml
 2. Click on "Run workflow"
@@ -148,6 +148,29 @@ The following endooints are available through the API Gateway:
 | `/api/v1/genai/generate-flashcards` | POST | Generate flashcards from an uploaded document |
 
 
-When running locally Swagger UI will be available at 
-- `http://localhost:8090/docs`
-- `http://localhost:8091/docs`
+### API documentation (Swagger UI)
+
+Every service exposes interactive API docs when running locally:
+
+| Service | Swagger UI | OpenAPI JSON |
+|---|---|---|
+| auth-service | `http://localhost:8081/swagger-ui.html` | `/v3/api-docs` |
+| flashcard-service | `http://localhost:8082/swagger-ui.html` | `/v3/api-docs` |
+| study-service | `http://localhost:8083/swagger-ui.html` | `/v3/api-docs` |
+| genai-service | `http://localhost:8090/docs` | `/openapi.json` |
+| upload-service | `http://localhost:8091/docs` | `/openapi.json` |
+
+The Spring services generate their docs from the live controllers via **springdoc-openapi**;
+the Python services expose FastAPI's built-in Swagger UI. The hand-written OpenAPI
+contracts (the single source of truth) live in [`api/`](api/).
+
+## Architecture Diagrams
+
+UML-style diagrams are in [`documents/diagrams/`](documents/diagrams/):
+
+- **Subsystem Decomposition** — [documents/diagrams/Subsystem Decomposition.md](documents/diagrams/Subsystem%20Decomposition.md)
+- **Use Case Diagram** — `documents/diagrams/Use Case Diagram.pdf`
+- **Analysis Object Model** — `documents/diagrams/Analysis Object Model.png`
+- **Component Diagram** — `documents/diagrams/Component Diagram v1.png`
+
+A written architecture overview is in [documents/system_structure.md](documents/system_structure.md).
