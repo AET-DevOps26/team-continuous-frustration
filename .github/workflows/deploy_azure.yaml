@@ -37,7 +37,7 @@ jobs:
       - name: Generate Ansible extra-vars file
         run: |
           install -m 600 /dev/null "$RUNNER_TEMP/vars.yml"
-          cat > "$RUNNER_TEMP/vars.yml" <<EOF
+          cat > "$RUNNER_TEMP/vars.yml" <<'EOF'
           azure_public_ip: "${{ vars.AZURE_PUBLIC_IP }}"
           github_actor: "${{ github.actor }}"
           github_token: "${{ secrets.GITHUB_TOKEN }}"
