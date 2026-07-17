@@ -32,7 +32,7 @@ services:
       SESSION_EXPIRATION_MS: ${SESSION_EXPIRATION_MS:-31536000000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-local-placeholder}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-local-placeholder}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5273}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     volumes:
       - ../services/auth-service:/app/services/auth-service
       - ../api:/app/api
@@ -186,7 +186,7 @@ services:
       GENAI_SERVICE_URL: http://genai-service:8090
       UPLOAD_SERVICE_URL: http://upload-service:8091
       JWT_SECRET: ${JWT_SECRET:-local-dev-jwt-secret-change-in-production-32c}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5273,http://localhost:${GATEWAY_PORT:-8088}}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8088}
       JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
     volumes:
       - ../services/api-gateway:/app/services/api-gateway
