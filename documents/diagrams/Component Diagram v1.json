@@ -1,25 +1,25 @@
 {
   "id": "46d2ec95-024d-4e9f-b1f6-7db3e8f0ae5d",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "title": "Component Diagram v1",
   "type": "ComponentDiagram",
   "nodes": [
     {
       "id": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
-      "width": 780,
-      "height": 750,
+      "width": 785,
+      "height": 595,
       "type": "componentSubsystem",
       "position": {
         "x": -300,
-        "y": 10
+        "y": 165
       },
       "data": {
         "name": "Backend",
         "isComponentSubsystemHeaderShown": true
       },
       "measured": {
-        "width": 780,
-        "height": 750
+        "width": 785,
+        "height": 595
       }
     },
     {
@@ -28,8 +28,8 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 360,
-        "y": 410
+        "x": 295,
+        "y": 255
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
@@ -83,8 +83,8 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 360,
-        "y": 260
+        "x": 295,
+        "y": 105
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
@@ -121,8 +121,8 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 360,
-        "y": 560
+        "x": 295,
+        "y": 405
       },
       "parentId": "6c36d204-7e41-4de3-9b4a-b6f04eb4e5f6",
       "data": {
@@ -157,10 +157,9 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 100,
-        "y": 125
+        "x": -435,
+        "y": -505
       },
-      "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
       "data": {
         "name": "REST API"
       },
@@ -176,7 +175,7 @@
       "type": "component",
       "position": {
         "x": 90,
-        "y": 80
+        "y": 75
       },
       "parentId": "7badfec6-3865-4e47-9b8c-23f53ca128a5",
       "data": {
@@ -198,7 +197,7 @@
         "y": 310
       },
       "data": {
-        "name": "SQL"
+        "name": "PostgreSQL"
       },
       "measured": {
         "width": 30,
@@ -211,11 +210,11 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": -100,
-        "y": -50
+        "x": -440,
+        "y": -195
       },
       "data": {
-        "name": ""
+        "name": "REST API"
       },
       "measured": {
         "width": 30,
@@ -246,7 +245,7 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": -1170,
+        "x": -1105,
         "y": -20
       },
       "data": {
@@ -263,11 +262,11 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 550,
-        "y": -310
+        "x": 560,
+        "y": -350
       },
       "data": {
-        "name": "gRPC"
+        "name": "Weaviate"
       },
       "measured": {
         "width": 30,
@@ -280,7 +279,7 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 235,
+        "x": 285,
         "y": 80
       },
       "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
@@ -337,7 +336,7 @@
         "y": 460
       },
       "data": {
-        "name": "SQL"
+        "name": "PostgreSQL"
       },
       "measured": {
         "width": 30,
@@ -354,7 +353,7 @@
         "y": 610
       },
       "data": {
-        "name": "SQL"
+        "name": "PostgreSQL"
       },
       "measured": {
         "width": 30,
@@ -367,8 +366,8 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 665,
-        "y": -560
+        "x": 870,
+        "y": -475
       },
       "data": {
         "name": "Vector DB",
@@ -389,7 +388,7 @@
         "y": 260
       },
       "data": {
-        "name": "Deck/ Flashcard DB",
+        "name": "Flashcard DB",
         "isComponentHeaderShown": true
       },
       "measured": {
@@ -425,7 +424,7 @@
         "y": 580
       },
       "data": {
-        "name": "Study Session DB",
+        "name": "Study DB",
         "isComponentHeaderShown": true
       },
       "measured": {
@@ -439,8 +438,8 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 990,
-        "y": -210
+        "x": 875,
+        "y": -130
       },
       "data": {
         "name": "Ollama",
@@ -457,8 +456,8 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 990,
-        "y": -35
+        "x": 875,
+        "y": 10
       },
       "data": {
         "name": "Logos",
@@ -475,11 +474,11 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 805,
-        "y": -175
+        "x": 565,
+        "y": -235
       },
       "data": {
-        "name": "Interface"
+        "name": "Redis"
       },
       "measured": {
         "width": 30,
@@ -492,11 +491,11 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 815,
-        "y": 0
+        "x": 560,
+        "y": 50
       },
       "data": {
-        "name": "Interface"
+        "name": "OpenAI compatible LLM"
       },
       "measured": {
         "width": 30,
@@ -509,12 +508,11 @@
       "height": 120,
       "type": "component",
       "position": {
-        "x": 580,
-        "y": 75
+        "x": 865,
+        "y": -665
       },
-      "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
       "data": {
-        "name": "File Storage",
+        "name": "File Upload DB",
         "isComponentHeaderShown": true
       },
       "measured": {
@@ -528,16 +526,33 @@
       "height": 30,
       "type": "componentInterface",
       "position": {
-        "x": 475,
-        "y": 120
+        "x": 560,
+        "y": -505
       },
-      "parentId": "6da73d7e-46c9-47c3-a26e-797933ff4fcc",
       "data": {
-        "name": ""
+        "name": "PostgreSQL"
       },
       "measured": {
         "width": 30,
         "height": 30
+      }
+    },
+    {
+      "id": "76011587-0bc1-4516-aac8-0b695ec47156",
+      "width": 180,
+      "height": 120,
+      "type": "component",
+      "position": {
+        "x": 875,
+        "y": -280
+      },
+      "data": {
+        "name": "Explanation cache",
+        "isComponentHeaderShown": true
+      },
+      "measured": {
+        "width": 180,
+        "height": 120
       }
     }
   ],
@@ -664,17 +679,6 @@
       }
     },
     {
-      "id": "78462b1d-2da5-4077-a24f-58d8da29f29b",
-      "source": "28b813bb-65d3-4b48-8700-f86d0094f74a",
-      "target": "e2227943-4103-4ed8-9eb0-4adfe53a3817",
-      "type": "ComponentRequiredInterface",
-      "sourceHandle": "top",
-      "targetHandle": "bottom",
-      "data": {
-        "points": []
-      }
-    },
-    {
       "id": "2db85e1b-bbfc-4d63-a33d-d0ab5b9b6978",
       "source": "4069a21b-95b3-4c0e-9e5e-310165c5b498",
       "target": "86bd08a0-2be9-4b42-91e2-9c13b689f87e",
@@ -703,17 +707,6 @@
       "type": "ComponentRequiredInterface",
       "sourceHandle": "right",
       "targetHandle": "left",
-      "data": {
-        "points": []
-      }
-    },
-    {
-      "id": "e0c28887-50a0-4f3c-9f93-6994b176699e",
-      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
-      "target": "e2227943-4103-4ed8-9eb0-4adfe53a3817",
-      "type": "ComponentProvidedInterface",
-      "sourceHandle": "left",
-      "targetHandle": "top",
       "data": {
         "points": []
       }
@@ -829,28 +822,6 @@
       }
     },
     {
-      "id": "1f2e4e63-9385-4d0c-84f1-ea7e82936420",
-      "source": "0fd19c39-92d8-4473-9707-3f2baf26544f",
-      "target": "903e2d59-ab93-4b88-9f0d-81bdbbb7bf06",
-      "type": "ComponentProvidedInterface",
-      "sourceHandle": "left",
-      "targetHandle": "right",
-      "data": {
-        "points": []
-      }
-    },
-    {
-      "id": "67071a6b-e53e-4631-9520-d9c6846669a9",
-      "source": "68e8b989-aa6d-4b86-9ec5-5f2fe6ba6769",
-      "target": "903e2d59-ab93-4b88-9f0d-81bdbbb7bf06",
-      "type": "ComponentRequiredInterface",
-      "sourceHandle": "bottom",
-      "targetHandle": "top",
-      "data": {
-        "points": []
-      }
-    },
-    {
       "id": "71c6ea78-1512-4b14-9f8f-e0e25a761019",
       "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
       "target": "903e2d59-ab93-4b88-9f0d-81bdbbb7bf06",
@@ -864,16 +835,8 @@
             "y": -220
           },
           {
-            "x": 488,
+            "x": 560,
             "y": -220
-          },
-          {
-            "x": 488,
-            "y": -160
-          },
-          {
-            "x": 800,
-            "y": -160
           }
         ]
       }
@@ -905,21 +868,14 @@
       "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
       "target": "2a46997d-01e2-4cf2-9249-4da5354c3c84",
       "type": "ComponentRequiredInterface",
-      "sourceHandle": "right-bottom",
+      "sourceHandle": "bottom",
       "targetHandle": "left",
       "data": {
-        "points": []
-      }
-    },
-    {
-      "id": "6f393776-dbe2-4182-9a6a-a466ccaacec9",
-      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
-      "target": "daceeb67-ac52-49f9-b78e-b64835d361a0",
-      "type": "ComponentRequiredInterface",
-      "sourceHandle": "top",
-      "targetHandle": "bottom",
-      "data": {
-        "points": []
+        "points": [],
+        "sourceAnchor": {
+          "side": "bottom",
+          "ratio": 0.5
+        }
       }
     },
     {
@@ -930,18 +886,24 @@
       "sourceHandle": "right",
       "targetHandle": "left",
       "data": {
-        "points": []
-      }
-    },
-    {
-      "id": "5cfb0730-9f54-4ecd-8781-ab420b875ec3",
-      "source": "ed1cc51c-2ada-49fe-95e6-2b5b6444e052",
-      "target": "07c615f1-247b-4159-8b58-bd1d85c1e9e8",
-      "type": "ComponentRequiredInterface",
-      "sourceHandle": "right",
-      "targetHandle": "left",
-      "data": {
-        "points": []
+        "points": [
+          {
+            "x": -714,
+            "y": -5
+          },
+          {
+            "x": -595,
+            "y": -5
+          },
+          {
+            "x": -595,
+            "y": -490
+          },
+          {
+            "x": -440,
+            "y": -490
+          }
+        ]
       }
     },
     {
@@ -953,6 +915,82 @@
       "targetHandle": "left",
       "data": {
         "points": []
+      }
+    },
+    {
+      "id": "f6a905bd-346e-4cb6-910f-fe10feb41fc9",
+      "source": "ed1cc51c-2ada-49fe-95e6-2b5b6444e052",
+      "target": "07c615f1-247b-4159-8b58-bd1d85c1e9e8",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "78b754f3-db30-4aeb-b09e-03bb760184d0",
+      "source": "0fd19c39-92d8-4473-9707-3f2baf26544f",
+      "target": "2a46997d-01e2-4cf2-9249-4da5354c3c84",
+      "type": "ComponentProvidedInterface",
+      "sourceHandle": "left",
+      "targetHandle": "top",
+      "data": {
+        "sourceAnchor": {
+          "side": "left",
+          "ratio": 0.5416666666666666
+        },
+        "points": []
+      }
+    },
+    {
+      "id": "48900f11-16be-4024-893a-b7e64f62777b",
+      "source": "76011587-0bc1-4516-aac8-0b695ec47156",
+      "target": "903e2d59-ab93-4b88-9f0d-81bdbbb7bf06",
+      "type": "ComponentProvidedInterface",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "0b82260d-d2fa-4f98-90e2-039999f31055",
+      "source": "9ed67377-801c-4d5a-abfc-2a6d52ab5472",
+      "target": "e2227943-4103-4ed8-9eb0-4adfe53a3817",
+      "type": "ComponentProvidedInterface",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "data": {
+        "points": []
+      }
+    },
+    {
+      "id": "a8fd61a8-1649-4e2e-b50c-9ac408b7a126",
+      "source": "3fcd994f-fc7a-4d86-a9be-ea4027f30b60",
+      "target": "e2227943-4103-4ed8-9eb0-4adfe53a3817",
+      "type": "ComponentRequiredInterface",
+      "sourceHandle": "right-between-mid-top-center",
+      "targetHandle": "left",
+      "data": {
+        "points": [
+          {
+            "x": -714,
+            "y": -5
+          },
+          {
+            "x": -595,
+            "y": -5
+          },
+          {
+            "x": -595,
+            "y": -180
+          },
+          {
+            "x": -445,
+            "y": -180
+          }
+        ]
       }
     }
   ],
