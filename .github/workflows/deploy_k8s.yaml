@@ -15,7 +15,6 @@ on:
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     # For the automatic (workflow_run) trigger, only deploy when the build
     # actually succeeded. Manual dispatches always run.
