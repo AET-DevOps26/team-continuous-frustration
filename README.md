@@ -9,36 +9,24 @@ Repository for team Continuous Frustration
 | Khalil Hkiri | Server / Backend |
 | Siyao Zhou (dropped out) | Client / Frontend |
 
-## Enable Pre-commit Hook
-
-From repository root, install and enable pre-commit:
-
-1. `pip install -r requirements-dev.txt`
-2. `pre-commit install`
-
-
 ## Starting All Services
 
-From the `infra/` directory, a single command starts everything (PostgreSQL, auth-service, flashcard-service, genai-service, web-client):
-# Important: Add *LOGOS_API_KEY* in `docker-compose.yaml` as ENV of the genai-service. Otherwise the GenAI service will not work as expected!
+Local setup:
 
 ```bash
 cd infra
+cp .env.example .env
+```
+
+**Important: Add *LOGOS_API_KEY* in your local `.env`. Otherwise the GenAI service will not work as expected!**
+
+From the `infra/` directory, then run docker compose to start everything (PostgreSQL, auth-service, flashcard-service, genai-service, web-client, ...)
+
+```bash
 docker compose up --build
 ```
 
-| Service | Port |
-|---|---|
-| API Gateway | 8080 |
-| Auth service | 8081 |
-| Flashcard service | 8082 |
-| GenAI service | 8090 |
-| Upload service | 8091 |
-| Web client | 5173 |
-| Prometheus | 9090 |
-| Grafana | 3001 |
-| Jaeger UI | 16686 |
-| Loki | 3100 |
+- Note: In the local setup, Google login is unavailable, and the local fallback LLM model is disabled by default so that a 7 GB model doesn't need to be pulled on app start.
 
 To stop all services:
 
@@ -51,6 +39,21 @@ To also remove the database volume (full reset):
 ```bash
 docker compose down -v
 ```
+
+# Service Overview
+| Service | Port |
+|---|---|
+| API Gateway | 8080 |
+| Auth service | 8081 |
+| Flashcard service | 8082 |
+| Study service | 8083 |
+| GenAI service | 8090 |
+| Upload service | 8091 |
+| Web client | 5173 |
+| Prometheus | 9090 |
+| Grafana | 3001 |
+| Jaeger UI | 16686 |
+| Loki | 3100 |
 
 ---
 
@@ -76,7 +79,8 @@ Grafana's own login on top) and one-time GitHub secrets setup, and troubleshooti
 - VM name: `team-continuous-frustration`
 - Public IP address: `68.210.146.30`
 - SSH user: `azureuser`
-- Client URL: https://68.210.146.30.nip.io
+- Client URL: https://68.210.146.30.nip.io/
+- Grafana URL: https://grafana.68.210.146.30.nip.io/ (`admin`/`admin`) 
 
 ### Run Azure CI
 
@@ -99,7 +103,8 @@ ssh -i ./team-continuous-frustration_key.pem azureuser@68.210.146.30
 
 - Cluster: stud
 - Namespace: team-continuous-frustration
-- URL: https://team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de/
+- Client URL: https://team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de/
+- Grafana URL: https://grafana.team-continuous-frustration-devops-ss26.stud.k8s.aet.cit.tum.de/ (`admin`/`admin`) 
 
 ### Run Kubernetes CI
 
@@ -174,3 +179,12 @@ UML-style diagrams are in [`documents/diagrams/`](documents/diagrams/):
 - **Component Diagram** — `documents/diagrams/Component Diagram v1.png`
 
 A written architecture overview is in [documents/system_structure.md](documents/system_structure.md).
+
+repo's `Kubernetes` GitHub environment.
+
+## Enable Pre-commit Hook
+
+From repository root, install and enable pre-commit:
+
+1. `pip install -r requirements-dev.txt`
+2. `pre-commit install`
