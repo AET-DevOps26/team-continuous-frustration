@@ -90,3 +90,25 @@ These diagrams capture the user interactions, domain model, and component-level 
 4. Generated flashcards are persisted via `flashcard-service`, and organized into decks via `study-service`.
 5. Study sessions are driven by `study-service`, which tracks per-flashcard study status and schedules reviews (spaced-repetition parameters configurable via `STUDY_EASE_*` env vars).
 6. Users can request AI explanations, produced by `genai-service` and returned through the gateway.
+
+## 8. AI component
+
+The `genai-service` (Python/LangChain) talks to LLMs through an OpenAI-compatible
+`/v1/chat/completions` interface, with two backends:
+
+- **Logos API (default)** — TUM-hosted, using the `openai/gpt-oss-120b` model
+  (`LOGOS_BASE_URL`, `LOGOS_MODEL`, `LOGOS_API_KEY`).
+- **Ollama (local fallback)** — a self-hosted `ollama` container running the
+  `qwen3:0.6b` model (`LLM_BASE_URL`, `LLM_MODEL`). Qwen3 0.6B was chosen because of
+  the memory constraints on the Azure VM and the Kubernetes cluster; it's small
+  enough to run on CPU without the pod/VM getting OOM-killed.
+
+At request time, `llm_factory.py` calls Logos first and only falls back to the
+local Ollama model if the Logos call fails (e.g. missing/invalid `LOGOS_API_KEY`
+or the API being unreachable).
+
+Ollama also serves as the embedding provider for the Weaviate vector database
+(used for RAG over uploaded flashcard documents): both the `genai-service`
+(`vector_store.py`) and Weaviate's `text2vec-ollama` module use the
+`nomic-embed-text` model, served from the same `ollama` container
+(`OLLAMA_API_ENDPOINT`).
