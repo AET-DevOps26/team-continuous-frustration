@@ -14,7 +14,7 @@ echo "🟢 Done!"
 
 if [ "$*" = "--pull-llm" ]; then
     echo "🔴 Retrieve LLM..."
-    ollama pull gemma4:e2b
+    ollama pull qwen3:0.6b
     echo "🟢 Done!"
 fi
 
