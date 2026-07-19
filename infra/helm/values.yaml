@@ -91,7 +91,7 @@ genaiService:
   name: genai-service
   replicaCount: 1
   port: 8090
-  llmModel: "gemma4:e2b"
+  llmModel: "qwen3:0.6b"
   resources:
     requests:
       cpu: 200m
@@ -173,7 +173,6 @@ ollama:
   name: ollama
   image: ollama/ollama:0.30.8
   port: 11434
-  pullLlm: false
   storageSize: 10Gi
   resources:
     requests:

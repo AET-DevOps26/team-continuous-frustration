@@ -26,7 +26,7 @@ From the `infra/` directory, then run docker compose to start everything (Postgr
 docker compose up --build
 ```
 
-- Note: In the local setup, Google login is unavailable, and the local fallback LLM model is disabled by default so that a 7 GB model doesn't need to be pulled on app start.
+- Note: In the local setup, Google login is unavailable
 
 To stop all services:
 
@@ -132,27 +132,6 @@ cd infra/helm
 helm install [RELEASE_NAME] . --namespace team-continuous-frustration
 ```
 
-## Features
-
-At the moment the Login/ Signup functionality is available end-to-end. The rest of the Fronted is currently mocked.
-
-### Implemented Endpoints
-
-The following endooints are available through the API Gateway:
-
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/v1/auth/register` | POST | Register a new user |
-| `/api/v1/auth/login` | POST | Login with email and password |
-| `/api/v1/auth/login/google` | POST | Login with Google OAuth |
-| `/api/v1/auth/logout` | POST | Logout |
-| `/api/v1/auth/me` | GET | Get current user profile |
-| `/api/v1/auth/refresh` | POST | Refresh authentication token |
-| `/api/v1/documents/upload` | POST | Upload a document |
-| `/api/v1/documents/{upload_id}` | GET | Get a document |
-| `/api/v1/genai/generate-flashcards` | POST | Generate flashcards from an uploaded document |
-
-
 ### API documentation (Swagger UI)
 
 Every service exposes interactive API docs when running locally:
@@ -173,6 +152,7 @@ contracts (the single source of truth) live in [`api/`](api/).
 
 UML-style diagrams are in [`documents/diagrams/`](documents/diagrams/):
 
+- **System Structure** - [documents/system_structure.md](documents/system_structure.md)
 - **Subsystem Decomposition** — [documents/diagrams/Subsystem Decomposition.md](documents/diagrams/Subsystem%20Decomposition.md)
 - **Use Case Diagram** — `documents/diagrams/Use Case Diagram.pdf`
 - **Analysis Object Model** — `documents/diagrams/Analysis Object Model.png`

@@ -13,7 +13,7 @@ API_KEY = os.getenv("LOGOS_API_KEY")
 
 # Ollama profile
 LOCAL_BASE_URL = os.getenv("LLM_BASE_URL", "http://ollama:11434/v1")
-LOCAL_LLM_MODEL_NAME = os.getenv("LLM_MODEL", "gemma3n:e2b")
+LOCAL_LLM_MODEL_NAME = os.getenv("LLM_MODEL", "qwen3:0.6b")
 LOCAL_API_KEY = "ollama"
 
 # Request timeout (seconds). Local models can cold-start slowly on CPU, so this
