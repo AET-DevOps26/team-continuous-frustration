@@ -152,7 +152,7 @@ contracts (the single source of truth) live in [`api/`](api/).
 
 UML-style diagrams are in [`documents/diagrams/`](documents/diagrams/):
 
-- **System Structure** - [documents/system_structure.md](documents/diagrams/Subsystem%20Decomposition.md)
+- **System Structure** - [documents/system_structure.md](documents/system_structure.md)
 - **Subsystem Decomposition** — [documents/diagrams/Subsystem Decomposition.md](documents/diagrams/Subsystem%20Decomposition.md)
 - **Use Case Diagram** — `documents/diagrams/Use Case Diagram.pdf`
 - **Analysis Object Model** — `documents/diagrams/Analysis Object Model.png`
